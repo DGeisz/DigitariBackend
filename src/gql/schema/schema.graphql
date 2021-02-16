@@ -2,6 +2,11 @@ type User {
     id: ID
     firstName: String
     lastName: String
+    userName: String
+    email: String
+
+    newUser: Boolean
+
     level: Int
     bio: String
     ranking: Int
@@ -154,6 +159,12 @@ type Query {
 }
 
 type Mutation {
+    createOrFetchUser(
+        id: ID!
+        firstName: String!
+        lastName: String!
+        email: String!
+    ): User
     dismissConvo(cid: ID!): Convo
     blockInitialConvo(cid: ID!): Convo
     activateConvo(cid: ID!): Convo

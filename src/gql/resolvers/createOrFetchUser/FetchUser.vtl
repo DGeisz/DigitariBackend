@@ -1,0 +1,20 @@
+## Request
+
+{
+    "operation": "GetItem",
+    "key": {
+        "id": $util.dynamodb.toDynamoDBJson($ctx.args.id),
+    }
+}
+
+## Response
+#if($ctx.error)
+    $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+#if($util.isNullOrEmpty($ctx.result))
+    $util.qr($ctx.stash.put("exists", false))
+#else
+    $util.qr($ctx.stash.put("user", $ctx.result))
+    $util.qr($ctx.stash.get("user").put("newUser", false))
+#end
