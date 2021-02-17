@@ -1,23 +1,8 @@
-mutation CreateOrFetchUser(
-    $id: ID!
-    $firstName: String!
-    $lastName: String!
-    $email: String!
-) {
-    createOrFetchUser(
-        id: $id
-        firstName: $firstName
-        lastName: $lastName
-        email: $email
-    ) {
+query GetUser {
+    user {
         id
         firstName
         lastName
-        userName
-        email
-
-        newUser
-
         level
         bio
         ranking

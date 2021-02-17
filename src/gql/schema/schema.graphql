@@ -160,7 +160,6 @@ type Query {
 
 type Mutation {
     createOrFetchUser(
-        id: ID!
         firstName: String!
         lastName: String!
         email: String!
