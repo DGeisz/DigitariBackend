@@ -1,0 +1,10 @@
+query GetCommunity($cmid: ID!) {
+    community(cmid: $cmid) {
+        id
+        uid
+        name
+        description
+        followers
+        timeCreated
+    }
+}

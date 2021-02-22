@@ -4,4 +4,6 @@ FetchUser
 
 CreateUser
 
+IndexUser
+
 after

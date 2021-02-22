@@ -1,0 +1,27 @@
+## Request
+#if($ctx.stash.get("exists"))
+    #return
+#end
+
+{
+    "version":"2017-02-28",
+    "operation":"PUT",
+    "path": $util.toJson("/search/search_entity/$ctx.identity.sub"),
+    "params" : {
+        "headers":{},
+        "queryString":{},
+        "body" : {
+            "id": $util.toJson($ctx.identity.sub),
+            "name" : $util.toJson("$ctx.args.firstName $ctx.args.lastName"),
+            "followers": $util.toJson(0),
+            "entityType": $util.toJson(0),
+        }
+    }
+}
+
+## Response
+#if($ctx.error)
+    $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+{}

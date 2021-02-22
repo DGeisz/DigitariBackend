@@ -1,0 +1,8 @@
+query Search($text: String!) {
+    search(text: $text) {
+        id
+        name
+        entityType
+        followers
+    }
+}

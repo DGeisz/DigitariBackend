@@ -1,0 +1,29 @@
+## Request
+{
+    "version":"2017-02-28",
+    "operation":"GET",
+    "path": "/search/search_entity/_search",
+    "params":{
+        "headers":{},
+        "queryString":{},
+        "body":{
+            "from": 0,
+            "size": 50,
+            "query": {
+                "match": {
+                    "name": {
+                        "query": $util.toJson($ctx.args.text),
+                    },
+                },
+            }
+        }
+    }
+}
+
+## Response
+[
+    #foreach($entry in $context.result.hits.hits)
+        #if( $velocityCount > 1 ) , #end
+        $utils.toJson($entry.get("_source"))
+    #end
+]

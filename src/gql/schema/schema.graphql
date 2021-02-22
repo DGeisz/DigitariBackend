@@ -152,12 +152,19 @@ type CoinCheck {
 }
 
 type Community {
-    id: String
-    uid: String
+    id: ID
+    uid: ID
     name: String
     description: String
     followers: Int
     timeCreated: String
+}
+
+type SearchEntity {
+    id: ID
+    name: String
+    followers: Int
+    entityType: Int
 }
 
 type Query {
@@ -172,6 +179,8 @@ type Query {
     post(pid: ID!): Post
     convo(cid: ID!): Convo
     createCommunityCoinCheck: CoinCheck
+    community(cmid: ID!): Community
+    search(text: String!): [SearchEntity]
 }
 
 type Mutation {
@@ -197,6 +206,11 @@ type Mutation {
         name: String
         description: String
     ): Community
+    indexUser(
+        id: ID,
+        firstName: String
+        lastName: String
+    ): SearchEntity
 }
 
 schema {
