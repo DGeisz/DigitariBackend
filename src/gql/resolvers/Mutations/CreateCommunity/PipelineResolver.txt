@@ -1,0 +1,11 @@
+before
+
+StashCreateCommunityPrice -- Global Function
+
+StashUser -- Global Function
+
+CreateCommunity
+
+DecreaseUserCoin -- Global function
+
+after

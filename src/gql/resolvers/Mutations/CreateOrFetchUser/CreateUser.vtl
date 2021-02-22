@@ -18,6 +18,7 @@
         "lastName" : $util.dynamodb.toDynamoDBJson($ctx.args.lastName),
         "userName" : $util.dynamodb.toDynamoDBJson($ctx.args.firstName),
         "email" : $util.dynamodb.toDynamoDBJson($ctx.args.email),
+        "timeCreated" : $util.dynamodb.toDynamoDBJson($util.time.nowEpochMilliSeconds()),
 
         "level" : $util.dynamodb.toDynamoDBJson(0),
         "bio" : $util.dynamodb.toDynamoDBJson(""),

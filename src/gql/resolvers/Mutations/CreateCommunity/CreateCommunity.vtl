@@ -1,0 +1,26 @@
+## Request
+
+#if($ctx.stash.get("user").get("coin") < $ctx.stash.get("price"))
+    $util.error("User doesn't have enough coin to create community")
+#end
+
+{
+    "version" : "2017-02-28",
+    "operation" : "PutItem",
+    "key" : {
+        "id" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("id")),
+    },
+    "attributeValues" : {
+        "uid" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("user").get("id")),
+        "name" : $util.dynamodb.toDynamoDBJson($ctx.args.name),
+        "description" : $util.dynamodb.toDynamoDBJson($ctx.args.description),
+        "followers" : $util.dynamodb.toDynamoDBJson(0),
+        "timeCreated" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("timeCreated")),
+    }
+}
+
+## Response
+
+$util.qr($ctx.stash.put("community", $ctx.result))
+
+{}

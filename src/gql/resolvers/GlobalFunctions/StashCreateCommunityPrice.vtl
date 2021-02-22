@@ -1,0 +1,17 @@
+## Request
+
+{
+    "operation": "GetItem",
+    "key": {
+        "id": $util.dynamodb.toDynamoDBJson("CreateCommunity"),
+    }
+}
+
+## Response
+#if($ctx.error)
+    $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+$util.qr($ctx.stash.put("price", $ctx.result.get("price")))
+
+{}

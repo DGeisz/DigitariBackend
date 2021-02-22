@@ -1,0 +1,10 @@
+mutation CreateCommunity($name: String, $description: String) {
+    createCommunity(name: $name, description: $description) {
+        id
+        uid
+        name
+        description
+        followers
+        timeCreated
+    }
+}

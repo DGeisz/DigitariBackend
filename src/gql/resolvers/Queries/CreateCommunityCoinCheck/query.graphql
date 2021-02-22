@@ -1,0 +1,6 @@
+query CreateCommunityCoinCheck {
+    createCommunityCoinCheck {
+        coin
+        price
+    }
+}

@@ -1,0 +1,18 @@
+## Request
+
+{
+    "operation": "GetItem",
+    "key": {
+        "id": $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+    }
+}
+
+## Response
+#if($ctx.error)
+    $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+$util.qr($ctx.stash.put("user", $ctx.result))
+
+## Always remember to include the final mapping
+{}
