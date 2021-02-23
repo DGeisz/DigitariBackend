@@ -170,7 +170,7 @@ type SearchEntity {
 type Query {
     feed(uid: ID!, lastTime: Int): [Post]
     wallet(id: ID!): Wallet
-    user: User
+    user(uid: ID!): User
     userPosts(uid: ID!, lastTime: Int): [Post]
     userConvos(uid: ID!, lastTime: Int): [ConvoCover]
     newConvos(uid: ID!, lastTime: Int): [ConvoCover]
