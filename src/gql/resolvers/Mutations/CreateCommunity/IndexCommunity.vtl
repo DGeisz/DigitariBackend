@@ -7,7 +7,7 @@
         "headers":{},
         "queryString":{},
         "body" : {
-            "id": $util.toJson($ctx.identity.sub),
+            "id": $util.toJson($ctx.stash.id),
             "name" : $util.toJson($ctx.args.name),
             "followers": $util.toJson(0),
             "entityType": $util.toJson(1),
