@@ -1,0 +1,7 @@
+{
+    "tid" : $util.toJson($ctx.args.tid),
+    "sid" : $util.toJson($ctx.identity.sub),
+    "time" : $util.toJson($ctx.stash.get("time")),
+    "name" : $util.toJson("$ctx.stash.source.firstName $ctx.stash.source.lastName"),
+    "entityType" : $util.toJson(0),
+}

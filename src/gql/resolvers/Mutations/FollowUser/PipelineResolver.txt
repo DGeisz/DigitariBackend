@@ -1,0 +1,17 @@
+before
+
+FetchSourceUser
+
+FetchTargetUser
+
+CreateFollowerItem
+
+CreateFollowingItem
+
+IncrementSourceFollowing
+
+IncrementTargetFollowers
+
+IncrementTargetSearchFollowers -- Global
+
+after

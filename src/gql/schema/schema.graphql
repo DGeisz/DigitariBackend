@@ -167,6 +167,14 @@ type SearchEntity {
     entityType: Int
 }
 
+type FollowEntity {
+    sid: ID
+    tid: ID
+    time: String
+    name: String
+    entityType: Int
+}
+
 type Query {
     feed(uid: ID!, lastTime: Int): [Post]
     wallet(id: ID!): Wallet
@@ -211,6 +219,9 @@ type Mutation {
         firstName: String
         lastName: String
     ): SearchEntity
+    followUser(
+        tid: ID!
+    ): FollowEntity
 }
 
 schema {

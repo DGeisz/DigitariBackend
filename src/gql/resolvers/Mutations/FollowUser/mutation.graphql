@@ -1,0 +1,7 @@
+mutation FollowUser($tid: ID!) {
+    followUser(tid: $tid) {
+        sid
+        tid
+        name
+    }
+}
