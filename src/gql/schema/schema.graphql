@@ -6,6 +6,10 @@ type User {
     email: String
     timeCreated: String
 
+    # Indicates whether the person who fetched this user is following this user.
+    amFollowing: Boolean
+    followPrice: Int
+
     newUser: Boolean
 
     level: Int
@@ -153,6 +157,10 @@ type CoinCheck {
 
 type Community {
     id: ID
+
+    amFollowing: Boolean
+    followPrice: Int
+
     uid: ID
     name: String
     description: String

@@ -1,5 +1,7 @@
 before
 
+StashFollowUser -- Global
+
 FetchSourceUser -- Global
 
 FetchTargetUser
@@ -13,5 +15,7 @@ IncrementSourceFollowing -- Global
 IncrementTargetFollowers
 
 IncrementTargetSearchFollowers -- Global
+
+DecreaseUserCoin -- Global
 
 after

@@ -1,3 +1,7 @@
 $util.qr($ctx.stash.put("time", $util.time.nowEpochMilliSeconds()))
 
+#if($ctx.identity.sub == $ctx.args.tid)
+    $util.error("User can't follow itself")
+#end
+
 {}

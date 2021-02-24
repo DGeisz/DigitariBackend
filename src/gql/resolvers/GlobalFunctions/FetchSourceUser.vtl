@@ -12,6 +12,10 @@
     $util.error($ctx.error.message, $ctx.error.type)
 #end
 
+#if($ctx.result.coin < $ctx.stash.get("price"))
+    $util.error("User doesn't have enough coin")
+#end
+
 $util.qr($ctx.stash.put("source", $ctx.result))
 
 {}
