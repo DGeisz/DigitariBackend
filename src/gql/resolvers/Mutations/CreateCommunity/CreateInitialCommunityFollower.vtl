@@ -3,13 +3,13 @@
     "version" : "2017-02-28",
     "operation" : "PutItem",
     "key" : {
-        "tid" : $util.dynamodb.toDynamoDBJson($ctx.args.tid),
+        "tid" : $util.dynamodb.toDynamoDBJson($ctx.stash.community.id),
         "sid" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
     },
     "attributeValues" : {
-        "name" : $util.dynamodb.toDynamoDBJson("$ctx.stash.source.firstName $ctx.stash.source.lastName"),
+        "name" : $util.dynamodb.toDynamoDBJson("$ctx.stash.user.firstName $ctx.stash.user.lastName"),
         "entityType" : $util.dynamodb.toDynamoDBJson(0),
-        "time" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),
+        "time" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("timeCreated")),
     }
 }
 

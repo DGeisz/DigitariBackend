@@ -6,6 +6,10 @@ StashUser -- Global Function
 
 CreateCommunity
 
+CreateInitialCommunityFollower
+
+CreateInitialCommunityFollowing
+
 IndexCommunity
 
 DecreaseUserCoin -- Global function

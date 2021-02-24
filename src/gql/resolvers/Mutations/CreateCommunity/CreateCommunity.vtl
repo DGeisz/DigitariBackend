@@ -14,7 +14,7 @@
         "uid" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("user").get("id")),
         "name" : $util.dynamodb.toDynamoDBJson($ctx.args.name),
         "description" : $util.dynamodb.toDynamoDBJson($ctx.args.description),
-        "followers" : $util.dynamodb.toDynamoDBJson(0),
+        "followers" : $util.dynamodb.toDynamoDBJson(1),
         "timeCreated" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("timeCreated")),
     }
 }
