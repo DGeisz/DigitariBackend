@@ -1,0 +1,17 @@
+## Request
+
+{
+    "operation": "GetItem",
+    "key": {
+        "id": $util.dynamodb.toDynamoDBJson($ctx.args.tid),
+    }
+}
+
+## Response
+#if($ctx.error)
+    $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+$util.qr($ctx.stash.put("target", $ctx.result))
+
+{}

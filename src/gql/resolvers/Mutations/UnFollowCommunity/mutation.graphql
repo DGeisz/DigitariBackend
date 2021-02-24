@@ -1,0 +1,9 @@
+mutation UnFollowCommunity($tid: ID!) {
+    unFollowCommunity(tid: $tid) {
+        sid
+        tid
+        name
+        time
+        entityType
+    }
+}

@@ -2,16 +2,18 @@ before
 
 FetchSourceUser -- Global
 
-FetchTargetUser
+FetchTargetCommunity
 
-CreateFollowerItem
+CreateCommunityFollowerItem
 
-CreateFollowingItem
+CreateCommunityFollowingItem
 
 IncrementSourceFollowing -- Global
 
-IncrementTargetFollowers
+IncrementCommunityFollowers
 
 IncrementTargetSearchFollowers -- Global
 
 after
+
+

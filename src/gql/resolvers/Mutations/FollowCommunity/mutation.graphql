@@ -1,0 +1,8 @@
+mutation FollowCommunity($tid: ID!) {
+    followCommunity(tid: $tid) {
+        tid
+        sid
+        name
+        time
+    }
+}

@@ -189,6 +189,7 @@ type Query {
     createCommunityCoinCheck: CoinCheck
     community(cmid: ID!): Community
     search(text: String!): [SearchEntity]
+    searchEntity(id: ID!): SearchEntity
 }
 
 type Mutation {
@@ -220,6 +221,15 @@ type Mutation {
         lastName: String
     ): SearchEntity
     followUser(
+        tid: ID!
+    ): FollowEntity
+    unFollowUser(
+        tid: ID!
+    ): FollowEntity
+    followCommunity(
+        tid: ID!
+    ): FollowEntity
+    unFollowCommunity(
         tid: ID!
     ): FollowEntity
 }

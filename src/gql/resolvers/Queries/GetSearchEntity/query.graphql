@@ -1,0 +1,8 @@
+query GetSearchEntity($id: ID!) {
+    searchEntity(id: $id) {
+        id
+        entityType
+        name
+        followers
+    }
+}

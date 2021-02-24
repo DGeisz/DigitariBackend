@@ -1,0 +1,15 @@
+## Request
+
+{
+    "version":"2017-02-28",
+    "operation":"GET",
+    "path": $util.toJson("/search/search_entity/$ctx.args.id"),
+    "params":{
+        "headers":{},
+        "queryString":{},
+        "body":{}
+    }
+}
+
+## Response
+$utils.toJson($context.result.get("_source"))

@@ -1,0 +1,7 @@
+mutation UnFollowUser($tid: ID!) {
+    unFollowUser(tid: $tid) {
+        sid
+        tid
+        name
+    }
+}
