@@ -1,0 +1,9 @@
+query GetFollowers($tid: ID!) {
+    followers(tid: $tid) {
+        sid
+        tid
+        name
+        time
+        entityType
+    }
+}

@@ -1,0 +1,9 @@
+query GetFollowing($sid: ID!) {
+    following(sid: $sid) {
+        tid
+        sid
+        time
+        name
+        entityType
+    }
+}
