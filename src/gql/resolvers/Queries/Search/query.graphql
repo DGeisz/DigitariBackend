@@ -1,5 +1,5 @@
-query Search($text: String!) {
-    search(text: $text) {
+query Search($text: String!, $offset: Int) {
+    search(text: $text, offset: $offset) {
         id
         name
         entityType

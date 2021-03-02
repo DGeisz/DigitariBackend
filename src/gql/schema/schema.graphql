@@ -192,6 +192,12 @@ type FollowEntity @aws_iam
     entityType: Int
 }
 
+type PaginatedFollowEntities @aws_iam
+@aws_cognito_user_pools {
+    entities: [FollowEntity],
+    nextToken: String
+}
+
 type Query @aws_iam
 @aws_cognito_user_pools {
     feed(uid: ID!, lastTime: Int): [Post]
@@ -206,10 +212,10 @@ type Query @aws_iam
     convo(cid: ID!): Convo
     createCommunityCoinCheck: CoinCheck
     community(cmid: ID!): Community
-    search(text: String!): [SearchEntity]
+    search(text: String!, offset: Int): [SearchEntity]
     searchEntity(id: ID!): SearchEntity
-    followers(tid: ID!): [FollowEntity]
-    following(sid: ID!): [FollowEntity]
+    followers(tid: ID!, nextToken: String): PaginatedFollowEntities
+    following(sid: ID!, nextToken: String): PaginatedFollowEntities
 }
 
 type Mutation {

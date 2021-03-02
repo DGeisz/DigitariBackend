@@ -8,8 +8,17 @@
         "expressionValues" : {
             ":id" : $util.dynamodb.toDynamoDBJson($ctx.args.tid)
         }
-    }
+    },
+    "limit": $util.toJson(20)
+    #if( $ctx.args.nextToken )
+        ,"nextToken": "$ctx.args.nextToken"
+    #end
 }
 
 ## Response
-$util.toJson($ctx.result.items)
+{
+    "entities": $util.toJson($ctx.result.items)
+    #if( $ctx.result.nextToken )
+        ,"nextToken": $util.toJson($ctx.result.nextToken)
+    #end
+}
