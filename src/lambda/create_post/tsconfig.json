@@ -1,5 +1,10 @@
 {
     "compilerOptions": {
-        "lib": ["es2015", "DOM"]
+        "outDir": "./dist/",
+        "noImplicitAny": true,
+        "module": "es6",
+        "target": "es5",
+        "jsx": "react",
+        "allowJs": true
     }
 }
