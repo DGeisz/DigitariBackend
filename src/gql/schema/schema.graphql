@@ -122,7 +122,7 @@ type Post {
     uid: ID
     user: String
     ranking: Int
-    time: Int
+    time: String
     content: String
     link: String
     convoReward: Int
@@ -258,6 +258,18 @@ type Mutation {
     unFollowCommunity(
         tid: ID!
     ): FollowEntity
+    createPost(
+        content: String
+        link: String
+        convoReward: Int
+        responseCost: Int
+
+        post2Followers: Boolean
+        numUserFollowers: Int
+        post2Community: Boolean
+        cmid: ID
+        numComFollowers: Int
+    ): Post
 }
 
 schema {

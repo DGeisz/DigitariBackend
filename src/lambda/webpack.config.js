@@ -1,5 +1,13 @@
+const path = require("path");
+
 module.exports = {
-    entry: "./src/create_post.ts",
+    /*
+     * Register all the different lambdas here
+     */
+    entry: {
+        create_post: "./src/lambdas/create_post/create_post.ts",
+    },
+    externals: ["aws-sdk"],
     mode: "production",
     module: {
         rules: [
@@ -16,8 +24,8 @@ module.exports = {
     },
     target: "node",
     output: {
-        filename: "lambda.js",
+        path: path.join(__dirname, "dist"),
+        filename: "[name].js",
         libraryTarget: "commonjs2",
-        // library: "lambda",
     },
 };
