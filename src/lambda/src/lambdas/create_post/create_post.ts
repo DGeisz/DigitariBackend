@@ -91,17 +91,20 @@ export async function handler(
      */
     if (event.arguments.post2Followers) {
         /*
-         * Check to be sure user has enough coin
+         * Check to be sure user has enough coin,
+         * and if so, deduct the price of posting to
+         * the community from this user's remaining coin
          */
         if (
-            userRemainingCoin <
+            userRemainingCoin >
             event.arguments.numUserFollowers * user.postPrice
         ) {
+            userRemainingCoin -=
+                event.arguments.numUserFollowers * user.postPrice;
+        } else {
             throw new Error(
                 "User doesn't have sufficient coin to complete the transaction"
             );
-        } else {
-            userRemainingCoin -= user.followers * user.postPrice;
         }
 
         /*
@@ -245,5 +248,22 @@ export async function handler(
                 })
                 .promise()
         ).Item as CommunityType;
+
+        /*
+         * Check if the user has enough coin to post
+         * to this community as requested, and if so, deduct
+         * the price of the post from the user's coin
+         */
+        if (
+            userRemainingCoin >
+            event.arguments.numComFollowers * comm.postPrice
+        ) {
+            userRemainingCoin -=
+                event.arguments.numComFollowers * user.postPrice;
+        } else {
+            throw new Error(
+                "User doesn't have sufficient coin to complete the transaction"
+            );
+        }
     }
 }

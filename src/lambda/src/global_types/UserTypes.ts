@@ -29,17 +29,17 @@ export interface UserType {
     postPrice: number;
     /**
      * Mean number of posts desired from this user
-     * by this user's followers
+     * per day by this user's followers
      */
     meanPostsDesired: number;
     /**
      * Standard deviation of the posts desired from
-     * this user by this user's followers
+     * this user per day by this user's followers
      */
     stdPostsDesired: number;
     /**
      * The number of posts requested from this user
-     * organized into activity groupings
+     * per day organized into activity groupings
      */
     postsRequestedForActivityGroupings: number[];
     /**

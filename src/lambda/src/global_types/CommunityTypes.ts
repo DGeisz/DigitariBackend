@@ -18,17 +18,17 @@ export interface CommunityType {
     postPrice: number;
     /**
      * The number of posts desired by followers
-     * of this community at this tier
+     * per day of this community at this tier
      */
     postsDesiredByTier: number[];
     /**
      * The mean number of posts desired by followers
-     * of this community at each tier
+     * per day of this community at each tier
      */
     meanPostsDesiredByTier: number[];
     /**
      * The standard deviation of the number of posts
-     * desired by followers of this community at each tier
+     * desired per day by followers of this community at each tier
      */
     stdPostsDesiredByTier: number[];
     /**
@@ -39,7 +39,6 @@ export interface CommunityType {
      * ie [[ag0_t0, ag1_t0, ag2_t0, ...], [ag0_t1, ag1_t1, ag2_t1, ...], ...]
      */
     postsRequestedForActivityGroupingsByTier: number[][];
-
     /**
      * This array of arrays is organized like postsRequested...ByTier
      * (the previous field), but each number corresponds to the number

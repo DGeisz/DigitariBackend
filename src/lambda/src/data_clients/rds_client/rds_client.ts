@@ -13,6 +13,11 @@ export class RdsClient {
         this.dataService = new RDSDataService();
     }
 
+    /*
+     * Execute the sql query in the query package, and
+     * use the result parser to parse the list of
+     * returned rows into objects
+     */
     async executeQuery<T>(query: QueryPackage<T>): Promise<T[]> {
         /*
          * First, use the service to execute the sql query
@@ -32,7 +37,7 @@ export class RdsClient {
          */
         if (data.records) {
             /*
-             * Apply the result parser to obtain the parsed list of returned objects
+             * Apply the result parser to obtain a list of parsed objects
              */
             return data.records.map(query.resultParser);
         } else {
