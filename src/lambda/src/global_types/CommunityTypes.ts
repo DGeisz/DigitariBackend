@@ -9,15 +9,41 @@ export interface CommunityType {
     description: string;
     followers: number;
     timeCreated: string;
-}
 
-export const exampleCommunity: CommunityType = {
-    id: "bett",
-    uid: "betty",
-    name: "Those named Bett",
-    amFollowing: false,
-    followPrice: 50,
-    description: "Everyone named Bett in the area",
-    followers: 20,
-    timeCreated: "1613999698186",
-};
+    // Fields pertaining to post distribution
+    /**
+     * Price of putting a post into the feed of
+     * one of this community's followers
+     */
+    postPrice: number;
+    /**
+     * The number of posts desired by followers
+     * of this community at this tier
+     */
+    postsDesiredByTier: number[];
+    /**
+     * The mean number of posts desired by followers
+     * of this community at each tier
+     */
+    meanPostsDesiredByTier: number[];
+    /**
+     * The standard deviation of the number of posts
+     * desired by followers of this community at each tier
+     */
+    stdPostsDesiredByTier: number[];
+    /**
+     * Each tier has its own set of activity groupings,
+     * so the outer array corresponds to tiers, ie [t0, t1, t2 ...]
+     * and each inner array corresponds to the number of posts
+     * desired for that activity grouping at that tier,
+     * ie [[ag0_t0, ag1_t0, ag2_t0, ...], [ag0_t1, ag1_t1, ag2_t1, ...], ...]
+     */
+    postsRequestedForActivityGroupingsByTier: number[][];
+
+    /**
+     * This array of arrays is organized like postsRequested...ByTier
+     * (the previous field), but each number corresponds to the number
+     * of users in each tiered activity grouping
+     */
+    activityGroupingSizeByTier: number[][];
+}
