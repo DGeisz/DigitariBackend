@@ -6,6 +6,7 @@ module.exports = {
      */
     entry: {
         create_post: "./src/lambdas/create_post/create_post.ts",
+        test_create_post_utils: "./src/lambdas/create_post/utils.test.ts",
     },
     externals: ["aws-sdk"],
     mode: "production",

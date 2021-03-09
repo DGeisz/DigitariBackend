@@ -1,12 +1,5 @@
 import { ConvoCoverType } from "./ConvoCoverTypes";
-import {
-    exampleStrippedPost,
-    gExampleStrippedPost,
-    gPostExampleWithLink,
-    GStrippedPostType,
-    PostType,
-    StrippedPostType,
-} from "./PostTypes";
+import { PostType, StrippedPostType } from "./PostTypes";
 import { ConvoMsgType } from "./ConvoMsgTypes";
 
 export const CONVO_TYPENAME = "Convo";
