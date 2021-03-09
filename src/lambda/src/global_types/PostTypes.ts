@@ -3,6 +3,8 @@ import { ConvoCoverType } from "./ConvoCoverTypes";
 export interface PostType {
     id: string;
     user: string;
+    targetCommunity?: string;
+    targetCommunityId?: string;
     uid: string;
     ranking: number;
     time: number;

@@ -88,6 +88,11 @@ export function selectWeightedRandomActivityGroup(
  * tier 1, then they'd fetch the second entry in the outer list
  * and do the same thing
  *
+ * If the caller specifies their tier and the number of posts
+ * they're sending out, then just return a list with the actual
+ * allocation of posts to different tiers.  Otherwise, return
+ * the entire allocation matrix
+ *
  * The whole purpose of this function is to provide a way
  * for all the tiers to (hopefully) get the number of
  * posts they request, and to make sure that each tier is
@@ -96,8 +101,10 @@ export function selectWeightedRandomActivityGroup(
 export function getTierPostAllocation(
     postsRequestedPerTier: number[],
     postsProvidedPerTier: number[],
-    initialMix: number
-): number[][] {
+    initialMix: number,
+    tier?: number,
+    postCount?: number
+): number[][] | number[] {
     /*
      * Make sure initial mix is between 0 and 1
      */
@@ -211,7 +218,9 @@ export function getTierPostAllocation(
      * adjust transAlloc if necessary, and report any deficit
      * that has occurred
      */
-    transAlloc.forEach((tierReceived, i) => {
+    for (let i = 0; i < transAlloc.length; ++i) {
+        const tierReceived = transAlloc[i];
+
         /*
          * Get the number of posts distributed to the tier
          */
@@ -231,15 +240,17 @@ export function getTierPostAllocation(
                 (rec) => ((totalReceived - requested) / totalReceived) * rec
             );
 
-            surplus.forEach((_, j) => (surplus[j] += tieredSurplus[j]));
+            for (let j = 0; j < surplus.length; ++j) {
+                surplus[j] += tieredSurplus[j];
+            }
 
             /*
              * Now then, remove the tiered surplus from transAlloc,
              * so the present tier receives the correct amount of posts
              */
-            tierReceived.forEach(
-                (_, j) => (tierReceived[j] -= tieredSurplus[j])
-            );
+            for (let j = 0; j < surplus.length; ++j) {
+                tierReceived[j] -= tieredSurplus[j];
+            }
         } else {
             /*
              * We're in a deficit, so we're going to calculate the size
@@ -247,7 +258,7 @@ export function getTierPostAllocation(
              */
             deficit[i] = requested - totalReceived;
         }
-    });
+    }
 
     /*
      * Calculate the total size of the deficit
@@ -260,9 +271,18 @@ export function getTierPostAllocation(
          * take posts from the surplus array according to the normalized
          * size of the deficit at the given tier
          */
-        deficit.forEach((tierDeficit, tierIndex) => {
+
+        for (let tierIndex = 0; tierIndex < deficit.length; ++tierIndex) {
+            const tierDeficit = deficit[tierIndex];
+
             if (tierDeficit > 0) {
-                surplus.forEach((tierSurplus, surplusIndex) => {
+                for (
+                    let surplusIndex = 0;
+                    surplusIndex < surplus.length;
+                    ++surplusIndex
+                ) {
+                    const tierSurplus = surplus[surplusIndex];
+
                     /*
                      * We're going to add the normalized surplus
                      * to the row in the transAllocation matrix
@@ -270,9 +290,9 @@ export function getTierPostAllocation(
                      */
                     transAlloc[tierIndex][surplusIndex] +=
                         (tierDeficit / totalDeficit) * tierSurplus;
-                });
+                }
             }
-        });
+        }
 
         /*
          * Set allocation to be the transpose of tier allocation
@@ -281,10 +301,9 @@ export function getTierPostAllocation(
     }
 
     /*
-     * Finally, normalize each row of allocation, and
-     * return the resulting matrix
+     * Finally, normalize each row of the allocation, and
      */
-    return allocation.map((row) => {
+    const normAllocation = allocation.map((row) => {
         const rowTotal = sumReduce(row);
 
         if (rowTotal !== 0) {
@@ -293,4 +312,35 @@ export function getTierPostAllocation(
             return new Array(numTiers).fill(0);
         }
     });
+
+    /*
+     * If the caller provided their tier, only return the tier
+     */
+    if (typeof tier !== "undefined") {
+        const tierAllocation = normAllocation[tier];
+
+        /*
+         * If caller provided the number of posts they're
+         * sending out, then multiply the tier allocation
+         * by the number of posts, and round to the nearest
+         * integer
+         */
+        if (typeof postCount !== "undefined") {
+            return tierAllocation.map((tierCount) =>
+                Math.round(postCount * tierCount)
+            );
+        } else {
+            /*
+             * ...otherwise, just return the normalized allocation
+             */
+            return tierAllocation;
+        }
+    } else {
+        /*
+         * If the caller didn't provide their tier, return
+         * the entire allocation matrix
+         */
+
+        return normAllocation;
+    }
 }

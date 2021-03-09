@@ -3,7 +3,11 @@ import { getTierPostAllocation, sumReduce, transpose } from "./utils";
 const postsRequested = [9, 1, 5, 6, 3, 0];
 const postsProvided = [12, 6, 1, 3, 0, 0];
 
-const out = getTierPostAllocation(postsRequested, postsProvided, 0.8);
+const out = getTierPostAllocation(
+    postsRequested,
+    postsProvided,
+    0.8
+) as number[][];
 
 console.log(out);
 

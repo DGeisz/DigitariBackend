@@ -9,9 +9,9 @@ function followersParser(row: FieldList): string {
     return row[0].stringValue;
 }
 
-export function getAllFollowersQueryPackage(uid: string): QueryPackage<string> {
+export function getAllFollowersQueryPackage(tid: string): QueryPackage<string> {
     return {
-        sql: `SELECT sid FROM follows WHERE tid=${uid}`,
+        sql: `SELECT sid FROM follows WHERE tid=${tid}`,
         resultParser: followersParser,
     };
 }
@@ -38,6 +38,35 @@ export function getAllActivityGroupFollowers(
     return {
         sql: `SELECT sid FROM follows 
               WHERE tid=${uid} AND activity_group=${activityGroup}
+              `,
+        resultParser: followersParser,
+    };
+}
+
+export function getRandomActivityGroupFollowersByTier(
+    tid: string,
+    activityGroup: number,
+    tier: number,
+    numFollowers: number
+): QueryPackage<string> {
+    return {
+        sql: `SELECT sid FROM follows 
+              WHERE tid=${tid} AND activity_group=${activityGroup} AND tier=${tier}
+              ORDER BY RAND()
+              LIMIT ${numFollowers}
+              `,
+        resultParser: followersParser,
+    };
+}
+
+export function getAllActivityGroupFollowersByTier(
+    uid: string,
+    tier: number,
+    activityGroup: number
+): QueryPackage<string> {
+    return {
+        sql: `SELECT sid FROM follows 
+              WHERE tid=${uid} AND activity_group=${activityGroup} AND tier=${tier}
               `,
         resultParser: followersParser,
     };

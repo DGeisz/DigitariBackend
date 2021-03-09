@@ -16,6 +16,10 @@ export interface CommunityType {
      * one of this community's followers
      */
     postPrice: number;
+    /** The number of posts per day provided
+     * to this community organized by tier
+     */
+    postsProvidedByTier: number[];
     /**
      * The number of posts desired by followers
      * per day of this community at this tier
