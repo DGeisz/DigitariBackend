@@ -17,10 +17,6 @@ export interface PostType {
     convos: ConvoCoverType[];
 }
 
-export interface GPostType extends PostType {
-    __typename: string;
-}
-
 export interface StrippedPostType {
     id: string;
     uid: string;

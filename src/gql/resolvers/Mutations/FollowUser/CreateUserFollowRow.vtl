@@ -1,0 +1,24 @@
+## Req
+{
+    "version": "2018-05-29",
+    "statements": [
+        "INSERT INTO follows VALUES (:TID, :SID, :TNAME, :SNAME, :TIME, :ENTITY_TYPE, :ACTIVITY_GROUP, :TIER)",
+    ],
+    "variableMap": {
+        ":TID": $util.toJson($ctx.args.tid),
+        ":SID": $util.toJson($ctx.identity.sub),
+        ":TNAME": "$ctx.stash.target.firstName $ctx.stash.target.lastName",
+        ":SNAME": "$ctx.stash.source.firstName $ctx.stash.source.lastName",
+        ":TIME": $util.toJson($ctx.stash.get("time")),
+        ":ENTITY_TYPE": $util.toJson(0),
+        ":ACTIVITY_GROUP": $util.toJson(5),
+        ":TIER": $util.toJson($ctx.stash.source.tier)
+    }
+}
+
+##Res
+#if($ctx.error)
+    $utils.error($ctx.error.message, $ctx.error.type)
+#end
+
+{}

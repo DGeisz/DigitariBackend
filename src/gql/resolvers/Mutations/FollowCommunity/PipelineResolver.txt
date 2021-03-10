@@ -6,9 +6,7 @@ FetchSourceUser -- Global
 
 FetchTargetCommunity
 
-CreateCommunityFollowerItem
-
-CreateCommunityFollowingItem
+CreateCommunityFollowRow
 
 IncrementSourceFollowing -- Global
 

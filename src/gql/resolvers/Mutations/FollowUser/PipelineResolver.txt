@@ -1,14 +1,12 @@
 before
 
-StashFollowUser -- Global
+StashFollowPrice -- Global
 
 FetchSourceUser -- Global
 
 FetchTargetUser
 
-CreateFollowerItem
-
-CreateFollowingItem
+CreateUserFollowRow
 
 IncrementSourceFollowing -- Global
 
