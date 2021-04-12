@@ -20,6 +20,13 @@
         "email" : $util.dynamodb.toDynamoDBJson($ctx.args.email),
         "timeCreated" : $util.dynamodb.toDynamoDBJson($util.time.nowEpochMilliSeconds()),
 
+        ##  Fields for post distribution
+        "postPrice" : $util.dynamodb.toDynamoDBJson(10),
+        "meanPostsDesired" : $util.dynamodb.toDynamoDBJson(0),
+        "stdPostsDesired" : $util.dynamodb.toDynamoDBJson(0),
+        "postsRequestedForActivityGroupings" : $util.dynamodb.toDynamoDBJson([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+        "activityGroupingSize" : $util.dynamodb.toDynamoDBJson([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+
         "level" : $util.dynamodb.toDynamoDBJson(0),
         "bio" : $util.dynamodb.toDynamoDBJson(""),
         "ranking" : $util.dynamodb.toDynamoDBJson(0),

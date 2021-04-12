@@ -11,6 +11,7 @@ type User @aws_iam
     userName: String
     email: String
     timeCreated: String
+    imgUrl: String
 
     # Indicates whether the person who fetched this user is following this user.
     amFollowing: Boolean
@@ -198,6 +199,11 @@ type PaginatedFollowEntities @aws_iam
     nextToken: String
 }
 
+type ImgUrl {
+    url: String
+    presignedUrl: String
+}
+
 type Query @aws_iam
 @aws_cognito_user_pools {
     feed(uid: ID!, lastTime: Int): [Post]
@@ -270,6 +276,12 @@ type Mutation {
         cmid: ID
         numComFollowers: Int
     ): Post
+    updateBio(
+        bio: String
+    ): User
+    updateProfilePic(
+        imgName: String
+    ): ImgUrl
 }
 
 schema {

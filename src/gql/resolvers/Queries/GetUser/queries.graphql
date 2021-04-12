@@ -9,6 +9,7 @@ query GetUser($uid: ID!) {
         blocked
         beenBlocked
         coin
+        imgUrl
 
         coinSpent
         csGoal
