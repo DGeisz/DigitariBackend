@@ -180,16 +180,17 @@ type SearchEntity @aws_iam
 @aws_cognito_user_pools {
     id: ID
     name: String
+    imgUrl: String
     followers: Int
     entityType: Int
 }
 
-type FollowEntity @aws_iam
-@aws_cognito_user_pools {
+type FollowEntity @aws_iam @aws_cognito_user_pools {
     sid: ID
     tid: ID
     time: String
     name: String
+    imgUrl: String
     entityType: Int
 }
 

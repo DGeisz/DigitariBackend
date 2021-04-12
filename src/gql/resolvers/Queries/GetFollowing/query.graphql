@@ -4,6 +4,7 @@ query GetFollowing($sid: ID!, $nextToken: String) {
             tid
             sid
             time
+            imgUrl
             name
             entityType
         }

@@ -1,9 +1,13 @@
 query GetFollowers($tid: ID!) {
     followers(tid: $tid) {
-        sid
-        tid
-        name
-        time
-        entityType
+        entities {
+            tid
+            sid
+            time
+            imgUrl
+            name
+            entityType
+        }
+        nextToken
     }
 }

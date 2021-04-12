@@ -1,0 +1,67 @@
+## Request
+
+#if($util.isNull($ctx.args.offset))
+    $util.qr($ctx.stash.put("from", 0))
+#else
+    $util.qr($ctx.stash.put("from", $ctx.args.offset))
+#end
+
+
+{
+    "version":"2017-02-28",
+    "operation":"GET",
+    "path": "/search/search_entity/_search",
+    "params": {
+        "headers":{},
+        "queryString":{},
+        "body": {
+            "from": $util.toJson($ctx.stash.get("from")),
+            "size": 50,
+            "query": {
+                "bool": {
+                    "must": {
+                        "function_score": {
+                            "query": {
+                                "match": {
+                                    "name": {
+                                        "query": $util.toJson($ctx.args.text),
+                                        "fuzziness": "AUTO"
+                                    }
+                                }
+                            },
+                            "field_value_factor": {
+                                "field": "followers",
+                                "modifier": "log1p"
+                            },
+                            "boost_mode": "sum"
+                        }
+                    },
+                    "should": {
+                        "function_score": {
+                            "query": {
+                                "match": {
+                                    "name": {
+                                        "query": $util.toJson($ctx.args.text)
+                                    }
+                                }
+                            },
+                            "field_value_factor": {
+                                "field": "followers",
+                                "modifier": "log1p"
+                            },
+                            "boost_mode": "sum"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+## Response
+[
+    #foreach($entry in $context.result.hits.hits)
+        #if( $velocityCount > 1 ) , #end
+        $utils.toJson($entry.get("_source"))
+    #end
+]

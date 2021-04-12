@@ -1,0 +1,37 @@
+## Request
+
+#set($userIds = [])
+#foreach($queryResult in ${ctx.prev.result})
+    #if($queryResult.entityType == 0)
+        #set($userMap = {})
+        $util.qr($userMap.put("id", $util.dynamodb.toString($queryResult.id)))
+        $util.qr($userIds.add($userMap))
+    #end
+#end
+
+#if($userIds.isEmpty())
+    #return($util.prev.result)
+#end
+
+
+{
+    "operation": "BatchGetItem",
+    "tables" : {
+        "DigitariUsers" : {
+            "keys" : $util.toJson($userIds),
+        }
+    }
+}
+
+## Response
+
+#foreach($user in ${ctx.result.data.DigitariUsers})
+    #foreach($queryResult in ${ctx.prev.result})
+        #if($queryResult.id.equals($user.id))
+            $util.qr($queryResult.put("imgUrl", $user.imgUrl))
+            #break
+        #end
+    #end
+#end
+
+$util.toJson($ctx.prev.result)
