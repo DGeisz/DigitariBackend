@@ -11,3 +11,5 @@ DecrementTargetFollowers
 DecrementTargetSearchFollowers -- Global
 
 after
+
+NOTE: No longer valid -- switched to Lambda

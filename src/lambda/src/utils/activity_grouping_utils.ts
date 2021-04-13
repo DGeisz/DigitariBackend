@@ -8,7 +8,7 @@ export function calculateActivityGrouping(
     targetMean: number,
     targetStd: number
 ): number {
-    if (targetStd === 0) {
+    if (targetStd <= 0 || targetMean < 0) {
         return 5;
     }
 

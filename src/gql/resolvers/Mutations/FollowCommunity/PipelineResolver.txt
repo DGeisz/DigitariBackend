@@ -18,4 +18,4 @@ DecreaseUserCoin  -- Global
 
 after
 
-
+Note: This has since moved to a lambda resolver

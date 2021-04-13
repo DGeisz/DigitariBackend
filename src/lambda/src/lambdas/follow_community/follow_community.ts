@@ -1,18 +1,23 @@
-import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
-import { DynamoDB } from "aws-sdk";
-import { DigitariPrice } from "../../global_types/DigitariPricesTypes";
-import { UserType } from "../../global_types/UserTypes";
-import { calculateActivityGrouping } from "../../utils/activity_grouping_utils";
-import { sumReduce } from "../create_post/utils";
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
-import { followChecker, insertFollowRow } from "./rds_queries/queries";
+import { DynamoDB } from "aws-sdk";
 import { Client } from "elasticsearch";
-import { ranking2Tier } from "../../utils/tier_utils";
+import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { FollowEventArgs } from "../../global_types/follow_event_args";
 import {
+    followChecker,
+    insertFollowRow,
+} from "../follow_user/rds_queries/queries";
+import { DigitariPrice } from "../../global_types/DigitariPricesTypes";
+import { UserType } from "../../global_types/UserTypes";
+import { CommunityType } from "../../global_types/CommunityTypes";
+import {
+    DIGITARI_COMMUNITIES,
     DIGITARI_PRICES,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
+import { ranking2Tier } from "../../utils/tier_utils";
+import { sumReduce } from "../create_post/utils";
+import { calculateActivityGrouping } from "../../utils/activity_grouping_utils";
 
 const rdsClient = new RdsClient();
 
@@ -72,42 +77,43 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             .promise()
     ).Item as UserType;
 
+    const sourceTier = ranking2Tier(source.ranking);
+
     if (source.coin < followPrice) {
         throw new Error("Source doesn't have sufficient coin to follow target");
     }
 
     /*
-     * Get the target user
+     * Get the target community
      */
-    const target: UserType = (
+    const target: CommunityType = (
         await dynamoClient
             .get({
-                TableName: DIGITARI_USERS,
+                TableName: DIGITARI_COMMUNITIES,
                 Key: {
                     id: tid,
                 },
             })
             .promise()
-    ).Item as UserType;
+    ).Item as CommunityType;
 
-    /*
-     * Calculate the source's activity grouping
-     * for target
-     */
-    let targetMean;
+    let targetAgPostsRequested =
+        target.postsRequestedForActivityGroupingsByTier[sourceTier];
+    let targetAgStd = target.stdPostsDesiredByTier[sourceTier];
+    let targetAgSize = sumReduce(target.activityGroupingSizeByTier[sourceTier]);
 
-    if (target.followers > 0) {
-        targetMean =
-            sumReduce(target.postsRequestedForActivityGroupings) /
-            target.followers;
+    let targetAgMean;
+
+    if (targetAgSize > 0) {
+        targetAgMean = sumReduce(targetAgPostsRequested) / targetAgSize;
     } else {
-        targetMean = 0;
+        targetAgMean = 0;
     }
 
-    const activityGrouping = calculateActivityGrouping(
+    const tierActivityGrouping = calculateActivityGrouping(
         sourcePostsRequested,
-        targetMean,
-        target.stdPostsDesired
+        targetAgMean,
+        targetAgStd
     );
 
     /*
@@ -142,11 +148,11 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             insertFollowRow(
                 tid,
                 sid,
-                `${target.firstName} ${target.lastName}`,
+                target.name,
                 `${source.firstName} ${source.lastName}`,
                 time,
-                activityGrouping,
-                ranking2Tier(source.ranking),
+                tierActivityGrouping,
+                sourceTier,
                 sourcePostsRequested
             )
         );
@@ -155,12 +161,10 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     }
 
     /*
-     * Increment target followers, and increase target's
-     * ag size for source's ag.  Also increment the posts
-     * requested for activity grouping
+     * Update the target
      */
-    const agSize = "activityGroupingSize";
-    const postsReq4Ag = "postsRequestedForActivityGroupings";
+    const postReq = "postsRequestedForActivityGroupingsByTier";
+    const agSize = "activityGroupingSizeByTier";
 
     try {
         await dynamoClient
@@ -170,8 +174,8 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     id: tid,
                 },
                 UpdateExpression: `set followers = followers + :unit, 
-                                   ${agSize}[${activityGrouping}] = ${agSize}[${activityGrouping}] + :unit,
-                                   ${postsReq4Ag}[${activityGrouping}] = ${postsReq4Ag}[${activityGrouping}] + :posts
+                                   ${agSize}[${sourceTier}][${tierActivityGrouping}] = ${agSize}[${tierActivityGrouping}] + :unit,
+                                   ${postReq}[${sourceTier}][${tierActivityGrouping}] = ${postReq}[${sourceTier}][${tierActivityGrouping}] + :posts
                                    `,
                 ExpressionAttributeValues: {
                     ":unit": 1,
@@ -183,10 +187,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
         throw new Error("Target update error: " + e);
     }
 
-    /*
-     * Increment the source's following field, and decrease the
-     * users coin
-     */
     try {
         await dynamoClient
             .update({

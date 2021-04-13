@@ -5,7 +5,7 @@ function followsParser(_row: FieldList): boolean {
     return true;
 }
 
-export function insertFollowUserRow(
+export function insertFollowRow(
     tid: string,
     sid: string,
     tname: string,
@@ -33,5 +33,12 @@ export function insertFollowUserRow(
                 },
             },
         ],
+    };
+}
+
+export function followChecker(tid: string, sid: string): QueryPackage<boolean> {
+    return {
+        sql: `SELECT * FROM follows WHERE tid='${tid}' AND sid='${sid}'`,
+        resultParser: followsParser,
     };
 }

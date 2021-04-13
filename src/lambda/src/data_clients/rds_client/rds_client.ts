@@ -49,4 +49,19 @@ export class RdsClient {
             return [];
         }
     }
+
+    /*
+     * Executes sql statement without bothering to return
+     * anything.  Useful for deletes
+     */
+    async executeSql(sql: string) {
+        await this.dataService
+            .executeStatement({
+                secretArn: process.env.SECRET_ARN,
+                resourceArn: process.env.CLUSTER_ARN,
+                sql,
+                database: process.env.DATABASE,
+            })
+            .promise();
+    }
 }
