@@ -14,7 +14,6 @@ export interface UserType {
     level: number;
     bio: string;
     ranking: number;
-    tier: number;
     blocked: number;
     beenBlocked: number;
     coin: number;

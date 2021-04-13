@@ -10,6 +10,8 @@
         "tabWidth": 4
     },
     "devDependencies": {
+        "@types/elasticsearch": "^5.0.37",
+        "@types/http-aws-es": "^6.0.0",
         "prettier": "^2.2.1",
         "ts-loader": "^8.0.17",
         "typescript": "^4.2.2",
@@ -21,6 +23,8 @@
         "@types/uuid": "^8.3.0",
         "aws-sdk": "^2.858.0",
         "cardinal": "^2.1.1",
+        "elasticsearch": "^16.7.2",
+        "http-aws-es": "^6.0.0",
         "mysql2": "^2.2.5",
         "uuid": "^8.3.2"
     }

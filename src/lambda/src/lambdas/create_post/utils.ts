@@ -140,7 +140,8 @@ export function getTierPostAllocation(
      * tiers
      */
     if (totalReq === 0 || totalProvided === 0) {
-        return postsRequestedPerTier.map((_, i) => {
+        // return
+        const allocMatrix = postsRequestedPerTier.map((_, i) => {
             const tierAllocation = new Array(numTiers).fill(0);
 
             tierAllocation[i] = initialMix;
@@ -157,6 +158,29 @@ export function getTierPostAllocation(
 
             return tierAllocation;
         });
+
+        if (typeof tier !== "undefined") {
+            const tierAllocation = allocMatrix[tier];
+
+            /*
+             * If caller provided the number of posts they're
+             * sending out, then multiply the tier allocation
+             * by the number of posts, and round to the nearest
+             * integer
+             */
+            if (typeof postCount !== "undefined") {
+                return tierAllocation.map((tierCount) =>
+                    Math.round(postCount * tierCount)
+                );
+            } else {
+                /*
+                 * ...otherwise, just return the normalized allocation
+                 */
+                return tierAllocation;
+            }
+        } else {
+            return allocMatrix;
+        }
     }
 
     /*

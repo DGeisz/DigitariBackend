@@ -19,10 +19,12 @@ import {
 import {
     getTierPostAllocation,
     selectWeightedRandomActivityGroup,
+    sumReduce,
 } from "./utils";
 import { CommunityType } from "../../global_types/CommunityTypes";
 import { WriteRequests } from "aws-sdk/clients/dynamodb";
 import { FeedRecord2DynamoJson } from "../../global_types/FeedRecordTypes";
+import { ranking2Tier } from "../../utils/tier_utils";
 
 const MAX_BATCH_WRITE_ITEMS = 25;
 
@@ -304,10 +306,13 @@ export async function handler(
              * Get the tier allocation for this user's posting
              */
             const tierAllocation = getTierPostAllocation(
-                comm.postsDesiredByTier,
+                // comm.postsDesiredByTier,
+                comm.postsRequestedForActivityGroupingsByTier.map((tier) =>
+                    sumReduce(tier)
+                ),
                 comm.postsProvidedByTier,
                 0.8,
-                user.tier,
+                ranking2Tier(user.ranking),
                 event.arguments.numComFollowers
             ) as number[];
 

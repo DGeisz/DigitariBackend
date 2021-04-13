@@ -5,10 +5,11 @@ module.exports = {
      * Register all the different lambdas here
      */
     entry: {
-        update_profile_pic:
-            "./src/lambdas/update_profile_pic/update_profile_pic.ts",
-        create_post: "./src/lambdas/create_post/create_post.ts",
-        test_create_post_utils: "./src/lambdas/create_post/utils.test.ts",
+        // update_profile_pic:
+        //     "./src/lambdas/update_profile_pic/update_profile_pic.ts",
+        // create_post: "./src/lambdas/create_post/create_post.ts",
+        follow_user: "./src/lambdas/follow_user/follow_user.ts",
+        // test_create_post_utils: "./src/lambdas/create_post/utils.test.ts",
     },
     externals: ["aws-sdk"],
     mode: "production",

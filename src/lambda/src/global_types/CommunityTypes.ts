@@ -21,11 +21,6 @@ export interface CommunityType {
      */
     postsProvidedByTier: number[];
     /**
-     * The number of posts desired by followers
-     * per day of this community at this tier
-     */
-    postsDesiredByTier: number[];
-    /**
      * The mean number of posts desired by followers
      * per day of this community at each tier
      */
