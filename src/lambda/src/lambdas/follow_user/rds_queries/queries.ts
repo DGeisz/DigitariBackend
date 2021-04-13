@@ -17,7 +17,21 @@ export function insertFollowUserRow(
 ): QueryPackage<boolean> {
     return {
         sql: `INSERT INTO follows VALUES 
-        ('${tid}', '${sid}', '${tname}', '${sname}', ${time}, 0, ${activityGroup}, ${tier}, ${postsRequested});`,
+        ('${tid}', '${sid}', :tname, :sname, ${time}, 0, ${activityGroup}, ${tier}, ${postsRequested});`,
         resultParser: followsParser,
+        parameters: [
+            {
+                name: "tname",
+                value: {
+                    stringValue: tname,
+                },
+            },
+            {
+                name: "sname",
+                value: {
+                    stringValue: sname,
+                },
+            },
+        ],
     };
 }

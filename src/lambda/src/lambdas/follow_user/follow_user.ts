@@ -97,6 +97,30 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
     );
 
     /*
+     * Increment the target's search follows in elasticsearch
+     * index
+     */
+    try {
+        await esClient.updateByQuery({
+            index: "search",
+            type: "search_entity",
+            body: {
+                query: {
+                    match: {
+                        id: tid,
+                    },
+                },
+                script: {
+                    source: "ctx._source.followers += 1",
+                    lang: "painless",
+                },
+            },
+        });
+    } catch (e) {
+        throw new Error("ES Error: " + e);
+    }
+
+    /*
      * Create follower row in rds follows table
      */
     try {
@@ -143,29 +167,6 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
             .promise();
     } catch (e) {
         throw new Error("Target update error: " + e);
-    }
-    /*
-     * Increment the target's search follows in elasticsearch
-     * index
-     */
-    try {
-        await esClient.updateByQuery({
-            index: "search",
-            type: "search_entity",
-            body: {
-                query: {
-                    match: {
-                        id: tid,
-                    },
-                },
-                script: {
-                    source: "ctx._source.followers += 1",
-                    lang: "painless",
-                },
-            },
-        });
-    } catch (e) {
-        throw new Error("ES Error: " + e);
     }
 
     /*

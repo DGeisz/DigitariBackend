@@ -1,9 +1,10 @@
 import { RDSDataService } from "aws-sdk";
-import { FieldList } from "aws-sdk/clients/rdsdataservice";
+import { FieldList, SqlParametersList } from "aws-sdk/clients/rdsdataservice";
 
 export interface QueryPackage<T> {
     sql: string;
     resultParser: (row: FieldList) => T;
+    parameters?: SqlParametersList;
 }
 
 export class RdsClient {
@@ -28,6 +29,7 @@ export class RdsClient {
                 resourceArn: process.env.CLUSTER_ARN,
                 sql: query.sql,
                 database: process.env.DATABASE,
+                parameters: query.parameters,
             })
             .promise();
 
