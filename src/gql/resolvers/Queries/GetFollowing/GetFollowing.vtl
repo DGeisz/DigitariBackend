@@ -16,13 +16,13 @@
         $util.toJson($statement)
     ],
     "variableMap": {
-        ":SID": $util.toJson($ctx.args.tid),
+        ":SID": $util.toJson($ctx.args.sid),
         ":LASTTIME": $util.toJson($ctx.args.lastTime),
     }
 }
 
 ## Response
-$util.rds.toJsonObject($ctx.result)[0],
+$util.toJson($util.rds.toJsonObject($ctx.result)[0])
 
 
 

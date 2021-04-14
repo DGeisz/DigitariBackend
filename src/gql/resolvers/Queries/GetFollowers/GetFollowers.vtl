@@ -22,7 +22,7 @@
 }
 
 ## Response
-$util.rds.toJsonObject($ctx.result)[0],
+$util.toJson($util.rds.toJsonObject($ctx.result)[0])
 
 
 

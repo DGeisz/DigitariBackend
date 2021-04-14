@@ -8,9 +8,8 @@
 #end
 
 #if($userIds.isEmpty())
-    #return($util.prev.result)
+    #return($ctx.prev.result)
 #end
-
 
 {
     "operation": "BatchGetItem",
