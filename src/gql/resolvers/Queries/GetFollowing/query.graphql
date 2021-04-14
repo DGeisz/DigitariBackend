@@ -1,13 +1,10 @@
-query GetFollowing($sid: ID!, $nextToken: String) {
-    following(sid: $sid, nextToken: $nextToken) {
-        entities {
-            tid
-            sid
-            time
-            imgUrl
-            name
-            entityType
-        }
-        nextToken
+query GetFollowing($sid: ID!, $lastTime: String) {
+    following(sid: $sid, lastTime: $lastTime) {
+        tid
+        sid
+        time
+        imgUrl
+        name
+        entityType
     }
 }

@@ -1,5 +1,5 @@
 #set($userIds = [])
-#foreach($entity in ${ctx.prev.result.entities})
+#foreach($entity in ${ctx.prev.result})
     #if($entity.entityType == 0)
         #set($userMap = {})
         $util.qr($userMap.put("id", $util.dynamodb.toString($entity.sid)))
@@ -24,7 +24,7 @@
 ## Response
 
 #foreach($user in ${ctx.result.data.DigitariUsers})
-    #foreach($entity in ${ctx.prev.result.entities})
+    #foreach($entity in ${ctx.prev.result})
         #if($entity.sid.equals($user.id))
             $util.qr($entity.put("imgUrl", $user.imgUrl))
             #break

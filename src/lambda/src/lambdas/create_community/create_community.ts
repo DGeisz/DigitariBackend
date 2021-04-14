@@ -132,6 +132,7 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
                 event.arguments.name,
                 `${user.firstName} ${user.lastName}`,
                 time,
+                1,
                 activityGrouping,
                 userTier,
                 userPostsReq

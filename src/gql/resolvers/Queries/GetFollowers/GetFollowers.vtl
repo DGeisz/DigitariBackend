@@ -1,5 +1,35 @@
 ## Request
 
+#if($util.isNullOrEmpty($ctx.args.lastTime))
+    #set($statement = "SELECT tid, sid, entity_type as entityType, sname as name, time
+                           FROM follows WHERE tid=:TID
+                           ORDER BY time DESC LIMIT 20")
+#else
+    #set($statement = "SELECT tid, sid, entity_type as entityType, sname as name, time
+                           FROM follows WHERE tid=:TID AND time < :LASTTIME
+                           ORDER BY time DESC LIMIT 20")
+#end
+
+{
+    "version": "2018-05-29",
+    "statements": [
+        $util.toJson($statement)
+    ],
+    "variableMap": {
+        ":TID": $util.toJson($ctx.args.tid),
+        ":LASTTIME": $util.toJson($ctx.args.lastTime),
+    }
+}
+
+## Response
+$util.rds.toJsonObject($ctx.result)[0],
+
+
+
+## OLD REQUEST!!
+
+## Request
+
 {
     "version" : "2017-02-28",
     "operation" : "Query",

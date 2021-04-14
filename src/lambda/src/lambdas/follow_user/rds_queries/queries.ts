@@ -11,13 +11,14 @@ export function insertFollowRow(
     tname: string,
     sname: string,
     time: number,
+    entityType: number,
     activityGroup: number,
     tier: number,
     postsRequested: number
 ): QueryPackage<boolean> {
     return {
         sql: `INSERT INTO follows VALUES 
-        ('${tid}', '${sid}', :tname, :sname, ${time}, 0, ${activityGroup}, ${tier}, ${postsRequested});`,
+        ('${tid}', '${sid}', :tname, :sname, ${time}, ${entityType}, ${activityGroup}, ${tier}, ${postsRequested});`,
         resultParser: followsParser,
         parameters: [
             {

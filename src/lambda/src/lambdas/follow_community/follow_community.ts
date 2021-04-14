@@ -151,6 +151,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                 target.name,
                 `${source.firstName} ${source.lastName}`,
                 time,
+                1,
                 tierActivityGrouping,
                 sourceTier,
                 sourcePostsRequested

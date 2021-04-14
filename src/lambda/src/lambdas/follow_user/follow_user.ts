@@ -145,6 +145,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                 `${target.firstName} ${target.lastName}`,
                 `${source.firstName} ${source.lastName}`,
                 time,
+                0,
                 activityGrouping,
                 ranking2Tier(source.ranking),
                 sourcePostsRequested

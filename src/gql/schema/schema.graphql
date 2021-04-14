@@ -221,8 +221,8 @@ type Query @aws_iam
     community(cmid: ID!): Community
     search(text: String!, offset: Int): [SearchEntity]
     searchEntity(id: ID!): SearchEntity
-    followers(tid: ID!, nextToken: String): PaginatedFollowEntities
-    following(sid: ID!, nextToken: String): PaginatedFollowEntities
+    followers(tid: ID!, lastTime: String): [FollowEntity]
+    following(sid: ID!, lastTime: String): [FollowEntity]
 }
 
 type Mutation {
