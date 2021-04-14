@@ -5,7 +5,6 @@ export interface CommunityType {
     uid: string;
     name: string;
     amFollowing: boolean;
-    followPrice: number;
     description: string;
     followers: number;
     timeCreated: string;

@@ -169,12 +169,12 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     try {
         await dynamoClient
             .update({
-                TableName: DIGITARI_USERS,
+                TableName: DIGITARI_COMMUNITIES,
                 Key: {
                     id: tid,
                 },
                 UpdateExpression: `set followers = followers + :unit, 
-                                   ${agSize}[${sourceTier}][${tierActivityGrouping}] = ${agSize}[${tierActivityGrouping}] + :unit,
+                                   ${agSize}[${sourceTier}][${tierActivityGrouping}] = ${agSize}[${sourceTier}][${tierActivityGrouping}] + :unit,
                                    ${postReq}[${sourceTier}][${tierActivityGrouping}] = ${postReq}[${sourceTier}][${tierActivityGrouping}] + :posts
                                    `,
                 ExpressionAttributeValues: {
@@ -211,6 +211,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
         sid,
         time,
         name: `${source.firstName} ${source.lastName}`,
-        entityType: 0,
+        entityType: 1,
     };
 }

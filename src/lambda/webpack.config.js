@@ -13,6 +13,7 @@ module.exports = {
         follow_community: "./src/lambdas/follow_community/follow_community.ts",
         unfollow_community:
             "./src/lambdas/unfollow_community/unfollow_community.ts",
+        create_community: "./src/lambdas/create_community/create_community.ts",
         test_create_post_utils: "./src/lambdas/create_post/utils.test.ts",
     },
     externals: ["aws-sdk"],

@@ -120,6 +120,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
         sid,
         time: Date.now(),
         name: "",
-        entityType: 0,
+        entityType: 1,
     };
 }
