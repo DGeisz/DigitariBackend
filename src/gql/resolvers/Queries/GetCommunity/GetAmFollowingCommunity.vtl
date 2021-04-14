@@ -1,3 +1,33 @@
+#if($util.isNullOrEmpty($ctx.identity.sub))
+    #return
+#end
+
+
+{
+    "version": "2018-05-29",
+    "statements": [
+        "SELECT tid FROM follows WHERE tid=:TID AND sid=:SID",
+    ],
+    "variableMap": {
+        ":TID": $util.toJson($ctx.args.cmid),
+        ":SID": $util.toJson($ctx.identity.sub),
+    }
+}
+
+
+## Response
+#if($ctx.error)
+    $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+#if(!$util.rds.toJsonObject($ctx.result)[0].isEmpty())
+    $util.qr($ctx.stash.put("amFollowing", true))
+#end
+
+{}
+
+
+
 ## Request
 #if($util.isNullOrEmpty($ctx.identity.sub))
     #return
