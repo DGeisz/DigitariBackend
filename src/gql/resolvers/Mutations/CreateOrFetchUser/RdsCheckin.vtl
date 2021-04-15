@@ -6,10 +6,10 @@
 {
     "version": "2018-05-29",
     "statements": [
-        "UPDATE follows SET last_checkin = :CHECKIN WHERE sid = :SID;",
+        "UPDATE follows SET last_check_in = :CHECK_IN WHERE sid = :SID;",
     ],
     "variableMap": {
-        ":CHECKIN": $util.toJson($ctx.stash.get("time")),
+        ":CHECK_IN": $util.toJson($ctx.stash.get("time")),
         ":SID": $util.toJson($ctx.identity.sub),
     }
 }

@@ -12,6 +12,10 @@ import { DigitariPrice } from "../../global_types/DigitariPricesTypes";
 import { UserType } from "../../global_types/UserTypes";
 import { v4 } from "uuid";
 import { insertFollowRow } from "../follow_user/rds_queries/queries";
+import {
+    COMMUNITY_DESCRIPTION_MAX_LEN,
+    COMMUNITY_NAME_MAX_LEN,
+} from "../../global_types/CommunityTypes";
 
 const rdsClient = new RdsClient();
 
@@ -28,6 +32,13 @@ const esClient = new Client({
 export async function handler(event: AppSyncResolverEvent<EventArgs>) {
     const time = Date.now();
     const uid = (event.identity as AppSyncIdentityCognito).sub;
+
+    if (
+        event.arguments.name.length > COMMUNITY_NAME_MAX_LEN ||
+        event.arguments.description.length > COMMUNITY_DESCRIPTION_MAX_LEN
+    ) {
+        throw new Error("New Community name or description is too long");
+    }
 
     /*
      * Get the price of following another user

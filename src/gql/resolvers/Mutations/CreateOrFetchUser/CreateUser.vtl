@@ -21,7 +21,7 @@
         "timeCreated" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),
 
         ##  Fields for post distribution
-        "lastCheckin" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),
+        "lastCheckIn" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),
 
         "level" : $util.dynamodb.toDynamoDBJson(0),
         "bio" : $util.dynamodb.toDynamoDBJson(""),

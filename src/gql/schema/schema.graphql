@@ -283,6 +283,9 @@ type Mutation {
     updateProfilePic(
         imgName: String
     ): ImgUrl
+    deleteSearchEntity(
+        id: String
+    ): SearchEntity
 }
 
 schema {

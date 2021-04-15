@@ -1,0 +1,7 @@
+mutation DeleteSearchEntity($id: String) {
+    deleteSearchEntity(id: $id) {
+        id
+        followers
+        entityType
+    }
+}

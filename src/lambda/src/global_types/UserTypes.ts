@@ -18,6 +18,8 @@ export interface UserType {
     beenBlocked: number;
     coin: number;
 
+    lastCheckIn: number;
+
     /*
      * Prices pertaining to post distribution
      */
