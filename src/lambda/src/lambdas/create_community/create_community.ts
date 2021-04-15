@@ -10,7 +10,6 @@ import {
 import { EventArgs } from "./lambda_types/event_args";
 import { DigitariPrice } from "../../global_types/DigitariPricesTypes";
 import { UserType } from "../../global_types/UserTypes";
-import { ranking2Tier } from "../../utils/tier_utils";
 import { v4 } from "uuid";
 import { insertFollowRow } from "../follow_user/rds_queries/queries";
 
@@ -29,8 +28,6 @@ const esClient = new Client({
 export async function handler(event: AppSyncResolverEvent<EventArgs>) {
     const time = Date.now();
     const uid = (event.identity as AppSyncIdentityCognito).sub;
-    const userPostsReq = 10;
-    const activityGrouping = 5;
 
     /*
      * Get the price of following another user
@@ -63,38 +60,10 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
         );
     }
 
-    const userTier = ranking2Tier(user.ranking);
-
     /*
      * Make community id
      */
     const cid = v4();
-
-    /*
-     * Make posts + std provided by tier
-     */
-    const postsProvidedByTier = new Array(10).fill(0);
-    const stdPostsDesiredByTier = new Array(10).fill(1);
-
-    /*
-     * Make posts req 4 ag by tier
-     * and ag size by tier
-     */
-    const postsReq4AgByTier = [];
-    const agSizeByTier = [];
-
-    for (let i = 0; i < 10; i++) {
-        const tierReq = new Array(10).fill(0);
-        const tierSize = new Array(10).fill(0);
-
-        if (i === userTier) {
-            tierReq[activityGrouping] = userPostsReq;
-            tierSize[activityGrouping] = 1;
-        }
-
-        postsReq4AgByTier.push(tierReq);
-        agSizeByTier.push(tierSize);
-    }
 
     /*
      * Now actually make the community
@@ -109,11 +78,6 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
                 description: event.arguments.description,
                 followers: 1,
                 timeCreated: time,
-                postPrice: 10,
-                postsProvidedByTier,
-                stdPostsDesiredByTier,
-                postsRequestedForActivityGroupingsByTier: postsReq4AgByTier,
-                activityGroupingSizeByTier: agSizeByTier,
             },
         })
         .promise();
@@ -129,10 +93,7 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
                 event.arguments.name,
                 `${user.firstName} ${user.lastName}`,
                 time,
-                1,
-                activityGrouping,
-                userTier,
-                userPostsReq
+                1
             )
         );
     } catch (e) {
@@ -142,8 +103,7 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
     /*
      * Index the community
      */
-    // try {
-    let doc = await esClient.index({
+    await esClient.index({
         index: "search",
         type: "search_entity",
         id: cid,
@@ -154,11 +114,6 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
             entityType: 1,
         },
     });
-
-    // throw new Error("This is the indexed doc: " + JSON.stringify(doc));
-    // } catch (e) {
-    //     throw new Error("ES Error: " + e);
-    // }
 
     /*
      * Increment the source's following field, and decrease the

@@ -18,14 +18,10 @@
         "lastName" : $util.dynamodb.toDynamoDBJson($ctx.args.lastName),
         "userName" : $util.dynamodb.toDynamoDBJson($ctx.args.firstName),
         "email" : $util.dynamodb.toDynamoDBJson($ctx.args.email),
-        "timeCreated" : $util.dynamodb.toDynamoDBJson($util.time.nowEpochMilliSeconds()),
+        "timeCreated" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),
 
         ##  Fields for post distribution
-        "postPrice" : $util.dynamodb.toDynamoDBJson(10),
-        "meanPostsDesired" : $util.dynamodb.toDynamoDBJson(0),
-        "stdPostsDesired" : $util.dynamodb.toDynamoDBJson(0),
-        "postsRequestedForActivityGroupings" : $util.dynamodb.toDynamoDBJson([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
-        "activityGroupingSize" : $util.dynamodb.toDynamoDBJson([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+        "lastCheckin" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),
 
         "level" : $util.dynamodb.toDynamoDBJson(0),
         "bio" : $util.dynamodb.toDynamoDBJson(""),

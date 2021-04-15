@@ -30,8 +30,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     const time = Date.now();
 
     const sid = (event.identity as AppSyncIdentityCognito).sub;
-    const sourcePostsRequested = 10;
-
     const tid = event.arguments.tid;
 
     /*
@@ -90,25 +88,25 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             .promise()
     ).Item as UserType;
 
-    /*
-     * Calculate the source's activity grouping
-     * for target
-     */
-    let targetMean;
-
-    if (target.followers > 0) {
-        targetMean =
-            sumReduce(target.postsRequestedForActivityGroupings) /
-            target.followers;
-    } else {
-        targetMean = 0;
-    }
-
-    const activityGrouping = calculateActivityGrouping(
-        sourcePostsRequested,
-        targetMean,
-        target.stdPostsDesired
-    );
+    // /*
+    //  * Calculate the source's activity grouping
+    //  * for target
+    //  */
+    // let targetMean;
+    //
+    // if (target.followers > 0) {
+    //     targetMean =
+    //         sumReduce(target.postsRequestedForActivityGroupings) /
+    //         target.followers;
+    // } else {
+    //     targetMean = 0;
+    // }
+    //
+    // const activityGrouping = calculateActivityGrouping(
+    //     sourcePostsRequested,
+    //     targetMean,
+    //     target.stdPostsDesired
+    // );
 
     /*
      * Increment the target's search follows in elasticsearch
@@ -145,23 +143,12 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                 `${target.firstName} ${target.lastName}`,
                 `${source.firstName} ${source.lastName}`,
                 time,
-                0,
-                activityGrouping,
-                ranking2Tier(source.ranking),
-                sourcePostsRequested
+                0
             )
         );
     } catch (e) {
         throw new Error("RDS error: " + e);
     }
-
-    /*
-     * Increment target followers, and increase target's
-     * ag size for source's ag.  Also increment the posts
-     * requested for activity grouping
-     */
-    const agSize = "activityGroupingSize";
-    const postsReq4Ag = "postsRequestedForActivityGroupings";
 
     try {
         await dynamoClient
@@ -170,13 +157,9 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                 Key: {
                     id: tid,
                 },
-                UpdateExpression: `set followers = followers + :unit, 
-                                   ${agSize}[${activityGrouping}] = ${agSize}[${activityGrouping}] + :unit,
-                                   ${postsReq4Ag}[${activityGrouping}] = ${postsReq4Ag}[${activityGrouping}] + :posts
-                                   `,
+                UpdateExpression: `set followers = followers + :unit`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
-                    ":posts": sourcePostsRequested,
                 },
             })
             .promise();

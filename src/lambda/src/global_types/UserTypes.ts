@@ -21,7 +21,22 @@ export interface UserType {
     /*
      * Prices pertaining to post distribution
      */
-
+    /**
+     * Mean posts provided by user
+     */
+    meanPostsProvided: number;
+    /**
+     * Last time this user had a user sync
+     */
+    lastSync: number;
+    /**
+     * Accumulated posts consumed since last sync
+     */
+    consumptionSinceLastSync: number;
+    /**
+     * Accumulated posts posted since the last sync
+     */
+    accumulatedPostsSinceSync: number;
     /**
      * Price of putting a post from this user
      * into one of his follower's feed

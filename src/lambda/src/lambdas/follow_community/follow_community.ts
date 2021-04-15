@@ -35,8 +35,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     const time = Date.now();
 
     const sid = (event.identity as AppSyncIdentityCognito).sub;
-    const sourcePostsRequested = 10;
-
     const tid = event.arguments.tid;
 
     /*
@@ -97,25 +95,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             .promise()
     ).Item as CommunityType;
 
-    let targetAgPostsRequested =
-        target.postsRequestedForActivityGroupingsByTier[sourceTier];
-    let targetAgStd = target.stdPostsDesiredByTier[sourceTier];
-    let targetAgSize = sumReduce(target.activityGroupingSizeByTier[sourceTier]);
-
-    let targetAgMean;
-
-    if (targetAgSize > 0) {
-        targetAgMean = sumReduce(targetAgPostsRequested) / targetAgSize;
-    } else {
-        targetAgMean = 0;
-    }
-
-    const tierActivityGrouping = calculateActivityGrouping(
-        sourcePostsRequested,
-        targetAgMean,
-        targetAgStd
-    );
-
     /*
      * Increment the target's search follows in elasticsearch
      * index
@@ -151,10 +130,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                 target.name,
                 `${source.firstName} ${source.lastName}`,
                 time,
-                1,
-                tierActivityGrouping,
-                sourceTier,
-                sourcePostsRequested
+                1
             )
         );
     } catch (e) {
@@ -164,9 +140,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     /*
      * Update the target
      */
-    const postReq = "postsRequestedForActivityGroupingsByTier";
-    const agSize = "activityGroupingSizeByTier";
-
     try {
         await dynamoClient
             .update({
@@ -174,13 +147,9 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                 Key: {
                     id: tid,
                 },
-                UpdateExpression: `set followers = followers + :unit, 
-                                   ${agSize}[${sourceTier}][${tierActivityGrouping}] = ${agSize}[${sourceTier}][${tierActivityGrouping}] + :unit,
-                                   ${postReq}[${sourceTier}][${tierActivityGrouping}] = ${postReq}[${sourceTier}][${tierActivityGrouping}] + :posts
-                                   `,
+                UpdateExpression: "set followers = followers + :unit",
                 ExpressionAttributeValues: {
                     ":unit": 1,
-                    ":posts": sourcePostsRequested,
                 },
             })
             .promise();
@@ -196,10 +165,10 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     id: sid,
                 },
                 UpdateExpression: `set following = following + :unit,
-                                       coin = coin + :price`,
+                                       coin = coin - :price`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
-                    ":price": -1 * followPrice,
+                    ":price": followPrice,
                 },
             })
             .promise();

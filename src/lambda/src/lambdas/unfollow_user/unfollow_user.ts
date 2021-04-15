@@ -26,15 +26,11 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     /*
      * Get activity information from the follows row
      */
-    const followRows = await rdsClient.executeQuery<FollowEntityActivity>(
-        getFollowEntity(tid, sid)
-    );
+    const followRows = await rdsClient.executeQuery(getFollowEntity(tid, sid));
 
     if (followRows.length < 1) {
         throw new Error("Source can't unfollow target");
     }
-
-    const followActivity = followRows[0];
 
     /*
      * Delete row from follows activity
@@ -86,15 +82,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
         throw new Error("Source update error: " + e);
     }
 
-    /*
-     * Decrease the target's follower count, decrease
-     * the target's ag size for the appropriate ag, and
-     * decrease the target's posts requested for ag by the
-     * appropriate amount
-     */
-    const agSize = "activityGroupingSize";
-    const postsReq4Ag = "postsRequestedForActivityGroupings";
-
     try {
         await dynamoClient
             .update({
@@ -102,12 +89,9 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                 Key: {
                     id: tid,
                 },
-                UpdateExpression: `set followers = followers - :unit, 
-                                   ${agSize}[${followActivity.activityGroup}] = ${agSize}[${followActivity.activityGroup}] - :unit,
-                                   ${postsReq4Ag}[${followActivity.activityGroup}] = ${postsReq4Ag}[${followActivity.activityGroup}] - :posts`,
+                UpdateExpression: "set followers = followers - :unit",
                 ExpressionAttributeValues: {
                     ":unit": 1,
-                    ":posts": followActivity.postsRequested,
                 },
             })
             .promise();

@@ -12,3 +12,11 @@ export interface FollowEntityActivity {
     tier: number;
     postsRequested: number;
 }
+
+export interface FollowTargetActivity {
+    tid: string;
+    entityType: number;
+    activityGroup: number;
+    tier: number;
+    postsRequested: number;
+}

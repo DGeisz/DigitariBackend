@@ -11,6 +11,10 @@ export interface CommunityType {
 
     // Fields pertaining to post distribution
     /**
+     * Mean posts provided to the community
+     */
+    meanPostsProvided: number;
+    /**
      * Price of putting a post into the feed of
      * one of this community's followers
      */

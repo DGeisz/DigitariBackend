@@ -6,6 +6,8 @@ CreateUser
 
 IndexUser
 
-CreateUserSync
+RdsCheckin
+
+UserCheckin
 
 after
