@@ -1,23 +1,27 @@
 ## Request
 
-#if($util.isNullOrEmpty($ctx.args.lastTime))
-    #set($statement = "SELECT tid, sid, entity_type as entityType, tname as name, time
-                           FROM follows WHERE sid=:SID
-                           ORDER BY time DESC LIMIT 20")
+#if(${ctx.args.lastTime})
+    #set($timeStatement = "AND time < :LAST_TIME")
 #else
-    #set($statement = "SELECT tid, sid, entity_type as entityType, tname as name, time
-                           FROM follows WHERE sid=:SID AND time < :LASTTIME
-                           ORDER BY time DESC LIMIT 20")
+    #set($timeStatement = "")
 #end
+
+#if(${ctx.args.entityType})
+    #set($entityStatement = "AND entity_type = :ENTITY_TYPE")
+#else
+    #set($entityStatement = "")
+#end
+
 
 {
     "version": "2018-05-29",
     "statements": [
-        $util.toJson($statement)
+        "SELECT tid, sid, entity_type as entityType, tname as name, time FROM follows WHERE sid=:SID $timeStatement $entityStatement ORDER BY time DESC LIMIT 20"
     ],
     "variableMap": {
         ":SID": $util.toJson($ctx.args.sid),
-        ":LASTTIME": $util.toJson($ctx.args.lastTime),
+        ":LAST_TIME": $util.toJson($ctx.args.lastTime),
+        ":ENTITY_TYPE": $util.toJson($ctx.args.entityType),
     }
 }
 
@@ -51,3 +55,14 @@ $util.toJson($util.rds.toJsonObject($ctx.result)[0])
         ,"nextToken": $util.toJson($ctx.result.nextToken)
     #end
 }
+
+## Old condition -- Disregard
+#if($util.isNullOrEmpty($ctx.args.lastTime))
+    #set($statement = "SELECT tid, sid, entity_type as entityType, tname as name, time
+                           FROM follows WHERE sid=:SID
+                           ORDER BY time DESC LIMIT 20")
+#else
+    #set($statement = "SELECT tid, sid, entity_type as entityType, tname as name, time
+                           FROM follows WHERE sid=:SID AND time < :LASTTIME
+                           ORDER BY time DESC LIMIT 20")
+#end

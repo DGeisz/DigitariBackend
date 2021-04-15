@@ -219,10 +219,10 @@ type Query @aws_iam
     convo(cid: ID!): Convo
     createCommunityCoinCheck: CoinCheck
     community(cmid: ID!): Community
-    search(text: String!, offset: Int): [SearchEntity]
+    search(text: String!, offset: Int, entityType: Int): [SearchEntity]
     searchEntity(id: ID!): SearchEntity
     followers(tid: ID!, lastTime: String): [FollowEntity]
-    following(sid: ID!, lastTime: String): [FollowEntity]
+    following(sid: ID!, lastTime: String, entityType: Int): [FollowEntity]
 }
 
 type Mutation {

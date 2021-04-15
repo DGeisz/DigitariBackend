@@ -19,23 +19,28 @@
             "size": 50,
             "query": {
                 "bool": {
-                    "must": {
-                        "function_score": {
-                            "query": {
-                                "match": {
-                                    "name": {
-                                        "query": $util.toJson($ctx.args.text),
-                                        "fuzziness": "AUTO"
+                    "must": [
+                        {
+                            "function_score": {
+                                "query": {
+                                    "match": {
+                                        "name": {
+                                            "query": $util.toJson($ctx.args.text),
+                                            "fuzziness": "AUTO"
+                                        }
                                     }
-                                }
-                            },
-                            "field_value_factor": {
-                                "field": "followers",
-                                "modifier": "log1p"
-                            },
-                            "boost_mode": "sum"
+                                },
+                                "field_value_factor": {
+                                    "field": "followers",
+                                    "modifier": "log1p"
+                                },
+                                "boost_mode": "sum"
+                            }
                         }
-                    },
+                        #if(${ctx.args.entityType})
+                            , { "term": { "entityType": $util.toJson($ctx.args.entityType) }}
+                        #end
+                    ],
                     "should": {
                         "function_score": {
                             "query": {
