@@ -6,13 +6,13 @@ function followersParser(row: FieldList): string {
 }
 
 export function getActiveFollowers(
-    uid: string,
+    tid: string,
     activeTime: number,
     numFollowers: number
 ): QueryPackage<string> {
     return {
         sql: `SELECT sid FROM follows
-              WHERE tid=${uid} AND time > ${activeTime}
+              WHERE tid=${tid} AND time > ${activeTime}
               ORDER BY RAND()
               LIMIT ${numFollowers}`,
         resultParser: followersParser,
@@ -20,13 +20,13 @@ export function getActiveFollowers(
 }
 
 export function getInactiveFollowers(
-    uid: string,
+    tid: string,
     activeTime: number,
     numFollowers: number
 ): QueryPackage<string> {
     return {
         sql: `SELECT sid FROM follows
-              WHERE tid=${uid} AND time < ${activeTime}
+              WHERE tid=${tid} AND time < ${activeTime}
               ORDER BY RAND()
               LIMIT ${numFollowers}`,
         resultParser: followersParser,

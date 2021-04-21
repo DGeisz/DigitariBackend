@@ -11,14 +11,24 @@ import {
 import { UserType } from "../../global_types/UserTypes";
 import {
     DIGITARI_COMMUNITIES,
+    DIGITARI_POSTS,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import { CommunityType } from "../../global_types/CommunityTypes";
 import { v4 } from "uuid";
 import { randomString } from "../../utils/string_utils";
+import {
+    getActiveFollowers,
+    getInactiveFollowers,
+} from "./rds_queries/queries";
+import { millisInDay } from "../../utils/time_utils";
+import { ranking2Tier } from "../../utils/tier_utils";
+import { WriteRequests } from "aws-sdk/clients/dynamodb";
+import { FeedRecord2DynamoJson } from "../../global_types/FeedRecordTypes";
 
 const BUCKET_NAME = "digitari-imgs";
 const s3Client = new S3();
+const MAX_BATCH_WRITE_ITEMS = 20;
 
 const rdsClient = new RdsClient();
 
@@ -42,6 +52,12 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
     const pid = v4();
     const time = Date.now();
     const uid = (event.identity as AppSyncIdentityCognito).sub;
+
+    /*
+     * Start off with the tid being the users id.
+     * If the user's posting to a community, we'll change it later
+     */
+    let tid = uid;
 
     /*
      * Do basic content length check
@@ -71,6 +87,12 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
 
     if (target === PostTarget.Community) {
         if (!!cmid) {
+            /*
+             * Change tid to cmid because obviously that's
+             * who we'll be fetching from
+             */
+            tid = cmid;
+
             community = (
                 await dynamoClient
                     .get({
@@ -141,9 +163,108 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
         throw new Error("Trying to send post to more users than OP has coin");
     }
 
+    const userTier = ranking2Tier(user.ranking);
+
     /*
-     * Alright, now it's time to actually find our targets
+     * Ok, so now we're going to start out by actually making the post
+     */
+    await dynamoClient.put({
+        TableName: DIGITARI_POSTS,
+        Item: {
+            id: pid,
+            uid,
+
+            user: user.firstName,
+            tier: ranking2Tier(user.ranking),
+            time,
+            content,
+
+            addOn,
+            addOnContent: finalAddOnContent,
+            target,
+            cmid,
+            communityName: community.name,
+
+            coin: 0,
+            convos: [],
+        },
+    });
+
+    /*
+     * Add the entry to the posts table
+     */
+    if (!!cmid) {
+        await rdsClient.executeSql(`INSERT INTO posts (uid, cmid, id, tier)
+                                        VALUES ('${uid}', '${cmid}', '${pid}', '${userTier}'`);
+    } else {
+        await rdsClient.executeSql(`INSERT INTO posts (uid, id, tier)
+                                        VALUES ('${uid}', '${pid}', '${userTier}'`);
+    }
+
+    /*
+     * Get the active time window (within the last three days)
+     * and start out by randomly fetching as many active user as you
+     * can
+     */
+    const activeTime = Date.now() - 3 * millisInDay;
+
+    let targetIds = await rdsClient.executeQuery<string>(
+        getActiveFollowers(tid, activeTime, finalRecipients)
+    );
+
+    /*
+     * Now we fetch from inactive followers just to pick up any slack
+     */
+    if (targetIds.length < finalRecipients) {
+        const inactiveTargets = await rdsClient.executeQuery<string>(
+            getInactiveFollowers(
+                tid,
+                activeTime,
+                finalRecipients - targetIds.length
+            )
+        );
+
+        targetIds = targetIds.concat(inactiveTargets);
+    }
+
+    /*
+     * Now we do a series of batch writes to get all these
+     * suckers into dynamo
      */
 
-    const targetIds = [];
+    for (let i = 0; i < targetIds.length; i += MAX_BATCH_WRITE_ITEMS) {
+        const writeRequests: WriteRequests = [];
+
+        for (let j = 0; j < MAX_BATCH_WRITE_ITEMS; ++j) {
+            /*
+             * First check that we haven't reached the end
+             * of targetIds
+             */
+            if (j + i >= targetIds.length) {
+                break;
+            } else {
+                /*
+                 * Otherwise, add a record
+                 * to the list of write requests
+                 */
+                writeRequests.push({
+                    PutRequest: {
+                        Item: FeedRecord2DynamoJson({
+                            uid: targetIds[i + j],
+                            time,
+                            pid,
+                        }),
+                    },
+                });
+            }
+        }
+
+        await dynamoClient
+            .batchWrite({
+                RequestItems: {
+                    DigitariFeedRecords: writeRequests,
+                },
+            })
+            .promise();
+    }
 }

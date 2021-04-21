@@ -20,7 +20,7 @@ export interface PostType {
     uid: string;
 
     user: string;
-    ranking: number;
+    tier: number;
     time: string;
     content: string;
 

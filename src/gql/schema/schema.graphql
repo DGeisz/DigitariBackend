@@ -124,7 +124,7 @@ type Post {
 
     # Main content
     user: String
-    ranking: Int
+    tier: Int
     time: String
     content: String
 
