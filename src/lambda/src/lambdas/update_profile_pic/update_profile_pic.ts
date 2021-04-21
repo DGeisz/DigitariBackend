@@ -1,6 +1,7 @@
 import { DynamoDB, S3 } from "aws-sdk";
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { EventArgs } from "./lambda_types/event_type";
+import { randomString } from "../../utils/string_utils";
 
 const BUCKET_NAME = "digitari-imgs";
 
@@ -18,17 +19,17 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
         throw new Error("Not a correct file type");
     }
 
-    // const imgSplit = imgName.split(".");
-    // const imgType = imgSplit[imgSplit.length - 1];
+    const imgSplit = imgName.split(".");
+    const imgType = imgSplit[imgSplit.length - 1];
 
-    const imgKey = `${uid}/${imgName}`;
+    const imgKey = `${uid}/p-${randomString(3)}.${imgType}`;
 
     const presignedUrl = s3Client.getSignedUrl("putObject", {
         Bucket: BUCKET_NAME,
         Key: imgKey,
     });
 
-    const imgUrl = `https://${BUCKET_NAME}.s3.us-east-2.amazonaws.com/${imgKey}`;
+    const imgUrl = `https://d3671gkd53urlb.cloudfront.net/${imgKey}`;
 
     await dynamoClient
         .update({

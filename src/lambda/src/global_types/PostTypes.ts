@@ -1,19 +1,41 @@
 import { ConvoCoverType } from "./ConvoCoverTypes";
 
+export const POST_CONTENT_MAX_LEN = 250;
+export const POST_ADD_ON_CONTENT_MAX_LEN = 10000;
+
+export enum PostAddOn {
+    None,
+    Text,
+    Image,
+    Link,
+}
+
+export enum PostTarget {
+    MyFollowers,
+    Community,
+}
+
 export interface PostType {
     id: string;
-    user: string;
-    targetCommunity?: string;
-    targetCommunityId?: string;
     uid: string;
+
+    user: string;
     ranking: number;
-    time: number;
+    time: string;
     content: string;
-    link?: string;
+
+    addOn: PostAddOn;
+    addOnContent: string;
+    target: PostTarget;
+    cmid?: string;
+    communityName?: string;
+
     convoReward: number;
     responseCost: number;
+
     coin: number;
     coinDonated?: boolean;
+
     convos: ConvoCoverType[];
 }
 

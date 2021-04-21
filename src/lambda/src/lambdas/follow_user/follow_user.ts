@@ -2,12 +2,9 @@ import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { DynamoDB } from "aws-sdk";
 import { DigitariPrice } from "../../global_types/DigitariPricesTypes";
 import { UserType } from "../../global_types/UserTypes";
-import { calculateActivityGrouping } from "../../utils/activity_grouping_utils";
-import { sumReduce } from "../create_post/utils";
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import { followChecker, insertFollowRow } from "./rds_queries/queries";
 import { Client } from "elasticsearch";
-import { ranking2Tier } from "../../utils/tier_utils";
 import { FollowEventArgs } from "../../global_types/follow_event_args";
 import {
     DIGITARI_PRICES,

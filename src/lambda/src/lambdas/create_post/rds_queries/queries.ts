@@ -1,73 +1,34 @@
-/**
- * Creates a query package to get all the followers of a
- * particular user
- */
-import { QueryPackage } from "../../../data_clients/rds_client/rds_client";
 import { FieldList } from "aws-sdk/clients/rdsdataservice";
+import { QueryPackage } from "../../../data_clients/rds_client/rds_client";
 
 function followersParser(row: FieldList): string {
     return row[0].stringValue;
 }
 
-export function getAllFollowersQueryPackage(tid: string): QueryPackage<string> {
-    return {
-        sql: `SELECT sid FROM follows WHERE tid=${tid}`,
-        resultParser: followersParser,
-    };
-}
-
-export function getRandomActivityGroupFollowers(
+export function getActiveFollowers(
     uid: string,
-    activityGroup: number,
+    activeTime: number,
     numFollowers: number
 ): QueryPackage<string> {
     return {
-        sql: `SELECT sid FROM follows 
-              WHERE tid=${uid} AND activity_group=${activityGroup}
+        sql: `SELECT sid FROM follows
+              WHERE tid=${uid} AND time > ${activeTime}
               ORDER BY RAND()
-              LIMIT ${numFollowers}
-              `,
+              LIMIT ${numFollowers}`,
         resultParser: followersParser,
     };
 }
 
-export function getAllActivityGroupFollowers(
+export function getInactiveFollowers(
     uid: string,
-    activityGroup: number
-): QueryPackage<string> {
-    return {
-        sql: `SELECT sid FROM follows 
-              WHERE tid=${uid} AND activity_group=${activityGroup}
-              `,
-        resultParser: followersParser,
-    };
-}
-
-export function getRandomActivityGroupFollowersByTier(
-    tid: string,
-    activityGroup: number,
-    tier: number,
+    activeTime: number,
     numFollowers: number
 ): QueryPackage<string> {
     return {
-        sql: `SELECT sid FROM follows 
-              WHERE tid=${tid} AND activity_group=${activityGroup} AND tier=${tier}
+        sql: `SELECT sid FROM follows
+              WHERE tid=${uid} AND time < ${activeTime}
               ORDER BY RAND()
-              LIMIT ${numFollowers}
-              `,
-        resultParser: followersParser,
-    };
-}
-
-export function getAllActivityGroupFollowersByTier(
-    uid: string,
-    tier: number,
-    activityGroup: number
-): QueryPackage<string> {
-    return {
-        sql: `SELECT sid FROM follows 
-              WHERE tid=${uid} AND activity_group=${activityGroup} AND tier=${tier}
-              `,
+              LIMIT ${numFollowers}`,
         resultParser: followersParser,
     };
 }

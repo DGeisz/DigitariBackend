@@ -1,13 +1,11 @@
+import { PostAddOn, PostTarget } from "../../../global_types/PostTypes";
+
 export interface EventArgs {
     content: string;
-    link?: string;
-    convoReward: number;
-    responseCost: number;
+    addOn: PostAddOn;
+    addOnContent: string;
+    target: PostTarget;
+    cmid?: string;
 
-    post2Followers: boolean;
-    numUserFollowers: number;
-
-    post2Community: boolean;
-    cmid: string;
-    numComFollowers: number;
+    recipients: number;
 }

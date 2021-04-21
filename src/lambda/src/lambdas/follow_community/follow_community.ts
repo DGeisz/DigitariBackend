@@ -16,8 +16,6 @@ import {
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import { ranking2Tier } from "../../utils/tier_utils";
-import { sumReduce } from "../create_post/utils";
-import { calculateActivityGrouping } from "../../utils/activity_grouping_utils";
 
 const rdsClient = new RdsClient();
 

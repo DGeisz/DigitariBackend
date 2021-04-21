@@ -140,7 +140,7 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
                 const comTarget = communityTargets.get(batchCom.id);
 
                 if (!!comTarget) {
-                    externalPostsProvided += batchCom.meanPostsProvided;
+                    // externalPostsProvided += batchCom.meanPostsProvided;
                 }
             }
         }
