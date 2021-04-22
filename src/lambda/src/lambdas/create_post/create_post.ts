@@ -312,10 +312,8 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
             Key: {
                 id: uid,
             },
-            UpdateExpression: `set following = following + :unit,
-                                       coin = coin - :price`,
+            UpdateExpression: `set coin = coin - :price`,
             ExpressionAttributeValues: {
-                ":unit": 1,
                 ":price": finalRecipients,
             },
         })
