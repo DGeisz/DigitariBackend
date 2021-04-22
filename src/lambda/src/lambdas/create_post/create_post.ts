@@ -7,6 +7,7 @@ import {
     POST_CONTENT_MAX_LEN,
     PostAddOn,
     PostTarget,
+    PostType,
 } from "../../global_types/PostTypes";
 import { UserType } from "../../global_types/UserTypes";
 import {
@@ -22,9 +23,11 @@ import {
     getInactiveFollowers,
 } from "./rds_queries/queries";
 import { millisInDay } from "../../utils/time_utils";
-import { ranking2Tier } from "../../utils/tier_utils";
-import { WriteRequests } from "aws-sdk/clients/dynamodb";
-import { FeedRecord2DynamoJson } from "../../global_types/FeedRecordTypes";
+import {
+    ranking2Tier,
+    tier2convoReward,
+    tier2responseCost,
+} from "../../utils/tier_utils";
 
 const BUCKET_NAME = "digitari-imgs";
 const s3Client = new S3();
@@ -67,6 +70,10 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
         addOnContent.length > POST_ADD_ON_CONTENT_MAX_LEN
     ) {
         throw new Error("Either content or addOnContent is too long");
+    }
+
+    if (recipients < 1) {
+        throw new Error("Must post to at least one recipient");
     }
 
     /*
@@ -165,40 +172,69 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
 
     const userTier = ranking2Tier(user.ranking);
 
+    const responseCost = tier2responseCost(userTier);
+    const convoReward = tier2convoReward(userTier);
+
+    const post: PostType = {
+        id: pid,
+        uid,
+
+        user: user.firstName,
+        tier: userTier,
+        time: time.toString(),
+        content,
+        coinDonated: false,
+
+        addOn,
+        addOnContent: finalAddOnContent,
+        target,
+        cmid,
+        communityName: community?.name,
+        responseCost,
+        convoReward,
+
+        coin: 0,
+        convos: [],
+    };
+
     /*
      * Ok, so now we're going to start out by actually making the post
      */
-    await dynamoClient.put({
-        TableName: DIGITARI_POSTS,
-        Item: {
-            id: pid,
-            uid,
+    await dynamoClient
+        .put({
+            TableName: DIGITARI_POSTS,
+            Item: {
+                id: pid,
+                uid,
 
-            user: user.firstName,
-            tier: ranking2Tier(user.ranking),
-            time,
-            content,
+                user: user.firstName,
+                tier: ranking2Tier(user.ranking),
+                time,
+                content,
 
-            addOn,
-            addOnContent: finalAddOnContent,
-            target,
-            cmid,
-            communityName: community.name,
+                addOn,
+                addOnContent: finalAddOnContent,
+                target,
+                cmid,
+                communityName: community?.name,
+                responseCost,
+                convoReward,
 
-            coin: 0,
-            convos: [],
-        },
-    });
+                coin: 0,
+                convos: [],
+            },
+        })
+        .promise();
 
     /*
      * Add the entry to the posts table
      */
     if (!!cmid) {
         await rdsClient.executeSql(`INSERT INTO posts (uid, cmid, id, tier)
-                                        VALUES ('${uid}', '${cmid}', '${pid}', '${userTier}'`);
+                                        VALUES ('${uid}', '${cmid}', '${pid}', '${userTier}');`);
     } else {
         await rdsClient.executeSql(`INSERT INTO posts (uid, id, tier)
-                                        VALUES ('${uid}', '${pid}', '${userTier}'`);
+                                        VALUES ('${uid}', '${pid}', '${userTier}');`);
     }
 
     /*
@@ -231,9 +267,8 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
      * Now we do a series of batch writes to get all these
      * suckers into dynamo
      */
-
     for (let i = 0; i < targetIds.length; i += MAX_BATCH_WRITE_ITEMS) {
-        const writeRequests: WriteRequests = [];
+        const writeRequests = [];
 
         for (let j = 0; j < MAX_BATCH_WRITE_ITEMS; ++j) {
             /*
@@ -249,11 +284,11 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
                  */
                 writeRequests.push({
                     PutRequest: {
-                        Item: FeedRecord2DynamoJson({
+                        Item: {
                             uid: targetIds[i + j],
                             time,
                             pid,
-                        }),
+                        },
                     },
                 });
             }
@@ -267,4 +302,27 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
             })
             .promise();
     }
+
+    /*
+     * Now charge the user for the transaction
+     */
+    await dynamoClient
+        .update({
+            TableName: DIGITARI_USERS,
+            Key: {
+                id: uid,
+            },
+            UpdateExpression: `set following = following + :unit,
+                                       coin = coin - :price`,
+            ExpressionAttributeValues: {
+                ":unit": 1,
+                ":price": finalRecipients,
+            },
+        })
+        .promise();
+
+    return {
+        post,
+        presignedUrl,
+    };
 }
