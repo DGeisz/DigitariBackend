@@ -1,0 +1,48 @@
+## Request
+
+#if($util.isNull($ctx.args.offset))
+    $util.qr($ctx.stash.put("from", 0))
+#else
+    $util.qr($ctx.stash.put("from", $ctx.args.offset))
+#end
+
+
+{
+    "version":"2017-02-28",
+    "operation":"GET",
+    "path": "/search/search_entity/_search",
+    "params": {
+        "headers":{},
+        "queryString":{},
+        "body": {
+            "query" : {
+                #if(${ctx.args.entityType})
+                    "term": { "entityType": $util.toJson($ctx.args.entityType) },
+                #else
+                    "match_all" : { },
+                #end
+            },
+            "sort": [
+                {
+                    "followers": {
+                        "order": "desc",
+                    },
+                },
+            ],
+            "from": $util.toJson($ctx.stash.get("from")),
+            "size": 50,
+        }
+    }
+}
+
+## Response
+#if($ctx.error)
+    $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+[
+    #foreach($entry in $context.result.hits.hits)
+        #if( $velocityCount > 1 ) , #end
+        $utils.toJson($entry.get("_source"))
+    #end
+]
