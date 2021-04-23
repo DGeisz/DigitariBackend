@@ -1,0 +1,44 @@
+## Request
+#if($util.isNullOrEmpty($ctx.args.lastTime))
+    {
+        "version" : "2017-02-28",
+        "operation" : "Query",
+        "query" : {
+            "expression": "uid = :uid",
+            "expressionValues" : {
+                ":uid" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+            },
+        },
+        "scanIndexForward": false,
+        "limit": $util.toJson(20)
+    }
+#else
+    {
+        "version" : "2017-02-28",
+        "operation" : "Query",
+        "query" : {
+            "expression": "uid = :uid AND #t < :t",
+            "expressionNames" : {
+                "#t" : "time",
+            },
+            "expressionValues" : {
+                ":uid" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+                ":t" : $util.toJson({"N" : $ctx.args.lastTime}),
+            },
+
+        },
+        "scanIndexForward": false,
+        "limit": $util.toJson(20)
+    }
+#end
+
+## Response
+#set($postIds = [])
+
+#foreach($postRecord in ${ctx.result.items})
+    $util.qr($postIds.add("$postRecord.pid"))
+#end
+
+$util.qr($ctx.stash.put("postIds", $postIds))
+
+$util.toJson($postIds)

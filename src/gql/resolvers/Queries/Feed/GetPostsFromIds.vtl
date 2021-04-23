@@ -1,0 +1,24 @@
+## Request
+#set($postIds = [])
+#foreach($postId in ${ctx.prev.result})
+    #set($postMap = {})
+    $util.qr($postMap.put("id", $util.dynamodb.toString($postId)))
+    $util.qr($postIds.add($postMap))
+#end
+
+#if($postIds.isEmpty())
+    #return([])
+#end
+
+{
+    "operation": "BatchGetItem",
+    "tables" : {
+        "DigitariPosts" : {
+            "keys" : $util.toJson($postIds),
+        }
+    }
+}
+
+## Response
+$util.toJson($ctx.result.data.DigitariPosts)
+
