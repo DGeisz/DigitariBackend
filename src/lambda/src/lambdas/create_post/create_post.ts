@@ -195,6 +195,7 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
 
         coin: 0,
         convoCount: 0,
+        responseCount: 0,
     };
 
     /*
@@ -222,6 +223,7 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
 
                 coin: 0,
                 convoCount: 0,
+                responseCount: 0,
             },
         })
         .promise();

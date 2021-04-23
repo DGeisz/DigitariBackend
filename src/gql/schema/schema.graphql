@@ -143,6 +143,7 @@ type Post {
 
     # Convos
     convoCount: Int
+    responseCount: Int
 }
 
 type PostPackage {

@@ -37,6 +37,7 @@ export interface PostType {
     coinDonated?: boolean;
 
     convoCount: number;
+    responseCount: number;
 }
 
 export interface StrippedPostType {
