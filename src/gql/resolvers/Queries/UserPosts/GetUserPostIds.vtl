@@ -1,0 +1,31 @@
+## Request
+#if($util.isNullOrEmpty($ctx.args.lastTime))
+    #set($statement = "SELECT id FROM posts WHERE uid=:UID
+                            ORDER BY time DESC LIMIT 20")
+#else
+    #set($statement = "SELECT id FROM posts WHERE uid=:UID and time < :LAST_TIME
+                            ORDER BY time DESC LIMIT 20")
+#end
+
+
+{
+    "version": "2018-05-29",
+    "statements": [
+        $util.toJson($statement)
+    ],
+    "variableMap": {
+        ":UID": $util.toJson($ctx.args.uid),
+        ":LAST_TIME": $util.toJson($ctx.args.lastTime),
+    }
+}
+
+## Response
+#set($postIds = [])
+
+#foreach($postRecord in ${util.rds.toJsonObject($ctx.result)[0]})
+    $util.qr($postIds.add("$postRecord.id"))
+#end
+
+$util.qr($ctx.stash.put("postIds", $postIds))
+
+$util.toJson($postIds)

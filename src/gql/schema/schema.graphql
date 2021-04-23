@@ -227,10 +227,10 @@ type Query @aws_iam
     feed(lastTime: String): [Post]
     wallet(id: ID!): Wallet
     user(uid: ID!): User
-    userPosts(uid: ID!, lastTime: Int): [Post]
-    userConvos(uid: ID!, lastTime: Int): [ConvoCover]
-    newConvos(uid: ID!, lastTime: Int): [ConvoCover]
-    activeConvos(uid: ID!, lastTime: Int): [ConvoCover]
+    userPosts(uid: ID!, lastTime: String): [Post]
+    userConvos(uid: ID!, lastTime: String): [ConvoCover]
+    newConvos(uid: ID!, lastTime: String): [ConvoCover]
+    activeConvos(uid: ID!, lastTime: String): [ConvoCover]
     challenges: [Challenge]
     post(pid: ID!): Post
     convo(cid: ID!): Convo

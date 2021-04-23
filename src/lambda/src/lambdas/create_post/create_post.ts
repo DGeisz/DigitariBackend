@@ -230,11 +230,11 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
      * Add the entry to the posts table
      */
     if (!!cmid) {
-        await rdsClient.executeSql(`INSERT INTO posts (uid, cmid, id, tier)
-                                        VALUES ('${uid}', '${cmid}', '${pid}', '${userTier}');`);
+        await rdsClient.executeSql(`INSERT INTO posts (uid, cmid, id, tier, time)
+                                        VALUES ('${uid}', '${cmid}', '${pid}', '${userTier}', ${time});`);
     } else {
-        await rdsClient.executeSql(`INSERT INTO posts (uid, id, tier)
-                                        VALUES ('${uid}', '${pid}', '${userTier}');`);
+        await rdsClient.executeSql(`INSERT INTO posts (uid, id, tier, time)
+                                        VALUES ('${uid}', '${pid}', '${userTier}', ${time});`);
     }
 
     /*
