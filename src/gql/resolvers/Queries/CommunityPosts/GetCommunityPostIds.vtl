@@ -1,0 +1,38 @@
+## Request
+#if($util.isNullOrEmpty($ctx.args.lastTime))
+    #set($timeStatement = "")
+#else
+    #set($timeStatement = "AND time < :LAST_TIME")
+#end
+
+#if($util.isNullOrEmpty($ctx.args.tier))
+    #set($tierStatement = "")
+#else
+    #set($tierStatement = "AND tier = :TIER")
+#end
+
+#set($statement = "SELECT id FROM posts WHERE cmid = :CMID $timeStatement $tierStatement
+                        ORDER BY time DESC LIMIT 20")
+
+{
+    "version": "2018-05-29",
+    "statements": [
+        $util.toJson($statement)
+    ],
+    "variableMap": {
+        ":CMID": $util.toJson($ctx.args.cmid),
+        ":LAST_TIME": $util.toJson($ctx.args.lastTime),
+        ":TIER" : $util.toJson($ctx.args.tier)
+    }
+}
+
+## Response
+#set($postIds = [])
+
+#foreach($postRecord in ${util.rds.toJsonObject($ctx.result)[0]})
+    $util.qr($postIds.add("$postRecord.id"))
+#end
+
+$util.qr($ctx.stash.put("postIds", $postIds))
+
+$util.toJson($postIds)

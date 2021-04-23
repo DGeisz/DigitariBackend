@@ -1,0 +1,9 @@
+before
+
+GetCommunityPostIds
+
+GetPostsFromIds -- Global
+
+GetCoinDonated -- Global
+
+after
