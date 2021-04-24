@@ -20,50 +20,6 @@ export interface UserType {
 
     lastCheckIn: number;
 
-    /*
-     * Prices pertaining to post distribution
-     */
-    /**
-     * Mean posts provided by user
-     */
-    meanPostsProvided: number;
-    /**
-     * Last time this user had a user sync
-     */
-    lastSync: number;
-    /**
-     * Accumulated posts consumed since last sync
-     */
-    consumptionSinceLastSync: number;
-    /**
-     * Accumulated posts posted since the last sync
-     */
-    accumulatedPostsSinceSync: number;
-    /**
-     * Price of putting a post from this user
-     * into one of his follower's feed
-     */
-    postPrice: number;
-    /**
-     * Mean number of posts desired from this user
-     * per day by this user's followers
-     */
-    meanPostsDesired: number;
-    /**
-     * Standard deviation of the posts desired from
-     * this user per day by this user's followers
-     */
-    stdPostsDesired: number;
-    /**
-     * The number of posts requested from this user
-     * per day organized into activity groupings
-     */
-    postsRequestedForActivityGroupings: number[];
-    /**
-     * The number of users in each activity grouping
-     */
-    activityGroupingSize: number[];
-
     // Challenge fields
     coinSpent: number;
     csGoal: number;
@@ -116,4 +72,8 @@ export interface UserType {
     invite2ComViaLink: number;
     i2cGoal: number;
     nextI2CIndex: number;
+}
+
+export interface ExtendedUserType extends UserType {
+    hid: string;
 }

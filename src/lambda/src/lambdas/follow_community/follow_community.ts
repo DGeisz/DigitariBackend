@@ -15,7 +15,7 @@ import {
     DIGITARI_PRICES,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
-import { ranking2Tier } from "../../utils/tier_utils";
+import { ranking2Tier } from "../../global_types/TierTypes";
 
 const rdsClient = new RdsClient();
 

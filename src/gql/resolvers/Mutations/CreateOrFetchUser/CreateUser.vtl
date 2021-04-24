@@ -14,6 +14,8 @@
         "expression": "attribute_not_exists(id)",
     },
     "attributeValues" : {
+        "hid" : $util.dynamodb.toDynamoDBJson($util.autoId()),
+
         "firstName" : $util.dynamodb.toDynamoDBJson($ctx.args.firstName),
         "lastName" : $util.dynamodb.toDynamoDBJson($ctx.args.lastName),
         "userName" : $util.dynamodb.toDynamoDBJson($ctx.args.firstName),

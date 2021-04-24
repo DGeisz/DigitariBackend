@@ -1,5 +1,3 @@
-import { ConvoCoverType } from "./ConvoCoverTypes";
-
 export const POST_CONTENT_MAX_LEN = 250;
 export const POST_ADD_ON_CONTENT_MAX_LEN = 10000;
 

@@ -23,11 +23,8 @@ import {
     getInactiveFollowers,
 } from "./rds_queries/queries";
 import { millisInDay } from "../../utils/time_utils";
-import {
-    ranking2Tier,
-    tier2convoReward,
-    tier2responseCost,
-} from "../../utils/tier_utils";
+import { tier2convoReward, tier2responseCost } from "../../utils/tier_utils";
+import { ranking2Tier } from "../../global_types/TierTypes";
 
 const BUCKET_NAME = "digitari-imgs";
 const s3Client = new S3();
