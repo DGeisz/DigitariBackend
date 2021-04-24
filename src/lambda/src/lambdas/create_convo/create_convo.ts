@@ -78,6 +78,10 @@ export async function handler(
             .promise()
     ).Item as PostType;
 
+    if (post.uid === uid) {
+        throw new Error("Users can't message themselves");
+    }
+
     /*
      * ...And grab the target user
      */
@@ -118,17 +122,38 @@ export async function handler(
     /*
      * Create the initial message
      */
-    await dynamoClient.put({
-        TableName: DIGITARI_MESSAGES,
-        Item: {
-            id: cvid,
-            anonymous,
-            content: message,
-            time,
-            uid: sid,
-            user: sname,
-        },
-    });
+    await dynamoClient
+        .put({
+            TableName: DIGITARI_MESSAGES,
+            Item: {
+                id: cvid,
+                anonymous,
+                content: message,
+                time,
+                uid: sid,
+                tid: targetUser.id,
+                user: sname,
+            },
+        })
+        .promise();
+
+    /*
+     * Increase the post's response count
+     */
+    await dynamoClient
+        .update({
+            TableName: DIGITARI_POSTS,
+            Key: {
+                id: pid,
+            },
+            UpdateExpression: `set responseCount = responseCount + :unit,
+                                    coin = coin + :cost`,
+            ExpressionAttributeValues: {
+                ":unit": 1,
+                ":cost": post.responseCost,
+            },
+        })
+        .promise();
 
     return {
         id: cvid,

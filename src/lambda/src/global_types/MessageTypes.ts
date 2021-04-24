@@ -6,5 +6,6 @@ export interface MessageType {
     content: string;
     time: number;
     uid: string;
+    tid: string;
     user: string;
 }

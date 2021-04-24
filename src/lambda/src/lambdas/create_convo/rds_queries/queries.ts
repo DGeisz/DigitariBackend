@@ -40,7 +40,7 @@ export function createConvo(
         sql: `INSERT INTO convos 
         (id, pid, cmid, status, initial_time, initial_msg, last_time, last_msg, sid, stier, sranking, sname, sanony, sviewed, tid, ttier, tranking, tname, tviewed, target_msg_count)
         VALUES
-        (${id}, ${pid}, ${cmid}, 0, ${time}, :msg, ${time}, :msg, ${sid}, ${stier}, ${sranking}, :sname, ${sanony}, true, ${tid}, ${ttier}, ${tranking}, :tname, false, 0)`,
+        ('${id}', '${pid}', '${cmid}', 0, ${time}, :msg, ${time}, :msg, '${sid}', ${stier}, ${sranking}, :sname, ${sanony}, true, '${tid}', ${ttier}, ${tranking}, :tname, false, 0)`,
         resultParser: truthParser,
         parameters: [
             {

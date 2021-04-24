@@ -79,8 +79,6 @@ type User @aws_iam
     nextI2CIndex: Int
 }
 
-
-
 type Convo {
     id: ID
     pid: ID
@@ -112,7 +110,8 @@ type Convo {
 
 type Message {
     id: ID
-    uid: String
+    uid: ID
+    tid: ID
     user: String
     time: Int
     anonymous: Boolean
@@ -244,6 +243,7 @@ type Query @aws_iam
     searchEntity(id: ID!): SearchEntity
     followers(tid: ID!, lastTime: String): [FollowEntity]
     following(sid: ID!, lastTime: String, entityType: Int): [FollowEntity]
+    postResponseCheck(pid: ID): Boolean
 }
 
 type Mutation {

@@ -1,0 +1,20 @@
+## Request
+
+{
+    "version": "2018-05-29",
+    "statements": [
+        "SELECT id FROM convos WHERE pid=:PID AND (sid=:UID OR sid=:HID)"
+    ],
+    "variableMap": {
+        ":PID": $util.toJson($ctx.args.pid),
+        ":HID": $util.toJson($ctx.stash.get("user").get("hid")),
+        ":UID" : $util.toJson($ctx.identity.sub)
+    }
+}
+
+## Response
+#if($util.rds.toJsonObject($ctx.result)[0].size() == 0)
+    $util.toJson(false)
+#else
+    $util.toJson(true)
+#end
