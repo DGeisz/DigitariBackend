@@ -230,7 +230,7 @@ type Query @aws_iam
     user(uid: ID!): User
     userPosts(uid: ID!, lastTime: String): [Post]
     userConvos(uid: ID!, lastTime: String): [Convo]
-    newConvos(uid: ID!, lastTime: String): [Convo]
+    newConvos(orderingType: Int, lastTime: String): [Convo]
     activeConvos(uid: ID!, lastTime: String): [Convo]
     challenges: [Challenge]
     post(pid: ID!): Post
