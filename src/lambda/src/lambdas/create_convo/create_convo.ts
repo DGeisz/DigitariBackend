@@ -107,6 +107,7 @@ export async function handler(
             time,
             message,
             sid,
+            uid,
             ranking2Tier(user.ranking),
             user.ranking,
             sname,

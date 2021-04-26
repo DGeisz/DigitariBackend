@@ -15,6 +15,8 @@ module.exports = {
             "./src/lambdas/unfollow_community/unfollow_community.ts",
         create_community: "./src/lambdas/create_community/create_community.ts",
         create_convo: "./src/lambdas/create_convo/create_convo.ts",
+        dismiss_convo: "./src/lambdas/dismiss_convo/dismiss_convo.ts",
+        block_convo: "./src/lambdas/block_convo/block_convo.ts",
     },
     externals: ["aws-sdk"],
     mode: "production",

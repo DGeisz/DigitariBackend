@@ -28,3 +28,7 @@ export interface ConvoType {
 
     targetMsgCount: number;
 }
+
+export interface ExtendedConvoType extends ConvoType {
+    suid: string;
+}
