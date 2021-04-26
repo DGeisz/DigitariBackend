@@ -1,0 +1,31 @@
+## Request
+#if($ctx.stash.convo.tid != $ctx.identity.sub
+    && $ctx.stash.convo.sid != $ctx.identity.sub
+    && $ctx.stash.convo.sid != $ctx.stash.user.hid)
+    $util.error("User isn't participating in convo!")
+#end
+
+#if($ctx.stash.convo.tid == $ctx.identity.sub)
+    #set($statement = "UPDATE convos SET tviewed=true WHERE id=:ID")
+#else
+    #set($statement = "UPDATE convos SET sviewed=true WHERE id=:ID")
+#end
+
+{
+    "version": "2018-05-29",
+    "statements": [
+        $util.toJson($statement)
+    ],
+    "variableMap": {
+        ":ID": $util.toJson($ctx.args.cvid)
+    }
+}
+
+## Response
+#if($ctx.stash.convo.tid == $ctx.identity.sub)
+    #set($ctx.stash.convo.tviewed = true)
+#else
+    #set($ctx.stash.convo.sviewed = true)
+#end
+
+{}

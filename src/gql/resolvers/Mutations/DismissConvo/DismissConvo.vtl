@@ -1,0 +1,25 @@
+## Request
+#if($ctx.stash.convo.tid != $ctx.identity.sub)
+    $util.error("Only the convo target can dismiss a convo")
+#end
+
+#if($ctx.stash.convo.status == -2)
+    $util.error("Convo already dismissed")
+#end
+
+#set($statement = "UPDATE convos SET status = -2 WHERE id=:ID")
+
+{
+    "version": "2018-05-29",
+    "statements": [
+        $util.toJson($statement)
+    ],
+    "variableMap": {
+        ":ID": $util.toJson($ctx.args.cvid)
+    }
+}
+
+## Response
+#set($ctx.stash.convo.status = -2)
+
+{}

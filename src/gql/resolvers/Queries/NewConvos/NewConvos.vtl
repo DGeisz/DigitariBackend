@@ -17,7 +17,7 @@
                    last_time as lastTime, last_msg as lastMsg,
                    sid, stier, sranking, sname, sanony, sviewed,
                    tid, ttier, tranking, tname, tviewed, target_msg_count as targetMsgCount
-                   FROM convos WHERE tid=:TID $orderStatement
+                   FROM convos WHERE tid=:TID AND status=0 $orderStatement
                    LIMIT 50 $offsetStatement")
 
 {
