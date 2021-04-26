@@ -1,9 +1,9 @@
 ## Request
 
-#if($util.isNullOrEmpty($ctx.args.lastTime))
-    #set($timeStatement = "")
+#if($util.isNullOrEmpty($ctx.args.offset))
+    #set($offsetStatement = "")
 #else
-    #set($timeStatement = "AND initial_time < :LAST_TIME")
+    #set($offsetStatement = "OFFSET :O_SET")
 #end
 
 #if($ctx.args.orderingType == 0)
@@ -17,8 +17,8 @@
                    last_time as lastTime, last_msg as lastMsg,
                    sid, stier, sranking, sname, sanony, sviewed,
                    tid, ttier, tranking, tname, tviewed, target_msg_count as targetMsgCount
-                   FROM convos WHERE tid=:TID $timeStatement $orderStatement
-                   LIMIT 50")
+                   FROM convos WHERE tid=:TID $orderStatement
+                   LIMIT 50 $offsetStatement")
 
 {
     "version": "2018-05-29",
@@ -27,7 +27,7 @@
     ],
     "variableMap": {
         ":TID": $util.toJson($ctx.identity.sub),
-        ":LAST_TIME": $util.toJson($ctx.args.lastTime),
+        ":O_SET": $util.toJson($ctx.args.offset),
     }
 }
 
