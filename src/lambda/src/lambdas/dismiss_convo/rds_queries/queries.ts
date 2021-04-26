@@ -10,10 +10,10 @@ function convoParser(row: FieldList): ExtendedConvoType {
 
         status: row[3].longValue,
 
-        initialTime: row[4].stringValue,
+        initialTime: row[4].longValue.toString(),
         initialMsg: row[5].stringValue,
 
-        lastTime: row[6].stringValue,
+        lastTime: row[6].longValue.toString(),
         lastMsg: row[7].stringValue,
 
         sid: row[8].stringValue,

@@ -17,6 +17,7 @@ module.exports = {
         create_convo: "./src/lambdas/create_convo/create_convo.ts",
         dismiss_convo: "./src/lambdas/dismiss_convo/dismiss_convo.ts",
         block_convo: "./src/lambdas/block_convo/block_convo.ts",
+        activate_convo: "./src/lambdas/activate_convo/activate_convo.ts",
     },
     externals: ["aws-sdk"],
     mode: "production",
