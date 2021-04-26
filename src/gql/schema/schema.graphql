@@ -232,7 +232,7 @@ type Query @aws_iam
     userPosts(uid: ID!, lastTime: String): [Post]
     userConvos(uid: ID!, lastTime: String): [Convo]
     newConvos(orderingType: Int, offset: Int): [Convo]
-    activeConvos(uid: ID!, lastTime: String): [Convo]
+    activeConvos(lastTime: String): [Convo]
     challenges: [Challenge]
     post(pid: ID!): Post
     convo(cvid: ID!): Convo
@@ -266,6 +266,9 @@ type Mutation {
     blockConvo(cvid: ID!): Convo
     activateConvo(cvid: ID!): Convo
     finishConvo(cvid: ID!): Convo
+
+    createMessage(cvid: ID!, message: String!): Message
+
     createCommunity(
         name: String
         description: String

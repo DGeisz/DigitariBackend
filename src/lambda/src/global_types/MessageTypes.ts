@@ -4,7 +4,7 @@ export interface MessageType {
     id: string;
     anonymous: boolean;
     content: string;
-    time: number;
+    time: string;
     uid: string;
     tid: string;
     user: string;

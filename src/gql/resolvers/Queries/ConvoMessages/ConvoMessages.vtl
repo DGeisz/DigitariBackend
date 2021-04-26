@@ -9,7 +9,6 @@
                 ":id" : $util.dynamodb.toDynamoDBJson($ctx.args.cvid),
             },
         },
-        "scanIndexForward": false,
         "limit": $util.toJson(50)
     }
 #else
@@ -17,7 +16,7 @@
         "version" : "2017-02-28",
         "operation" : "Query",
         "query" : {
-            "expression": "id = :id AND #t < :t",
+            "expression": "id = :id AND #t > :t",
             "expressionNames" : {
                 "#t" : "time",
             },
@@ -27,7 +26,6 @@
             },
 
         },
-        "scanIndexForward": false,
         "limit": $util.toJson(50)
     }
 #end
