@@ -1,0 +1,34 @@
+## Request
+#if($util.isNullOrEmpty($ctx.args.offset))
+    #set($offsetStatement = "")
+#else
+    #set($offsetStatement = "OFFSET :O_SET")
+#end
+
+#if($ctx.args.orderingType == 0)
+    #set($orderStatement = "ORDER BY last_time DESC")
+#else
+    #set($orderStatement = "ORDER BY sranking DESC")
+#end
+
+#set($statement = "SELECT id, pid, cmid, status,
+                   initial_time as initialTime, initial_msg as initialMsg,
+                   last_time as lastTime, last_msg as lastMsg,
+                   sid, stier, sranking, sname, sanony, sviewed,
+                   tid, ttier, tranking, tname, tviewed, target_msg_count as targetMsgCount
+                   FROM convos WHERE pid=:PID AND (status = -1 OR status = 1 OR status = 2)
+                   $orderStatement LIMIT 50 $offsetStatement")
+
+{
+    "version": "2018-05-29",
+    "statements": [
+        $util.toJson($statement)
+    ],
+    "variableMap": {
+        ":PID": $util.toJson($ctx.args.pid),
+        ":O_SET": $util.toJson($ctx.args.offset),
+    }
+}
+
+## Response
+$util.toJson($util.rds.toJsonObject($ctx.result)[0])
