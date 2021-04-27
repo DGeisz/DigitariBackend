@@ -70,19 +70,20 @@ export async function handler(
      * If the user is the target, then we should also increment target_msg_count
      * in the convos table
      */
-    let targetStatement;
+    let customStatement;
 
     if (uid === convo.tid) {
-        targetStatement = ", target_msg_count = target_msg_count + 1";
+        customStatement =
+            "sviewed=false, target_msg_count = target_msg_count + 1";
     } else {
-        targetStatement = "";
+        customStatement = "tviewed=false";
     }
 
     /*
      * Now update the convo with last time and last msg
      */
     await rdsClient.executeSql(
-        `UPDATE convos SET last_time=${time}, last_msg=:msg${targetStatement} WHERE id='${cvid}'`,
+        `UPDATE convos SET last_time=${time}, last_msg=:msg, ${customStatement} WHERE id='${cvid}'`,
         [
             {
                 name: "msg",

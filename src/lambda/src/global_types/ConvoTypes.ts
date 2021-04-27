@@ -1,5 +1,7 @@
 export const CONVO_TYPENAME = "Convo";
 
+export const TARGET_MESSAGE_COUNT_THRESHOLD = 2;
+
 export interface ConvoType {
     id: string;
     pid: string;
