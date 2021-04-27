@@ -34,3 +34,8 @@ export interface ConvoType {
 export interface ExtendedConvoType extends ConvoType {
     suid: string;
 }
+
+export interface ConvoUpdate {
+    tid: string;
+    convo: ConvoType;
+}

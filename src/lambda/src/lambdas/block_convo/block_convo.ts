@@ -2,7 +2,7 @@ import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import { DynamoDB } from "aws-sdk";
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { EventArgs } from "../dismiss_convo/lambda_types/event_args";
-import { ConvoType } from "../../global_types/ConvoTypes";
+import { ConvoType, ConvoUpdate } from "../../global_types/ConvoTypes";
 import { getConvo } from "../dismiss_convo/rds_queries/queries";
 import { DIGITARI_USERS } from "../../global_types/DynamoTableNames";
 
@@ -14,7 +14,7 @@ const dynamoClient = new DynamoDB.DocumentClient({
 
 export async function handler(
     event: AppSyncResolverEvent<EventArgs>
-): Promise<ConvoType> {
+): Promise<ConvoUpdate> {
     const uid = (event.identity as AppSyncIdentityCognito).sub;
     const { cvid } = event.arguments;
 
@@ -89,5 +89,8 @@ export async function handler(
     convo.status = -1;
     convo.suid = "";
 
-    return convo;
+    return {
+        convo,
+        tid: uid === convo.tid ? convo.sid : convo.tid,
+    };
 }

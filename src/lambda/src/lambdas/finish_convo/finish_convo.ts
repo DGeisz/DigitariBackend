@@ -4,6 +4,7 @@ import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { EventArgs } from "../dismiss_convo/lambda_types/event_args";
 import {
     ConvoType,
+    ConvoUpdate,
     TARGET_MESSAGE_COUNT_THRESHOLD,
 } from "../../global_types/ConvoTypes";
 import { getConvo } from "../dismiss_convo/rds_queries/queries";
@@ -21,7 +22,7 @@ const dynamoClient = new DynamoDB.DocumentClient({
 
 export async function handler(
     event: AppSyncResolverEvent<EventArgs>
-): Promise<ConvoType> {
+): Promise<ConvoUpdate> {
     const uid = (event.identity as AppSyncIdentityCognito).sub;
     const { cvid } = event.arguments;
 
@@ -121,5 +122,8 @@ export async function handler(
     convo.status = 2;
     convo.suid = "";
 
-    return convo;
+    return {
+        convo,
+        tid: uid === convo.tid ? convo.sid : convo.tid,
+    };
 }
