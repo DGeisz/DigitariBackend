@@ -5,6 +5,8 @@ import { EventArgs } from "./lambda_types/event_args";
 import { MESSAGE_MAX_LEN, MessageType } from "../../global_types/MessageTypes";
 import { getConvo } from "../dismiss_convo/rds_queries/queries";
 import { DIGITARI_MESSAGES } from "../../global_types/DynamoTableNames";
+import { sendPushAndHandleReceipts } from "../../push_notifications/push";
+import { PushNotificationType } from "../../global_types/PushTypes";
 
 const rdsClient = new RdsClient();
 
@@ -111,6 +113,22 @@ export async function handler(
             },
         })
         .promise();
+
+    /*
+     * Send push notifications to the target
+     */
+    try {
+        await sendPushAndHandleReceipts(
+            convo.tid === uid ? convo.suid : convo.tid,
+            PushNotificationType.Message,
+            cvid,
+            anonymous ? "Message" : messageUser,
+            message,
+            dynamoClient
+        );
+    } catch (e) {
+        throw new Error(`Push notification failed: ${JSON.stringify(e)}`);
+    }
 
     return {
         id: cvid,
