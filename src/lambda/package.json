@@ -24,6 +24,7 @@
         "aws-sdk": "^2.858.0",
         "cardinal": "^2.1.1",
         "elasticsearch": "^16.7.2",
+        "expo-server-sdk": "^3.6.0",
         "http-aws-es": "^6.0.0",
         "mysql2": "^2.2.5",
         "uuid": "^8.3.2"

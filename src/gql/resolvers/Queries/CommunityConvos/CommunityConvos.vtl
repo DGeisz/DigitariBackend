@@ -1,0 +1,34 @@
+#if($util.isNullOrEmpty($ctx.args.lastTime))
+    #set($timeStatement = "")
+#else
+    #set($timeStatement = "AND last_time < :LAST_TIME")
+#end
+
+#if($util.isNullOrEmpty($ctx.args.tier))
+    #set($tierStatement = "")
+#else
+    #set($tierStatement = "AND (ttier = :TIER OR stier = :TIER)")
+#end
+
+#set($statement = "SELECT id, pid, cmid, status,
+                   initial_time as initialTime, initial_msg as initialMsg,
+                   last_time as lastTime, last_msg as lastMsg,
+                   sid, stier, sranking, sname, sanony, sviewed,
+                   tid, ttier, tranking, tname, tviewed, target_msg_count as targetMsgCount
+                   FROM convos WHERE cmid=:CMID AND status != -2 AND status != 0 $tierStatement
+                   $timeStatement ORDER BY last_time DESC LIMIT 50")
+
+{
+    "version": "2018-05-29",
+    "statements": [
+        $util.toJson($statement)
+    ],
+    "variableMap": {
+        ":CMID": $util.toJson($ctx.args.cmid),
+        ":LAST_TIME": $util.toJson($ctx.args.lastTime),
+        ":TIER" : $util.toJson($ctx.args.tier)
+    }
+}
+
+## Response
+$util.toJson($util.rds.toJsonObject($ctx.result)[0])

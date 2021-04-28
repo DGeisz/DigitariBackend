@@ -1,0 +1,35 @@
+## Request
+
+#if($ctx.args.uid == $ctx.identity.sub)
+    #set($userCondition = " (tid=:UID OR suid=:UID) AND status != 0 ")
+#else
+    #set($userCondition = " (tid=:UID OR sid=:UID) AND status != 0 AND status != -2 ")
+#end
+
+#if($util.isNullOrEmpty($ctx.args.lastTime))
+    #set($timeStatement = "")
+#else
+    #set($timeStatement = " AND last_time < :LAST_TIME ")
+#end
+
+#set($statement = "SELECT id, pid, cmid, status,
+                   initial_time as initialTime, initial_msg as initialMsg,
+                   last_time as lastTime, last_msg as lastMsg,
+                   sid, stier, sranking, sname, sanony, sviewed,
+                   tid, ttier, tranking, tname, tviewed, target_msg_count as targetMsgCount
+                   FROM convos WHERE $userCondition
+                   $timeStatement ORDER BY last_time DESC LIMIT 50")
+
+{
+    "version": "2018-05-29",
+    "statements": [
+        $util.toJson($statement)
+    ],
+    "variableMap": {
+        ":UID": $util.toJson($ctx.args.uid),
+        ":LAST_TIME": $util.toJson($ctx.args.lastTime),
+    }
+}
+
+## Response
+$util.toJson($util.rds.toJsonObject($ctx.result)[0])
