@@ -44,7 +44,7 @@ export function getConvo(cvid: string): QueryPackage<ExtendedConvoType> {
                    last_time as lastTime, last_msg as lastMsg,
                    sid, stier, sranking, sname, sanony, sviewed,
                    tid, ttier, tranking, tname, tviewed, target_msg_count as targetMsgCount, suid,
-                   responseCost as response_cost, convoReward as convo_reward
+                   response_cost as responseCost, convo_reward as convoReward
                    FROM convos WHERE id='${cvid}'`,
     };
 }

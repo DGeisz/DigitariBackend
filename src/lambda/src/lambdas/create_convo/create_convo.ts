@@ -167,7 +167,7 @@ export async function handler(
             PushNotificationType.NewConvo,
             `${cvid}/${pid}`,
             "New convo",
-            `You have a new convo about your post: "${post.content}"`,
+            `Your post received a new response: "${message}"`,
             dynamoClient
         );
     } catch (e) {}

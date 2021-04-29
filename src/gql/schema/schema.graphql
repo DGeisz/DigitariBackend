@@ -158,6 +158,15 @@ type PostPackage {
     presignedUrl: String
 }
 
+type Transaction {
+    tid: ID
+    time: String
+    coin: Int
+    message: String
+    transactionType: Int
+    data: String
+}
+
 type Wallet {
     id: ID
     sum: Int
@@ -233,7 +242,6 @@ type ImgUrl {
 type Query @aws_iam
 @aws_cognito_user_pools {
     feed(lastTime: String): [Post]
-    wallet(id: ID!): Wallet
     user(uid: ID!): User
     hid: String
     userPosts(uid: ID!, lastTime: String): [Post]
@@ -255,6 +263,8 @@ type Query @aws_iam
     followers(tid: ID!, lastTime: String): [FollowEntity]
     following(sid: ID!, lastTime: String, entityType: Int): [FollowEntity]
     postResponseCheck(pid: ID): Boolean
+    transactionAccumulation: Int
+    transactions(lastTime: String): [Transaction]
 }
 
 type Mutation {
