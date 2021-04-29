@@ -29,6 +29,8 @@ export interface ConvoType {
     tviewed: boolean;
 
     targetMsgCount: number;
+    convoReward: number;
+    responseCost: number;
 }
 
 export interface ExtendedConvoType extends ConvoType {

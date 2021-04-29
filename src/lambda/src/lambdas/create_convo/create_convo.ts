@@ -118,7 +118,10 @@ export async function handler(
             targetUser.id,
             ranking2Tier(targetUser.ranking),
             targetUser.ranking,
-            targetUser.firstName
+            targetUser.firstName,
+
+            post.responseCost,
+            post.convoReward
         )
     );
 
@@ -196,5 +199,7 @@ export async function handler(
         tviewed: false,
 
         targetMsgCount: 0,
+        responseCost: post.responseCost,
+        convoReward: post.convoReward,
     };
 }

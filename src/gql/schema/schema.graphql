@@ -106,6 +106,8 @@ type Convo {
     tviewed: Boolean
 
     targetMsgCount: Int
+    convoReward: Int
+    responseCost: Int
 }
 
 type ConvoUpdate {

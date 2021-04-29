@@ -16,7 +16,8 @@
                    initial_time as initialTime, initial_msg as initialMsg,
                    last_time as lastTime, last_msg as lastMsg,
                    sid, stier, sranking, sname, sanony, sviewed,
-                   tid, ttier, tranking, tname, tviewed, target_msg_count as targetMsgCount
+                   tid, ttier, tranking, tname, tviewed, target_msg_count as targetMsgCount,
+                   response_cost as responseCost, convo_reward as convoReward
                    FROM convos WHERE $userCondition
                    $timeStatement ORDER BY last_time DESC LIMIT 50")
 

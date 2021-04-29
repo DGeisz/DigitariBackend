@@ -60,20 +60,6 @@ export async function handler(
     }
 
     /*
-     * Grab a copy of the post for the convo reward
-     */
-    const post = (
-        await dynamoClient
-            .get({
-                TableName: DIGITARI_POSTS,
-                Key: {
-                    id: convo.pid,
-                },
-            })
-            .promise()
-    ).Item as PostType;
-
-    /*
      * Update rds
      */
     /*
@@ -97,7 +83,7 @@ export async function handler(
                                  successfulConvos = successfulConvos + :unit,
                                  ranking = ranking + :unit`,
             ExpressionAttributeValues: {
-                ":reward": post.convoReward,
+                ":reward": convo.convoReward,
                 ":unit": 1,
             },
         })
