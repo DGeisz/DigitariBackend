@@ -28,8 +28,20 @@ export interface UserToken {
 }
 
 export interface PushTicket {
+    /*
+     * This is the id of the token to which this ticket corresponds
+     */
     id: string;
+    /*
+     * This is the time the ticket was created
+     */
     time: number;
+    /*
+     * This is a value dynamo uses to clear out old receipts
+     */
     ttl: number;
+    /*
+     * This is the actual id of the ticket
+     */
     ticket: string;
 }

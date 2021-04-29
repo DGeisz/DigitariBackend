@@ -119,7 +119,7 @@ export async function sendPushAndHandleReceipts(
                                      * Now get the full token object to which this corresponds
                                      */
                                     const fullTicket = tokenTickets.find(
-                                        (ticket) => ticket.id === receiptId
+                                        (ticket) => ticket.ticket === receiptId
                                     );
 
                                     if (!!fullTicket) {
