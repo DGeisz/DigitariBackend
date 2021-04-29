@@ -14,6 +14,8 @@ import { PostType } from "../../global_types/PostTypes";
 import { v4 } from "uuid";
 import { ranking2Tier } from "../../global_types/TierTypes";
 import { ConvoType } from "../../global_types/ConvoTypes";
+import { sendPushAndHandleReceipts } from "../../push_notifications/push";
+import { PushNotificationType } from "../../global_types/PushTypes";
 
 const rdsClient = new RdsClient();
 
@@ -155,6 +157,17 @@ export async function handler(
             },
         })
         .promise();
+
+    try {
+        await sendPushAndHandleReceipts(
+            targetUser.id,
+            PushNotificationType.NewConvo,
+            cvid,
+            "New convo",
+            `You have a new convo about your post: "${post.content}"`,
+            dynamoClient
+        );
+    } catch (e) {}
 
     return {
         id: cvid,

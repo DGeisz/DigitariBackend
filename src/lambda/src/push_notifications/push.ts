@@ -81,7 +81,7 @@ export async function sendPushAndHandleReceipts(
             ).Items as PushTicket[];
 
             if (tokenTickets.length > 0) {
-                const ticketIds = tokenTickets.map((ticket) => ticket.id);
+                const ticketIds = tokenTickets.map((ticket) => ticket.ticket);
 
                 const receiptIdChunks = expo.chunkPushNotificationReceiptIds(
                     ticketIds
@@ -284,6 +284,7 @@ export async function sendPushAndHandleReceipts(
                             successfulTickets.push({
                                 id: token.token,
                                 time,
+                                ttl: time + 24 * 60 * 60,
                                 ticket: newTicket.id,
                             });
                         } else if (newTicket.status === "error") {

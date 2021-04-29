@@ -10,6 +10,8 @@ import {
     DIGITARI_PRICES,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
+import { sendPushAndHandleReceipts } from "../../push_notifications/push";
+import { PushNotificationType } from "../../global_types/PushTypes";
 
 const rdsClient = new RdsClient();
 
@@ -186,6 +188,17 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     } catch (e) {
         throw new Error("Source update error: " + e);
     }
+
+    try {
+        await sendPushAndHandleReceipts(
+            tid,
+            PushNotificationType.UserFollowed,
+            sid,
+            "New follower",
+            `${source.firstName} followed you!`,
+            dynamoClient
+        );
+    } catch (e) {}
 
     return {
         tid,

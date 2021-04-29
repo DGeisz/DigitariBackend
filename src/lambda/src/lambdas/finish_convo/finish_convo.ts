@@ -13,6 +13,8 @@ import {
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import { PostType } from "../../global_types/PostTypes";
+import { sendPushAndHandleReceipts } from "../../push_notifications/push";
+import { PushNotificationType } from "../../global_types/PushTypes";
 
 const rdsClient = new RdsClient();
 
@@ -114,6 +116,27 @@ export async function handler(
             },
         })
         .promise();
+
+    /*
+     * Send push notifications to the target
+     */
+    const pushMessage =
+        convo.tid === uid
+            ? `${convo.tname} finished your convo!"`
+            : convo.sanony
+            ? `Your convo with an anonymous user was finished!`
+            : `${convo.sname} finished your convo!`;
+
+    try {
+        await sendPushAndHandleReceipts(
+            convo.tid === uid ? convo.suid : convo.tid,
+            PushNotificationType.ConvoFinished,
+            cvid,
+            "Convo finished",
+            pushMessage,
+            dynamoClient
+        );
+    } catch (e) {}
 
     /*
      * Finish things off by setting convo status locally, and scrubbing

@@ -122,13 +122,11 @@ export async function handler(
             convo.tid === uid ? convo.suid : convo.tid,
             PushNotificationType.Message,
             cvid,
-            anonymous ? "Message" : messageUser,
+            anonymous ? "New message" : messageUser,
             message,
             dynamoClient
         );
-    } catch (e) {
-        throw new Error(`Push notification failed: ${JSON.stringify(e)}`);
-    }
+    } catch (e) {}
 
     return {
         id: cvid,

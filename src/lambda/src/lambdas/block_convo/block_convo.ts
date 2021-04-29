@@ -5,6 +5,8 @@ import { EventArgs } from "../dismiss_convo/lambda_types/event_args";
 import { ConvoType, ConvoUpdate } from "../../global_types/ConvoTypes";
 import { getConvo } from "../dismiss_convo/rds_queries/queries";
 import { DIGITARI_USERS } from "../../global_types/DynamoTableNames";
+import { sendPushAndHandleReceipts } from "../../push_notifications/push";
+import { PushNotificationType } from "../../global_types/PushTypes";
 
 const rdsClient = new RdsClient();
 
@@ -82,6 +84,27 @@ export async function handler(
             },
         })
         .promise();
+
+    /*
+     * Send push notifications to the target
+     */
+    const pushMessage =
+        convo.tid === uid
+            ? `${convo.tname} blocked your message: "${convo.lastMsg}"`
+            : convo.sanony
+            ? `Your message was blocked: "${convo.lastMsg}"`
+            : `${convo.sname} blocked your message: "${convo.lastMsg}"`;
+
+    try {
+        await sendPushAndHandleReceipts(
+            convo.tid === uid ? convo.suid : convo.tid,
+            PushNotificationType.ConvoBlocked,
+            cvid,
+            "Message blocked",
+            pushMessage,
+            dynamoClient
+        );
+    } catch (e) {}
 
     /*
      * Update in memory convo object and return it

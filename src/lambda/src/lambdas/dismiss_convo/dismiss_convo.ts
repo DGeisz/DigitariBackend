@@ -4,6 +4,8 @@ import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { getConvo } from "./rds_queries/queries";
 import { EventArgs } from "./lambda_types/event_args";
 import { ConvoType } from "../../global_types/ConvoTypes";
+import { sendPushAndHandleReceipts } from "../../push_notifications/push";
+import { PushNotificationType } from "../../global_types/PushTypes";
 
 const rdsClient = new RdsClient();
 
@@ -49,6 +51,17 @@ export async function handler(
      */
 
     convo.status = -2;
+
+    try {
+        await sendPushAndHandleReceipts(
+            convo.suid,
+            PushNotificationType.ConvoDismissed,
+            cvid,
+            "Convo dismissed",
+            `${convo.tname} dismissed your response: "${convo.lastMsg}"`,
+            dynamoClient
+        );
+    } catch (e) {}
 
     return convo;
 }

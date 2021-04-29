@@ -5,7 +5,8 @@ export enum PushNotificationType {
     NewConvo,
     ConvoDismissed,
     ConvoBlocked,
-    ConvoActivated,
+    ConvoFinished,
+    UserFollowed,
 }
 
 export interface PushNotification extends ExpoPushMessage {
@@ -29,5 +30,6 @@ export interface UserToken {
 export interface PushTicket {
     id: string;
     time: number;
+    ttl: number;
     ticket: string;
 }
