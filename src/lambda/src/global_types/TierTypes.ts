@@ -34,3 +34,47 @@ export function ranking2Tier(ranking: number): TierEnum {
         return TierEnum.AngryHorns;
     }
 }
+/*
+ * First return is the hourly wage, second return
+ * is the daily wage (max wage)
+ */
+export function ranking2Wage(ranking: number): [number, number] {
+    const tier = ranking2Tier(ranking);
+
+    let dailyWage: number;
+
+    switch (tier) {
+        case TierEnum.AngryHorns:
+            dailyWage = 10;
+            break;
+        case TierEnum.Steam:
+            dailyWage = 50;
+            break;
+        case TierEnum.Frowning:
+            dailyWage = 200;
+            break;
+        case TierEnum.SlightlySmiling:
+            dailyWage = 400;
+            break;
+        case TierEnum.Smiling:
+            dailyWage = 600;
+            break;
+        case TierEnum.Grinning:
+            dailyWage = 1000;
+            break;
+        case TierEnum.Hugging:
+            dailyWage = 1500;
+            break;
+        case TierEnum.Sunglasses:
+            dailyWage = 3000;
+            break;
+        case TierEnum.HeartEyes:
+            dailyWage = 8000;
+            break;
+        case TierEnum.Angel:
+            dailyWage = 20000;
+            break;
+    }
+
+    return [dailyWage / 24, dailyWage];
+}

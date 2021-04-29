@@ -13,6 +13,8 @@ type User @aws_iam
     timeCreated: String
     imgUrl: String
 
+    lastCollectionTime: String
+
     # Indicates whether the person who fetched this user is following this user.
     amFollowing: Boolean
     followPrice: Int
@@ -167,20 +169,11 @@ type Transaction {
     data: String
 }
 
-type Wallet {
-    id: ID
-    sum: Int
-    expirationTime: Int
-    entries: [WalletEntry]
+type EarningsReceipt {
+    coin: Int
+    time: String
 }
 
-type WalletEntry {
-    time: Int
-    content: String
-    coin: Int
-    entryType: Int
-    meta: String
-}
 
 type Challenge {
     index: Int
@@ -330,6 +323,8 @@ type Mutation {
     deleteSearchEntity(
         id: String
     ): SearchEntity
+
+    collectEarnings: EarningsReceipt
 }
 
 type Subscription {

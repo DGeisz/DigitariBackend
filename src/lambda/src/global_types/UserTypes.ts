@@ -18,7 +18,7 @@ export interface UserType {
     beenBlocked: number;
     coin: number;
 
-    lastCheckIn: number;
+    lastCollectionTime: number;
 
     // Challenge fields
     coinSpent: number;
