@@ -122,7 +122,7 @@ export async function handler(
      */
     const pushMessage =
         convo.tid === uid
-            ? `${convo.tname} finished your convo!"`
+            ? `${convo.tname} finished your convo!`
             : convo.sanony
             ? `Your convo with an anonymous user was finished!`
             : `${convo.sname} finished your convo!`;

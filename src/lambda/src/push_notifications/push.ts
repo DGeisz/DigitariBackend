@@ -342,7 +342,7 @@ export async function sendPushAndHandleReceipts(
                 }
             }
         } catch (e) {
-            // throw new Error(`Message failure ${e}`);
+            // throw new Error(`Message failure ${JSON.stringify(e)}`);
         }
     }
 
