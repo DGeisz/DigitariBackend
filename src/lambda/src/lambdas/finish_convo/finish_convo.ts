@@ -131,7 +131,7 @@ export async function handler(
         await sendPushAndHandleReceipts(
             convo.tid === uid ? convo.suid : convo.tid,
             PushNotificationType.ConvoFinished,
-            cvid,
+            `${cvid}/${convo.pid}`,
             "Convo finished",
             pushMessage,
             dynamoClient

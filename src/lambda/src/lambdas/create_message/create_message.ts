@@ -121,7 +121,7 @@ export async function handler(
         await sendPushAndHandleReceipts(
             convo.tid === uid ? convo.suid : convo.tid,
             PushNotificationType.Message,
-            cvid,
+            `${cvid}/${convo.pid}`,
             anonymous ? "New message" : messageUser,
             message,
             dynamoClient

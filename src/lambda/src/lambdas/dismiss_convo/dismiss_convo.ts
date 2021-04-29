@@ -50,18 +50,19 @@ export async function handler(
      * return the object
      */
 
-    convo.status = -2;
-
     try {
         await sendPushAndHandleReceipts(
             convo.suid,
             PushNotificationType.ConvoDismissed,
-            cvid,
+            `${cvid}/${convo.pid}`,
             "Convo dismissed",
             `${convo.tname} dismissed your response: "${convo.lastMsg}"`,
             dynamoClient
         );
     } catch (e) {}
+
+    convo.status = -2;
+    convo.suid = "";
 
     return convo;
 }

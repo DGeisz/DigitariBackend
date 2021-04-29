@@ -162,7 +162,7 @@ export async function handler(
         await sendPushAndHandleReceipts(
             targetUser.id,
             PushNotificationType.NewConvo,
-            cvid,
+            `${cvid}/${pid}`,
             "New convo",
             `You have a new convo about your post: "${post.content}"`,
             dynamoClient

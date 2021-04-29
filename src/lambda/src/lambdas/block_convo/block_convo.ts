@@ -99,7 +99,7 @@ export async function handler(
         await sendPushAndHandleReceipts(
             convo.tid === uid ? convo.suid : convo.tid,
             PushNotificationType.ConvoBlocked,
-            cvid,
+            `${cvid}/${convo.pid}`,
             "Message blocked",
             pushMessage,
             dynamoClient
