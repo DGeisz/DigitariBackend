@@ -7,6 +7,7 @@ import { ExtendedUserType, UserType } from "../../global_types/UserTypes";
 import {
     DIGITARI_MESSAGES,
     DIGITARI_POSTS,
+    DIGITARI_TRANSACTIONS,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import { checkForConvo, createConvo } from "./rds_queries/queries";
@@ -16,6 +17,10 @@ import { ranking2Tier } from "../../global_types/TierTypes";
 import { ConvoType } from "../../global_types/ConvoTypes";
 import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
+import {
+    TransactionType,
+    TransactionTypesEnum,
+} from "../../global_types/TransactionTypes";
 
 const rdsClient = new RdsClient();
 
@@ -158,6 +163,29 @@ export async function handler(
                 ":unit": 1,
                 ":cost": post.responseCost,
             },
+        })
+        .promise();
+
+    /*
+     * Create transaction for this bad boi
+     */
+    const transaction: TransactionType = {
+        tid: targetUser.id,
+        time,
+        coin: post.responseCost,
+        message: `Your post received a new response: "${message}"`,
+        transactionType: TransactionTypesEnum.Convo,
+        data: `${cvid}:${pid}`,
+        ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
+    };
+
+    /*
+     * Send off the transaction
+     */
+    await dynamoClient
+        .put({
+            TableName: DIGITARI_TRANSACTIONS,
+            Item: transaction,
         })
         .promise();
 

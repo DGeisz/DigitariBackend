@@ -6,6 +6,11 @@ import { EventArgs } from "./lambda_types/event_args";
 import { ConvoType } from "../../global_types/ConvoTypes";
 import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
+import {
+    TransactionType,
+    TransactionTypesEnum,
+} from "../../global_types/TransactionTypes";
+import { DIGITARI_TRANSACTIONS } from "../../global_types/DynamoTableNames";
 
 const rdsClient = new RdsClient();
 
@@ -45,18 +50,43 @@ export async function handler(
         `UPDATE convos SET status = -2 WHERE id='${cvid}'`
     );
 
+    const time = Date.now();
+    const pushMessage = `${convo.tname} dismissed your response: "${convo.lastMsg}"`;
+
+    /*
+     * Create transaction for this bad boi
+     */
+    const transaction: TransactionType = {
+        tid: convo.suid,
+        time,
+        coin: 0,
+        message: pushMessage,
+        transactionType: TransactionTypesEnum.Convo,
+        data: `${cvid}:${convo.pid}`,
+        ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
+    };
+
+    /*
+     * Send off the transaction
+     */
+    await dynamoClient
+        .put({
+            TableName: DIGITARI_TRANSACTIONS,
+            Item: transaction,
+        })
+        .promise();
+
     /*
      * Change the convo's status in the in memory object, and then
      * return the object
      */
-
     try {
         await sendPushAndHandleReceipts(
             convo.suid,
             PushNotificationType.ConvoDismissed,
             `${cvid}/${convo.pid}`,
             "Convo dismissed",
-            `${convo.tname} dismissed your response: "${convo.lastMsg}"`,
+            pushMessage,
             dynamoClient
         );
     } catch (e) {}

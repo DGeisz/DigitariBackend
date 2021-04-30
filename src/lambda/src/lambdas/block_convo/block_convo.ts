@@ -4,9 +4,16 @@ import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { EventArgs } from "../dismiss_convo/lambda_types/event_args";
 import { ConvoType, ConvoUpdate } from "../../global_types/ConvoTypes";
 import { getConvo } from "../dismiss_convo/rds_queries/queries";
-import { DIGITARI_USERS } from "../../global_types/DynamoTableNames";
+import {
+    DIGITARI_TRANSACTIONS,
+    DIGITARI_USERS,
+} from "../../global_types/DynamoTableNames";
 import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
+import {
+    TransactionType,
+    TransactionTypesEnum,
+} from "../../global_types/TransactionTypes";
 
 const rdsClient = new RdsClient();
 
@@ -85,9 +92,6 @@ export async function handler(
         })
         .promise();
 
-    /*
-     * Send push notifications to the target
-     */
     const pushMessage =
         convo.tid === uid
             ? `${convo.tname} blocked your message: "${convo.lastMsg}"`
@@ -95,6 +99,34 @@ export async function handler(
             ? `Your message was blocked: "${convo.lastMsg}"`
             : `${convo.sname} blocked your message: "${convo.lastMsg}"`;
 
+    const time = Date.now();
+
+    /*
+     * Create transaction for this bad boi
+     */
+    const transaction: TransactionType = {
+        tid: convo.tid === uid ? convo.suid : convo.tid,
+        time,
+        coin: 0,
+        message: pushMessage,
+        transactionType: TransactionTypesEnum.Convo,
+        data: `${cvid}:${convo.pid}`,
+        ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
+    };
+
+    /*
+     * Send off the transaction
+     */
+    await dynamoClient
+        .put({
+            TableName: DIGITARI_TRANSACTIONS,
+            Item: transaction,
+        })
+        .promise();
+
+    /*
+     * Send push notifications to the target
+     */
     try {
         await sendPushAndHandleReceipts(
             convo.tid === uid ? convo.suid : convo.tid,

@@ -10,11 +10,16 @@ import {
 import { getConvo } from "../dismiss_convo/rds_queries/queries";
 import {
     DIGITARI_POSTS,
+    DIGITARI_TRANSACTIONS,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import { PostType } from "../../global_types/PostTypes";
 import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
+import {
+    TransactionType,
+    TransactionTypesEnum,
+} from "../../global_types/TransactionTypes";
 
 const rdsClient = new RdsClient();
 
@@ -112,6 +117,31 @@ export async function handler(
             : convo.sanony
             ? `Your convo with an anonymous user was finished!`
             : `${convo.sname} finished your convo!`;
+
+    const time = Date.now();
+
+    /*
+     * Create transaction for this bad boi
+     */
+    const transaction: TransactionType = {
+        tid: convo.suid,
+        time,
+        coin: convo.convoReward,
+        message: `Reward for your successful convo with ${convo.tname}`,
+        transactionType: TransactionTypesEnum.Convo,
+        data: `${cvid}:${convo.pid}`,
+        ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
+    };
+
+    /*
+     * Send off the transaction
+     */
+    await dynamoClient
+        .put({
+            TableName: DIGITARI_TRANSACTIONS,
+            Item: transaction,
+        })
+        .promise();
 
     try {
         await sendPushAndHandleReceipts(
