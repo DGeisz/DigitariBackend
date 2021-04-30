@@ -13,9 +13,16 @@ import { CommunityType } from "../../global_types/CommunityTypes";
 import {
     DIGITARI_COMMUNITIES,
     DIGITARI_PRICES,
+    DIGITARI_TRANSACTIONS,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import { ranking2Tier } from "../../global_types/TierTypes";
+import {
+    TransactionType,
+    TransactionTypesEnum,
+} from "../../global_types/TransactionTypes";
+import { sendPushAndHandleReceipts } from "../../push_notifications/push";
+import { PushNotificationType } from "../../global_types/PushTypes";
 
 const rdsClient = new RdsClient();
 
@@ -174,9 +181,46 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
         throw new Error("Source update error: " + e);
     }
 
+    const pushMessage = `${source.firstName} followed your community: "${target.name}"`;
+
+    /*
+     * Create transaction for this bad boi
+     */
+    const transaction: TransactionType = {
+        tid: target.uid,
+        time,
+        coin: followPrice,
+        message: pushMessage,
+        transactionType: TransactionTypesEnum.User,
+        data: source.id,
+        ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
+    };
+
+    /*
+     * Send off the transaction
+     */
+    await dynamoClient
+        .put({
+            TableName: DIGITARI_TRANSACTIONS,
+            Item: transaction,
+        })
+        .promise();
+
+    try {
+        await sendPushAndHandleReceipts(
+            target.uid,
+            PushNotificationType.UserFollowedCommunity,
+            sid,
+            "New community follower",
+            pushMessage,
+            dynamoClient
+        );
+    } catch (e) {}
+
     return {
         tid,
         sid,
+        tuid: target.uid,
         time,
         name: `${source.firstName} ${source.lastName}`,
         entityType: 1,

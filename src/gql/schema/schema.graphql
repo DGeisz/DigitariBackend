@@ -160,6 +160,14 @@ type PostPackage {
     presignedUrl: String
 }
 
+type DonationRecord {
+    uid: ID
+    pid: ID
+    tuid: ID
+    amount: Int
+    name: String
+}
+
 type Transaction {
     tid: ID
     time: String
@@ -215,6 +223,7 @@ type SearchEntity @aws_iam
 type FollowEntity @aws_iam @aws_cognito_user_pools {
     sid: ID
     tid: ID
+    tuid: ID
     time: String
     name: String
     imgUrl: String
@@ -275,6 +284,7 @@ type Mutation {
         anonymous: Boolean
     ): Convo
 
+
     markConvoViewed(cvid: ID!): Convo
     dismissConvo(cvid: ID!): Convo
     activateConvo(cvid: ID!): Convo
@@ -314,6 +324,12 @@ type Mutation {
 
         recipients: Int
     ): PostPackage
+
+    donateToPost(
+        pid: ID!,
+        amount: Int!,
+    ): DonationRecord
+
     updateBio(
         bio: String
     ): User
@@ -343,6 +359,11 @@ type Subscription {
         @aws_subscribe(mutations: ["blockConvo"])
     convoFinished(tid: ID!): ConvoUpdate
         @aws_subscribe(mutations: ["finishConvo"])
+
+    newFollower(tid: ID!): FollowEntity
+        @aws_subscribe(mutations: ["followUser"])
+    newCommunityFollower(tuid: ID!): FollowEntity
+        @aws_subscribe(mutations: ["followCommunity"])
 }
 
 schema {

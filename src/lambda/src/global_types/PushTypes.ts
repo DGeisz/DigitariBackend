@@ -7,6 +7,8 @@ export enum PushNotificationType {
     ConvoBlocked,
     ConvoFinished,
     UserFollowed,
+    UserFollowedCommunity,
+    CoinDonated,
 }
 
 export interface PushNotification extends ExpoPushMessage {

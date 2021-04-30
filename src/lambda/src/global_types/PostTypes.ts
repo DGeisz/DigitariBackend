@@ -48,3 +48,11 @@ export interface StrippedPostType {
     link?: string;
     convoReward: number;
 }
+
+export interface DonationRecord {
+    uid: string;
+    pid: string;
+    tuid: string;
+    amount: number;
+    name: string;
+}
