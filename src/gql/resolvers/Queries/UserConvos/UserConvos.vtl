@@ -1,5 +1,4 @@
 ## Request
-
 #if($ctx.args.uid == $ctx.identity.sub)
     #set($userCondition = " (tid=:UID OR suid=:UID) AND status != 0 ")
 #else
