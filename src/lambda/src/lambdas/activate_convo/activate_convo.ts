@@ -101,6 +101,22 @@ export async function handler(
         .promise();
 
     /*
+     * Increase the post's convo count
+     */
+    await dynamoClient
+        .update({
+            TableName: DIGITARI_POSTS,
+            Key: {
+                id: convo.pid,
+            },
+            UpdateExpression: `set convoCount = convoCount + :unit`,
+            ExpressionAttributeValues: {
+                ":unit": 1,
+            },
+        })
+        .promise();
+
+    /*
      * Update the in-memory convo object
      */
     convo.status = 1;
