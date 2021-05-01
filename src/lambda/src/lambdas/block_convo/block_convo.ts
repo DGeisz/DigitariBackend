@@ -2,9 +2,10 @@ import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import { DynamoDB } from "aws-sdk";
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { EventArgs } from "../dismiss_convo/lambda_types/event_args";
-import { ConvoType, ConvoUpdate } from "../../global_types/ConvoTypes";
+import { ConvoUpdate } from "../../global_types/ConvoTypes";
 import { getConvo } from "../dismiss_convo/rds_queries/queries";
 import {
+    DIGITARI_POSTS,
     DIGITARI_TRANSACTIONS,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
@@ -91,6 +92,30 @@ export async function handler(
             },
         })
         .promise();
+
+    /*
+     * If target message count is zero, and we're blocking
+     * this post, then we're effectively doing the exact same thing
+     * as if the user blocked the convo in the first place, and this
+     * convo won't be showing up in userConvos, postConvos, commConvos
+     * queries, so we want to decrease the posts convoCount to cancel
+     * the affect of activating the convo so the number of convos visible
+     * is equal to the convo count
+     */
+    if (convo.targetMsgCount === 0) {
+        await dynamoClient
+            .update({
+                TableName: DIGITARI_POSTS,
+                Key: {
+                    id: convo.pid,
+                },
+                UpdateExpression: `set convoCount = convoCount - :unit`,
+                ExpressionAttributeValues: {
+                    ":unit": 1,
+                },
+            })
+            .promise();
+    }
 
     const pushMessage =
         convo.tid === uid
