@@ -1,0 +1,18 @@
+## Req
+{
+    "version": "2017-02-28",
+    "operation": "GetItem",
+    "key": {
+        "uid": $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+        "pid": $util.dynamodb.toDynamoDBJson($ctx.args.pid),
+    }
+}
+
+## Res
+#if($util.isNullOrEmpty($ctx.result))
+    $util.qr($ctx.prev.result.put("coinDonated", false))
+#else
+    $util.qr($ctx.prev.result.put("coinDonated", true))
+#end
+
+$util.toJson($ctx.prev.result)

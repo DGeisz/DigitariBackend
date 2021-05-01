@@ -12,23 +12,23 @@ export enum TierEnum {
 }
 
 export function ranking2Tier(ranking: number): TierEnum {
-    if (ranking > 100) {
+    if (ranking >= 100) {
         return TierEnum.Angel;
-    } else if (ranking > 70) {
+    } else if (ranking >= 70) {
         return TierEnum.HeartEyes;
-    } else if (ranking > 50) {
+    } else if (ranking >= 50) {
         return TierEnum.Sunglasses;
-    } else if (ranking > 35) {
+    } else if (ranking >= 35) {
         return TierEnum.Hugging;
-    } else if (ranking > 20) {
+    } else if (ranking >= 20) {
         return TierEnum.Grinning;
-    } else if (ranking > 5) {
+    } else if (ranking >= 5) {
         return TierEnum.Smiling;
-    } else if (ranking > -5) {
+    } else if (ranking >= -5) {
         return TierEnum.SlightlySmiling;
-    } else if (ranking > -10) {
+    } else if (ranking >= -10) {
         return TierEnum.Frowning;
-    } else if (ranking > -20) {
+    } else if (ranking >= -20) {
         return TierEnum.Steam;
     } else {
         return TierEnum.AngryHorns;
