@@ -3,7 +3,7 @@
 #if($ctx.args.uid == $ctx.identity.sub)
     #set($userCondition = " (tid=:UID OR suid=:UID) AND status != 0 ")
 #else
-    #set($userCondition = " (tid=:UID OR sid=:UID) AND status != 0 AND status != -2 ")
+    #set($userCondition = " (tid=:UID OR sid=:UID) AND (status > 0 OR target_msg_count > 0) ")
 #end
 
 #if($util.isNullOrEmpty($ctx.args.lastTime))
