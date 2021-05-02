@@ -131,6 +131,23 @@ export async function handler(
     );
 
     /*
+     * Flag the target user's new transaction update and new convo update
+     */
+    await dynamoClient
+        .update({
+            TableName: DIGITARI_USERS,
+            Key: {
+                id: targetUser.id,
+            },
+            UpdateExpression: `set newTransactionUpdate = :b,
+                                    newConvoUpdate = :b`,
+            ExpressionAttributeValues: {
+                ":b": true,
+            },
+        })
+        .promise();
+
+    /*
      * Create the initial message
      */
     await dynamoClient

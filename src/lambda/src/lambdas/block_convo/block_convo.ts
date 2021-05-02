@@ -77,7 +77,7 @@ export async function handler(
         .promise();
 
     /*
-     * Update other user
+     * Update other user, flag new transaction update
      */
     await dynamoClient
         .update({
@@ -86,9 +86,11 @@ export async function handler(
                 id: uid === convo.tid ? convo.suid : convo.tid,
             },
             UpdateExpression: `set beenBlocked = beenBlocked + :unit,
-                                    ranking = ranking - :unit`,
+                                    ranking = ranking - :unit,
+                                    newTransactionUpdate = :b`,
             ExpressionAttributeValues: {
                 ":unit": 1,
+                ":b": true,
             },
         })
         .promise();

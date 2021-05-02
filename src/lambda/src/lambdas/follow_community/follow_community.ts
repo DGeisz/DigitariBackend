@@ -184,6 +184,22 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     const pushMessage = `${source.firstName} followed your community: "${target.name}"`;
 
     /*
+     * Flag the target's newTransactionUpdate as true
+     */
+    await dynamoClient
+        .update({
+            TableName: DIGITARI_USERS,
+            Key: {
+                id: target.uid,
+            },
+            UpdateExpression: `set newTransactionUpdate = :b`,
+            ExpressionAttributeValues: {
+                ":b": true,
+            },
+        })
+        .promise();
+
+    /*
      * Create transaction for this bad boi
      */
     const transaction: TransactionType = {

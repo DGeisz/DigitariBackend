@@ -161,9 +161,11 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                 Key: {
                     id: tid,
                 },
-                UpdateExpression: `set followers = followers + :unit`,
+                UpdateExpression: `set followers = followers + :unit,
+                                        newTransactionUpdate = :b`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
+                    ":b": true,
                 },
             })
             .promise();

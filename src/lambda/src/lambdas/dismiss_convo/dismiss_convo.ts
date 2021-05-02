@@ -10,7 +10,10 @@ import {
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
-import { DIGITARI_TRANSACTIONS } from "../../global_types/DynamoTableNames";
+import {
+    DIGITARI_TRANSACTIONS,
+    DIGITARI_USERS,
+} from "../../global_types/DynamoTableNames";
 
 const rdsClient = new RdsClient();
 
@@ -52,6 +55,22 @@ export async function handler(
 
     const time = Date.now();
     const pushMessage = `${convo.tname} dismissed your response: "${convo.lastMsg}"`;
+
+    /*
+     * Flag the source's new transaction update
+     */
+    await dynamoClient
+        .update({
+            TableName: DIGITARI_USERS,
+            Key: {
+                id: convo.suid,
+            },
+            UpdateExpression: `set newTransactionUpdate = :b`,
+            ExpressionAttributeValues: {
+                ":b": true,
+            },
+        })
+        .promise();
 
     /*
      * Create transaction for this bad boi

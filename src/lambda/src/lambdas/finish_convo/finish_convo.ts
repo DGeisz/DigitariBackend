@@ -86,10 +86,12 @@ export async function handler(
             },
             UpdateExpression: `set coin = coin + :reward,
                                  successfulConvos = successfulConvos + :unit,
-                                 ranking = ranking + :unit`,
+                                 ranking = ranking + :unit,
+                                 newTransactionUpdate = :b`,
             ExpressionAttributeValues: {
                 ":reward": convo.convoReward,
                 ":unit": 1,
+                ":b": true,
             },
         })
         .promise();

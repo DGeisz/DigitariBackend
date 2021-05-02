@@ -4,7 +4,10 @@ import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { EventArgs } from "./lambda_types/event_args";
 import { MESSAGE_MAX_LEN, MessageType } from "../../global_types/MessageTypes";
 import { getConvo } from "../dismiss_convo/rds_queries/queries";
-import { DIGITARI_MESSAGES } from "../../global_types/DynamoTableNames";
+import {
+    DIGITARI_MESSAGES,
+    DIGITARI_USERS,
+} from "../../global_types/DynamoTableNames";
 import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
 
@@ -110,6 +113,22 @@ export async function handler(
                 uid: messageUid,
                 tid: messageTid,
                 user: messageUser,
+            },
+        })
+        .promise();
+
+    /*
+     * Flag the user's new convo update
+     */
+    await dynamoClient
+        .update({
+            TableName: DIGITARI_USERS,
+            Key: {
+                id: uid === convo.tid ? convo.suid : convo.tid,
+            },
+            UpdateExpression: `set newConvoUpdate = :b`,
+            ExpressionAttributeValues: {
+                ":b": true,
             },
         })
         .promise();

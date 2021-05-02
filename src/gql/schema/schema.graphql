@@ -21,6 +21,9 @@ type User @aws_iam
 
     newUser: Boolean
 
+    newConvoUpdate: Boolean
+    newTransactionUpdate: Boolean
+
     level: Int
     bio: String
     ranking: Int
@@ -284,6 +287,8 @@ type Mutation {
         anonymous: Boolean
     ): Convo
 
+    viewedConvoUpdate: Boolean
+    viewedTransactionUpdate: Boolean
 
     markConvoViewed(cvid: ID!): Convo
     dismissConvo(cvid: ID!): Convo

@@ -1,0 +1,17 @@
+## Request
+{
+    "version" : "2017-02-28",
+    "operation" : "UpdateItem",
+    "key": {
+        "id" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+    },
+    "update" : {
+        "expression" : "set newConvoUpdate = :b",
+        "expressionValues" : {
+            ":b" : $util.dynamodb.toDynamoDBJson(false),
+        },
+    },
+}
+
+## Response
+$util.toJson(true)

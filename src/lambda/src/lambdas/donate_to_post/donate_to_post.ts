@@ -163,6 +163,22 @@ export async function handler(
         })
         .promise();
 
+    /*
+     * Flag the poster's new transaction update
+     */
+    await dynamoClient
+        .update({
+            TableName: DIGITARI_USERS,
+            Key: {
+                id: targetUser.id,
+            },
+            UpdateExpression: `set newTransactionUpdate = :b`,
+            ExpressionAttributeValues: {
+                ":b": true,
+            },
+        })
+        .promise();
+
     let pushMessage;
 
     if (amount === 1) {
