@@ -179,16 +179,6 @@ export async function handler(
         })
         .promise();
 
-    let pushMessage;
-
-    if (amount === 1) {
-        pushMessage = `${user.firstName} donated a digicoin to your post: "${post.content}"`;
-    } else {
-        pushMessage = `${user.firstName} donated ${toRep(
-            amount
-        )} digicoin to your post: "${post.content}"`;
-    }
-
     /*
      * Create transaction for this bad boi
      */
@@ -196,7 +186,7 @@ export async function handler(
         tid: targetUser.id,
         time,
         coin: amount,
-        message: pushMessage,
+        message: `${user.firstName} liked your post: "${post.content}"`,
         transactionType: TransactionTypesEnum.User,
         data: uid,
         ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
@@ -220,8 +210,8 @@ export async function handler(
             targetUser.id,
             PushNotificationType.CoinDonated,
             uid,
-            "Post donation",
-            pushMessage,
+            `${user.firstName} liked your post`,
+            "",
             dynamoClient
         );
     } catch (e) {}
