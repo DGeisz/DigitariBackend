@@ -20,6 +20,8 @@ import {
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
+import { UserType } from "../../global_types/UserTypes";
+import { challengeCheck } from "../../challenges/challenge_check";
 
 const rdsClient = new RdsClient();
 
@@ -154,6 +156,40 @@ export async function handler(
             pushMessage,
             dynamoClient
         );
+    } catch (e) {}
+
+    /*
+     * Fetch source and target,
+     * and handle challenge checks
+     */
+    try {
+        const source: UserType = (
+            await dynamoClient
+                .get({
+                    TableName: DIGITARI_USERS,
+                    Key: {
+                        id: uid,
+                    },
+                })
+                .promise()
+        ).Item as UserType;
+
+        await challengeCheck(source, dynamoClient);
+    } catch (e) {}
+
+    try {
+        const target: UserType = (
+            await dynamoClient
+                .get({
+                    TableName: DIGITARI_USERS,
+                    Key: {
+                        id: uid,
+                    },
+                })
+                .promise()
+        ).Item as UserType;
+
+        await challengeCheck(target, dynamoClient);
     } catch (e) {}
 
     /*

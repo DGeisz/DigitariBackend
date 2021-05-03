@@ -17,6 +17,7 @@ import {
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
+import { challengeCheck } from "../../challenges/challenge_check";
 
 const rdsClient = new RdsClient();
 
@@ -173,6 +174,9 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
         throw new Error("Target update error: " + e);
     }
 
+    target.followers += 1;
+    target.newTransactionUpdate = true;
+
     /*
      * Increment the source's following field, and decrease the
      * users coin
@@ -185,16 +189,21 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     id: sid,
                 },
                 UpdateExpression: `set following = following + :unit,
-                                       coin = coin + :price`,
+                                       coin = coin - :price,
+                                       coinSpent = coinSpent + :price`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
-                    ":price": -1 * followPrice,
+                    ":price": followPrice,
                 },
             })
             .promise();
     } catch (e) {
         throw new Error("Source update error: " + e);
     }
+
+    source.following += 1;
+    source.coin -= followPrice;
+    source.coinSpent += followPrice;
 
     const pushMessage = `${source.firstName} followed you!`;
 
@@ -230,6 +239,17 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             pushMessage,
             dynamoClient
         );
+    } catch (e) {}
+
+    /*
+     * Handle challenges
+     */
+    try {
+        await challengeCheck(source, dynamoClient);
+    } catch (e) {}
+
+    try {
+        await challengeCheck(target, dynamoClient);
     } catch (e) {}
 
     return {

@@ -12,3 +12,7 @@ export function toRep(val: number) {
     }
     return (val / 1000000000).toFixed(1) + "b";
 }
+
+export function toCommaRep(val: number) {
+    return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}

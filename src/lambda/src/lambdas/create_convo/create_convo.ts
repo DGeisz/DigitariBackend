@@ -21,6 +21,7 @@ import {
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
+import { challengeCheck } from "../../challenges/challenge_check";
 
 const rdsClient = new RdsClient();
 
@@ -131,6 +132,28 @@ export async function handler(
     );
 
     /*
+     * Decrease the callers coin
+     */
+    await dynamoClient
+        .update({
+            TableName: DIGITARI_USERS,
+            Key: {
+                id: uid,
+            },
+            UpdateExpression: `set coin = coin - :price,
+                                   coinSpent = coinSpent + :price,
+                                   spentOnConvos = spentOnConvos + :price`,
+            ExpressionAttributeValues: {
+                ":price": post.responseCost,
+            },
+        })
+        .promise();
+
+    user.coin -= post.responseCost;
+    user.coinSpent -= post.responseCost;
+    user.spentOnConvos -= post.responseCost;
+
+    /*
      * Flag the target user's new transaction update and new convo update
      */
     await dynamoClient
@@ -140,12 +163,18 @@ export async function handler(
                 id: targetUser.id,
             },
             UpdateExpression: `set newTransactionUpdate = :b,
-                                    newConvoUpdate = :b`,
+                                   newConvoUpdate = :b,
+                                   receivedFromConvos = receivedFromConvos + :price`,
             ExpressionAttributeValues: {
                 ":b": true,
+                ":price": post.responseCost,
             },
         })
         .promise();
+
+    targetUser.newTransactionUpdate = true;
+    targetUser.newConvoUpdate = true;
+    targetUser.receivedFromConvos += post.responseCost;
 
     /*
      * Create the initial message
@@ -215,6 +244,17 @@ export async function handler(
             `Your post received a new response: "${message}"`,
             dynamoClient
         );
+    } catch (e) {}
+
+    /*
+     * Handle challenge updates
+     */
+    try {
+        await challengeCheck(user, dynamoClient);
+    } catch (e) {}
+
+    try {
+        await challengeCheck(targetUser, dynamoClient);
     } catch (e) {}
 
     return {

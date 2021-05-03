@@ -16,6 +16,7 @@ import {
 import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
 import { toRep } from "../../utils/value_rep_utils";
+import { challengeCheck } from "../../challenges/challenge_check";
 
 const dynamoClient = new DynamoDB.DocumentClient({
     apiVersion: "2012-08-10",
@@ -156,12 +157,18 @@ export async function handler(
             Key: {
                 id: uid,
             },
-            UpdateExpression: `set coin = coin - :amount`,
+            UpdateExpression: `set coin = coin - :amount,
+                                   coinSpent = coinSpent + :amount,
+                                   spentOnConvos = spentOnConvos + :amount`,
             ExpressionAttributeValues: {
                 ":amount": amount,
             },
         })
         .promise();
+
+    user.coin -= amount;
+    user.coinSpent += amount;
+    user.spentOnConvos += amount;
 
     /*
      * Flag the poster's new transaction update
@@ -172,12 +179,17 @@ export async function handler(
             Key: {
                 id: targetUser.id,
             },
-            UpdateExpression: `set newTransactionUpdate = :b`,
+            UpdateExpression: `set newTransactionUpdate = :b,
+                                   receivedFromConvos = receivedFromConvos + :amount`,
             ExpressionAttributeValues: {
                 ":b": true,
+                ":amount": amount,
             },
         })
         .promise();
+
+    targetUser.newTransactionUpdate = true;
+    targetUser.receivedFromConvos += amount;
 
     /*
      * Create transaction for this bad boi
@@ -214,6 +226,17 @@ export async function handler(
             "",
             dynamoClient
         );
+    } catch (e) {}
+
+    /*
+     * Handle challenge updates
+     */
+    try {
+        await challengeCheck(user, dynamoClient);
+    } catch (e) {}
+
+    try {
+        await challengeCheck(targetUser, dynamoClient);
     } catch (e) {}
 
     return {

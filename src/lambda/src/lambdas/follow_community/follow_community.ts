@@ -23,6 +23,7 @@ import {
 } from "../../global_types/TransactionTypes";
 import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
+import { communityFollowersHandler } from "../../challenges/challenge_handlers/community_followers/community_follower";
 
 const rdsClient = new RdsClient();
 
@@ -162,6 +163,8 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
         throw new Error("Target update error: " + e);
     }
 
+    target.followers += 1;
+
     try {
         await dynamoClient
             .update({
@@ -170,7 +173,8 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     id: sid,
                 },
                 UpdateExpression: `set following = following + :unit,
-                                       coin = coin - :price`,
+                                       coin = coin - :price,
+                                       coinSpent = coin + :price`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
                     ":price": followPrice,
@@ -229,6 +233,17 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             sid,
             "New community follower",
             pushMessage,
+            dynamoClient
+        );
+    } catch (e) {}
+
+    /*
+     * Handle challenge updates
+     */
+    try {
+        await communityFollowersHandler(
+            target.uid,
+            target.followers,
             dynamoClient
         );
     } catch (e) {}

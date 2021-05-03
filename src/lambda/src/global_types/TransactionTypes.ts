@@ -1,6 +1,7 @@
 export enum TransactionTypesEnum {
     User,
     Convo,
+    Challenge,
 }
 
 export interface TransactionType {

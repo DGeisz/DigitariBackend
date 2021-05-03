@@ -32,56 +32,27 @@ type User @aws_iam
     coin: Int
 
     coinSpent: Int
-    csGoal: Int
-    nextCsIndex: Int
 
-    postCount: Int
-    pcGoal: Int
-    nextPcIndex: Int
+    # Fields for challenges
+    receivedFromConvos: Int
+    rfcChallengeIndex: Int
 
-    donated2Other: Int
-    d2OGoal: Int
-    nextD2OIndex: Int
-
-    donated2User: Int
-    d2UGoal: Int
-    nextD2UIndex: Int
-
-    responses2Other: Int
-    r2OGoal: Int
-    nextR2OIndex: Int
-
-    responses2User: Int
-    r2UGoal: Int
-    nextR2UIndex: Int
+    spentOnConvos: Int
+    socChallengeIndex: Int
 
     successfulConvos: Int
-    scGoal: Int
-    nextScIndex: Int
+    scChallengeIndex: Int
 
-    following: Int
-    fgGoal: Int
-    nextFgIndex: Int
+    postCount: Int
+    pcChallengeIndex: Int
 
     followers: Int
-    fsGoal: Int
-    nextFsIndex: Int
+    followersChallengeIndex: Int
 
-    followersViaLink: Int
-    fvlGoal: Int
-    nextFvlIndex: Int
+    following: Int
+    followingChallengeIndex: Int
 
-    comsCreated: Int
-    ccGoal: Int
-    nextCcIndex: Int
-
-    welcomeCount: Int
-    wcGoal: Int
-    nextWcIndex: Int
-
-    invite2ComViaLink: Int
-    i2cGoal: Int
-    nextI2CIndex: Int
+    communityFollowersChallengeIndex: Int
 }
 
 type Convo {

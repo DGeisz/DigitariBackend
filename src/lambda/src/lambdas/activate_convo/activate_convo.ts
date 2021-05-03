@@ -93,7 +93,8 @@ export async function handler(
             Key: {
                 id: uid,
             },
-            UpdateExpression: `set coin = coin - :price`,
+            UpdateExpression: `set coin = coin - :price,
+                               coinSpent = coinSpent + :price`,
             ExpressionAttributeValues: {
                 ":price": post.convoReward,
             },

@@ -9,6 +9,7 @@ export enum PushNotificationType {
     UserFollowed,
     UserFollowedCommunity,
     CoinDonated,
+    ChallengeComplete,
 }
 
 export interface PushNotification extends ExpoPushMessage {

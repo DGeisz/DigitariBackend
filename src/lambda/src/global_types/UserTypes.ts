@@ -20,58 +20,31 @@ export interface UserType {
 
     lastCollectionTime: number;
 
-    // Challenge fields
+    newConvoUpdate: boolean;
+    newTransactionUpdate: boolean;
+
     coinSpent: number;
-    csGoal: number;
-    nextCsIndex: number;
 
-    postCount: number;
-    pcGoal: number;
-    nextPcIndex: number;
+    // Challenge fields
+    receivedFromConvos: number;
+    rfcChallengeIndex: number;
 
-    donated2Other: number;
-    d2OGoal: number;
-    nextD2OIndex: number;
-
-    donated2User: number;
-    d2UGoal: number;
-    nextD2UIndex: number;
-
-    responses2Other: number;
-    r2OGoal: number;
-    nextR2OIndex: number;
-
-    responses2User: number;
-    r2UGoal: number;
-    nextR2UIndex: number;
+    spentOnConvos: number;
+    socChallengeIndex: number;
 
     successfulConvos: number;
-    scGoal: number;
-    nextScIndex: number;
+    scChallengeIndex: number;
 
-    following: number;
-    fgGoal: number;
-    nextFgIndex: number;
+    postCount: number;
+    pcChallengeIndex: number;
 
     followers: number;
-    fsGoal: number;
-    nextFsIndex: number;
+    followersChallengeIndex: number;
 
-    followersViaLink: number;
-    fvlGoal: number;
-    nextFvlIndex: number;
+    following: number;
+    followingChallengeIndex: number;
 
-    comsCreated: number;
-    ccGoal: number;
-    nextCcIndex: number;
-
-    welcomeCount: number;
-    wcGoal: number;
-    nextWcIndex: number;
-
-    invite2ComViaLink: number;
-    i2cGoal: number;
-    nextI2CIndex: number;
+    communityFollowersChallengeIndex: number;
 }
 
 export interface ExtendedUserType extends UserType {

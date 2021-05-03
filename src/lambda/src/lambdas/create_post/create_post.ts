@@ -25,6 +25,7 @@ import {
 import { millisInDay } from "../../utils/time_utils";
 import { tier2convoReward, tier2responseCost } from "../../utils/tier_utils";
 import { ranking2Tier } from "../../global_types/TierTypes";
+import { challengeCheck } from "../../challenges/challenge_check";
 
 const BUCKET_NAME = "digitari-imgs";
 const s3Client = new S3();
@@ -311,12 +312,26 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
             Key: {
                 id: uid,
             },
-            UpdateExpression: `set coin = coin - :price`,
+            UpdateExpression: `set coin = coin - :price,
+                                   coinSpent = coinSpent + :price,
+                                   postCount = postCount + :unit`,
             ExpressionAttributeValues: {
                 ":price": finalRecipients,
+                ":unit": 1,
             },
         })
         .promise();
+
+    user.coin -= finalRecipients;
+    user.coinSpent += finalRecipients;
+    user.postCount += 1;
+
+    /*
+     * Handle challenge updates
+     */
+    try {
+        await challengeCheck(user, dynamoClient);
+    } catch (e) {}
 
     return {
         post,
