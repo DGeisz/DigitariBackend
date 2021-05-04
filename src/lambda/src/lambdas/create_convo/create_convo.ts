@@ -240,7 +240,7 @@ export async function handler(
             targetUser.id,
             PushNotificationType.NewConvo,
             `${cvid}/${pid}`,
-            "New convo",
+            "",
             `Your post received a new response: "${message}"`,
             dynamoClient
         );

@@ -118,15 +118,17 @@ export async function postCountHandler(
         /*
          * Write all the transactions
          */
-        await dynamoClient.batchWrite({
-            RequestItems: {
-                DigitariTransactions: transactions.map((transaction) => ({
-                    PutRequest: {
-                        Item: transaction,
-                    },
-                })),
-            },
-        });
+        await dynamoClient
+            .batchWrite({
+                RequestItems: {
+                    DigitariTransactions: transactions.map((transaction) => ({
+                        PutRequest: {
+                            Item: transaction,
+                        },
+                    })),
+                },
+            })
+            .promise();
 
         /*
          * Modify user

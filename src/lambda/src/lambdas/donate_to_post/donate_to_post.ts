@@ -222,8 +222,8 @@ export async function handler(
             targetUser.id,
             PushNotificationType.CoinDonated,
             uid,
-            `${user.firstName} liked your post`,
             "",
+            `${user.firstName} liked your post!`,
             dynamoClient
         );
     } catch (e) {}

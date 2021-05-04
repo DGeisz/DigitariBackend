@@ -231,7 +231,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             target.uid,
             PushNotificationType.UserFollowedCommunity,
             sid,
-            "New community follower",
+            "",
             pushMessage,
             dynamoClient
         );

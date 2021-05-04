@@ -118,15 +118,17 @@ export async function followersHandler(
         /*
          * Write all the transactions
          */
-        await dynamoClient.batchWrite({
-            RequestItems: {
-                DigitariTransactions: transactions.map((transaction) => ({
-                    PutRequest: {
-                        Item: transaction,
-                    },
-                })),
-            },
-        });
+        await dynamoClient
+            .batchWrite({
+                RequestItems: {
+                    DigitariTransactions: transactions.map((transaction) => ({
+                        PutRequest: {
+                            Item: transaction,
+                        },
+                    })),
+                },
+            })
+            .promise();
 
         /*
          * Send push
@@ -136,8 +138,8 @@ export async function followersHandler(
                 user.id,
                 PushNotificationType.ChallengeComplete,
                 "",
-                "You completed a challenge!",
                 "",
+                "You completed a challenge!",
                 dynamoClient
             );
         } catch (e) {}

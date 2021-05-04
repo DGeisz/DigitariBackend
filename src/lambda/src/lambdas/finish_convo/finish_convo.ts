@@ -152,7 +152,7 @@ export async function handler(
             convo.tid === uid ? convo.suid : convo.tid,
             PushNotificationType.ConvoFinished,
             `${cvid}/${convo.pid}`,
-            "Convo finished",
+            "",
             pushMessage,
             dynamoClient
         );

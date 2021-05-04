@@ -29,6 +29,8 @@
         "newConvoUpdate" : $util.dynamodb.toDynamoDBJson(false),
         "newTransactionUpdate" : $util.dynamodb.toDynamoDBJson(false),
 
+        "challengeReceipts" : $util.dynamodb.toDynamoDBJson([]),
+
         "level" : $util.dynamodb.toDynamoDBJson(0),
         "bio" : $util.dynamodb.toDynamoDBJson(""),
         "ranking" : $util.dynamodb.toDynamoDBJson(0),
