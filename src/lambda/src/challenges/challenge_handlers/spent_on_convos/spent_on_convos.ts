@@ -8,6 +8,7 @@ import { sendPushAndHandleReceipts } from "../../../push_notifications/push";
 import { PushNotificationType } from "../../../global_types/PushTypes";
 import { DIGITARI_USERS } from "../../../global_types/DynamoTableNames";
 import { toCommaRep } from "../../../utils/value_rep_utils";
+import { slightlyRandomTime } from "../utils/time_utils";
 
 const SOC = "soc";
 
@@ -42,7 +43,7 @@ export async function spentOnConvosHandler(
     if (user.spentOnConvos >= bronzeCount && user.socChallengeIndex < 1) {
         transactions.push({
             tid: user.id,
-            time,
+            time: slightlyRandomTime(),
             coin: bronzeCoin,
             message: `You completed the challenge: "Spend ${toCommaRep(
                 bronzeCount
@@ -62,7 +63,7 @@ export async function spentOnConvosHandler(
     if (user.spentOnConvos >= silverCount && user.socChallengeIndex < 2) {
         transactions.push({
             tid: user.id,
-            time,
+            time: slightlyRandomTime(),
             coin: silverCoin,
             message: `You completed the challenge: "Spend ${toCommaRep(
                 silverCount
@@ -82,7 +83,7 @@ export async function spentOnConvosHandler(
     if (user.spentOnConvos >= goldCount && user.socChallengeIndex < 3) {
         transactions.push({
             tid: user.id,
-            time,
+            time: slightlyRandomTime(),
             coin: goldCoin,
             message: `You completed the challenge: "Spend ${toCommaRep(
                 goldCount
@@ -102,7 +103,7 @@ export async function spentOnConvosHandler(
     if (user.spentOnConvos >= supremeCount && user.socChallengeIndex < 4) {
         transactions.push({
             tid: user.id,
-            time,
+            time: slightlyRandomTime(),
             coin: supremeCoin,
             message: `You completed the challenge: "Spend ${toCommaRep(
                 supremeCount

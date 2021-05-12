@@ -8,6 +8,7 @@ import { sendPushAndHandleReceipts } from "../../../push_notifications/push";
 import { PushNotificationType } from "../../../global_types/PushTypes";
 import { DIGITARI_USERS } from "../../../global_types/DynamoTableNames";
 import { toCommaRep } from "../../../utils/value_rep_utils";
+import { slightlyRandomTime } from "../utils/time_utils";
 
 const PC = "pc";
 
@@ -42,7 +43,7 @@ export async function postCountHandler(
     if (user.postCount >= bronzeCount && user.pcChallengeIndex < 1) {
         transactions.push({
             tid: user.id,
-            time,
+            time: slightlyRandomTime(),
             coin: bronzeCoin,
             message: `You completed the challenge: "Create a post"`,
             transactionType: TransactionTypesEnum.Challenge,
@@ -60,7 +61,7 @@ export async function postCountHandler(
     if (user.postCount >= silverCount && user.pcChallengeIndex < 2) {
         transactions.push({
             tid: user.id,
-            time,
+            time: slightlyRandomTime(),
             coin: silverCoin,
             message: `You completed the challenge: "Create ${toCommaRep(
                 silverCount
@@ -80,7 +81,7 @@ export async function postCountHandler(
     if (user.postCount >= goldCount && user.pcChallengeIndex < 3) {
         transactions.push({
             tid: user.id,
-            time,
+            time: slightlyRandomTime(),
             coin: goldCoin,
             message: `You completed the challenge: "Create ${toCommaRep(
                 goldCount
@@ -100,7 +101,7 @@ export async function postCountHandler(
     if (user.postCount >= supremeCount && user.pcChallengeIndex < 4) {
         transactions.push({
             tid: user.id,
-            time,
+            time: slightlyRandomTime(),
             coin: supremeCoin,
             message: `You completed the challenge: "Create ${toCommaRep(
                 supremeCount

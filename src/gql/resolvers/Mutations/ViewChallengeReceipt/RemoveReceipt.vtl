@@ -1,0 +1,24 @@
+## Request
+#set($finalReceipts = [])
+#foreach($receipt in ${ctx.stash.get("user").get("challengeReceipts")})
+    #if($receipt != $ctx.args.receipt)
+        $util.qr($finalReceipts.add($receipt))
+    #end
+#end
+
+{
+    "version" : "2017-02-28",
+    "operation" : "UpdateItem",
+    "key": {
+        "id" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+    },
+    "update" : {
+        "expression" : "set challengeReceipts = :receipts",
+        "expressionValues" : {
+            ":receipts" : $util.dynamodb.toDynamoDBJson($finalReceipts),
+        },
+    },
+}
+
+## Response
+$util.toJson($ctx.result)

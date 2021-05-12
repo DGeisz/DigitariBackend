@@ -319,6 +319,8 @@ type Mutation {
     ): SearchEntity
 
     collectEarnings: EarningsReceipt
+
+    viewChallengeReceipt(receipt: String!): String
 }
 
 type Subscription {

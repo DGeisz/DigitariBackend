@@ -8,6 +8,7 @@ import { sendPushAndHandleReceipts } from "../../../push_notifications/push";
 import { PushNotificationType } from "../../../global_types/PushTypes";
 import { DIGITARI_USERS } from "../../../global_types/DynamoTableNames";
 import { toCommaRep } from "../../../utils/value_rep_utils";
+import { slightlyRandomTime } from "../utils/time_utils";
 
 const FLW = "flw";
 
@@ -42,7 +43,7 @@ export async function followingHandler(
     if (user.following >= bronzeCount && user.followingChallengeIndex < 1) {
         transactions.push({
             tid: user.id,
-            time,
+            time: slightlyRandomTime(),
             coin: bronzeCoin,
             message:
                 'You completed the challenge: "Follow one user or community"',
@@ -61,7 +62,7 @@ export async function followingHandler(
     if (user.following >= silverCount && user.followingChallengeIndex < 2) {
         transactions.push({
             tid: user.id,
-            time,
+            time: slightlyRandomTime(),
             coin: silverCoin,
             message: `You completed the challenge: "Follow ${toCommaRep(
                 silverCount
@@ -81,7 +82,7 @@ export async function followingHandler(
     if (user.following >= goldCount && user.followingChallengeIndex < 3) {
         transactions.push({
             tid: user.id,
-            time,
+            time: slightlyRandomTime(),
             coin: goldCoin,
             message: `You completed the challenge: "Follow ${toCommaRep(
                 goldCount
@@ -101,7 +102,7 @@ export async function followingHandler(
     if (user.following >= supremeCount && user.followingChallengeIndex < 4) {
         transactions.push({
             tid: user.id,
-            time,
+            time: slightlyRandomTime(),
             coin: supremeCoin,
             message: `You completed the challenge: "Follow ${toCommaRep(
                 supremeCount

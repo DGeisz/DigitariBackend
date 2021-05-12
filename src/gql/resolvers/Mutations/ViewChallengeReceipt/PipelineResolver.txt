@@ -1,0 +1,7 @@
+before
+
+StashUser
+
+RemoveReceipt
+
+after
