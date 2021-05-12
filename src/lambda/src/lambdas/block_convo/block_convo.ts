@@ -96,15 +96,14 @@ export async function handler(
         .promise();
 
     /*
-     * If target message count is zero, and we're blocking
-     * this post, then we're effectively doing the exact same thing
-     * as if the user blocked the convo in the first place, and this
-     * convo won't be showing up in userConvos, postConvos, commConvos
-     * queries, so we want to decrease the posts convoCount to cancel
-     * the affect of activating the convo so the number of convos visible
-     * is equal to the convo count
+     * If the convo is active (status = 1), and the
+     * targetMsgCount is zero, then the convo goes
+     * from a visible status to a non-visible status.
+     * Thus we need to decrease the convoCount so that
+     * it properly corresponds with the number of visible
+     * convos
      */
-    if (convo.targetMsgCount === 0) {
+    if (convo.targetMsgCount === 0 && convo.status === 1) {
         await dynamoClient
             .update({
                 TableName: DIGITARI_POSTS,

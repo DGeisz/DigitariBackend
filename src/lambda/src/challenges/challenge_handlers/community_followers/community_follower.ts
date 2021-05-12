@@ -61,7 +61,7 @@ export async function communityFollowersHandler(
             coin: bronzeCoin,
             message: `You completed the challenge: "Create a community with ${toCommaRep(
                 bronzeCount
-            )} follower"`,
+            )} followers"`,
             transactionType: TransactionTypesEnum.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds

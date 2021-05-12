@@ -31,6 +31,8 @@ type User @aws_iam
     beenBlocked: Int
     coin: Int
 
+    challengeReceipts: [String]
+
     coinSpent: Int
 
     # Fields for challenges
