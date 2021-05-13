@@ -165,6 +165,9 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
 
     target.followers += 1;
 
+    /*
+     * TODO: Add community followers field to user
+     */
     try {
         await dynamoClient
             .update({

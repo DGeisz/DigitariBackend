@@ -4,8 +4,6 @@ import {
     TransactionTypesEnum,
 } from "../../../global_types/TransactionTypes";
 import { DynamoDB } from "aws-sdk";
-import { sendPushAndHandleReceipts } from "../../../push_notifications/push";
-import { PushNotificationType } from "../../../global_types/PushTypes";
 import { DIGITARI_USERS } from "../../../global_types/DynamoTableNames";
 import { toCommaRep } from "../../../utils/value_rep_utils";
 import { slightlyRandomTime } from "../utils/time_utils";

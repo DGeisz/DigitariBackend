@@ -158,7 +158,7 @@ export async function handler(
             convo.tid === uid ? convo.suid : convo.tid,
             PushNotificationType.ConvoBlocked,
             `${cvid}/${convo.pid}`,
-            "Message blocked",
+            "",
             pushMessage,
             dynamoClient
         );

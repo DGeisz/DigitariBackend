@@ -104,7 +104,7 @@ export async function handler(
             convo.suid,
             PushNotificationType.ConvoDismissed,
             `${cvid}/${convo.pid}`,
-            "Convo dismissed",
+            "",
             pushMessage,
             dynamoClient
         );
