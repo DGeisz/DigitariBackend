@@ -81,8 +81,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             .promise()
     ).Item as UserType;
 
-    const sourceTier = ranking2Tier(source.ranking);
-
     if (source.coin < followPrice) {
         throw new Error("Source doesn't have sufficient coin to follow target");
     }
@@ -165,9 +163,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
 
     target.followers += 1;
 
-    /*
-     * TODO: Add community followers field to user
-     */
     try {
         await dynamoClient
             .update({
@@ -187,6 +182,26 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     } catch (e) {
         throw new Error("Source update error: " + e);
     }
+
+    /*
+     * Update the community creator's max community followers
+     * if this community has more followers than their current max
+     */
+    try {
+        await dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: target.uid,
+                },
+                ConditionExpression: "maxCommunityFollowers < :followers",
+                UpdateExpression: "set maxCommunityFollowers = :followers",
+                ExpressionAttributeValues: {
+                    ":followers": target.followers,
+                },
+            })
+            .promise();
+    } catch (e) {}
 
     const pushMessage = `${source.firstName} followed your community: "${target.name}"`;
 

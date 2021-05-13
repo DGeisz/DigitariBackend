@@ -55,6 +55,7 @@ type User @aws_iam
     followingChallengeIndex: Int
 
     communityFollowersChallengeIndex: Int
+    maxCommunityFollowers: Int
 }
 
 type Convo {
