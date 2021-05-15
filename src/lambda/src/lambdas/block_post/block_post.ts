@@ -88,7 +88,8 @@ export async function handler(
                 id: uid,
             },
             UpdateExpression: `set coin = coin - :amount,
-                                   blocked = blocked + :unit`,
+                                   blocked = blocked + :unit,
+                                   ranking = ranking - :unit`,
             ExpressionAttributeValues: {
                 ":amount": POST_BLOCK_COST,
                 ":unit": 1,
@@ -105,7 +106,8 @@ export async function handler(
             Key: {
                 id: post.uid,
             },
-            UpdateExpression: `set beenBlocked = beenBlocked + :unit`,
+            UpdateExpression: `set beenBlocked = beenBlocked + :unit,
+                                   ranking = ranking - :unit`,
             ExpressionAttributeValues: {
                 ":unit": 1,
             },
