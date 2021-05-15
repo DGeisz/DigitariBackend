@@ -1,5 +1,6 @@
 ./zipNpush.sh activate_convo activate_convo
 ./zipNpush.sh block_convo block_convo
+./zipNpush.sh block_post block_post
 ./zipNpush.sh collect_earnings collect_earnings
 ./zipNpush.sh create_community create_community
 ./zipNpush.sh create_convo create_convo

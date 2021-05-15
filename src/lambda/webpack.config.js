@@ -24,6 +24,7 @@ module.exports = {
             "./src/lambdas/transaction_accumulation/transaction_accumulation.ts",
         collect_earnings: "./src/lambdas/collect_earnings/collect_earnings.ts",
         donate_to_post: "./src/lambdas/donate_to_post/donate_to_post.ts",
+        block_post: "./src/lambdas/block_post/block_post.ts",
     },
     externals: ["aws-sdk"],
     mode: "production",
