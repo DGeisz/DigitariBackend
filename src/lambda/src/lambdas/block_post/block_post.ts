@@ -61,7 +61,7 @@ export async function handler(
             .promise()
     ).Item as PostType;
 
-    if (!!post) {
+    if (!post) {
         throw new Error("Post doesn't exist");
     }
 
