@@ -326,6 +326,7 @@ type Mutation {
     blockPost(pid: ID!): Post
 
     deletePost(pid: ID!): Boolean
+    reportPost(pid: ID!, report: String!): String
 }
 
 type Subscription {

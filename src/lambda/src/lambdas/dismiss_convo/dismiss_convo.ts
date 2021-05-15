@@ -99,16 +99,17 @@ export async function handler(
      * Change the convo's status in the in memory object, and then
      * return the object
      */
-    try {
-        await sendPushAndHandleReceipts(
-            convo.suid,
-            PushNotificationType.ConvoDismissed,
-            `${cvid}/${convo.pid}`,
-            "",
-            pushMessage,
-            dynamoClient
-        );
-    } catch (e) {}
+    // I'm removing push notifications for dismiss convo for now
+    // try {
+    //     await sendPushAndHandleReceipts(
+    //         convo.suid,
+    //         PushNotificationType.ConvoDismissed,
+    //         `${cvid}/${convo.pid}`,
+    //         "",
+    //         pushMessage,
+    //         dynamoClient
+    //     );
+    // } catch (e) {}
 
     convo.status = -2;
     convo.suid = "";
