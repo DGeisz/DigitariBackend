@@ -16,6 +16,7 @@ import {
     COMMUNITY_DESCRIPTION_MAX_LEN,
     COMMUNITY_NAME_MAX_LEN,
 } from "../../global_types/CommunityTypes";
+import { insertCommunityRow } from "./rds_queries/queries";
 
 const rdsClient = new RdsClient();
 
@@ -97,6 +98,9 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
      * Make the following entity
      */
     try {
+        /*
+         * Add the follower row
+         */
         await rdsClient.executeQuery<boolean>(
             insertFollowRow(
                 cid,
@@ -107,6 +111,11 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
                 1
             )
         );
+
+        /*
+         * Add the community to rds for reports
+         */
+        await rdsClient.executeQuery<boolean>(insertCommunityRow(cid));
     } catch (e) {
         throw new Error("RDS error: " + e);
     }

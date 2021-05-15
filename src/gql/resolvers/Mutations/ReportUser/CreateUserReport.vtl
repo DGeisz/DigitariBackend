@@ -1,0 +1,15 @@
+## Req
+{
+    "version" : "2017-02-28",
+    "operation" : "PutItem",
+    "key" : {
+        "tuid" : $util.dynamodb.toDynamoDBJson($ctx.args.uid),
+        "uid" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+    },
+    "attributeValues" : {
+        "report" : $util.dynamodb.toDynamoDBJson($ctx.args.report),
+    }
+}
+
+## Res
+{}

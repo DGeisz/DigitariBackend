@@ -1,0 +1,15 @@
+{
+    "operation": "GetItem",
+    "key": {
+        "cmid": $util.dynamodb.toDynamoDBJson($ctx.args.cmid),
+        "uid": $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+    }
+}
+
+## Res
+
+#if(!$util.isNullOrEmpty($ctx.result))
+    $util.qr($ctx.stash.put("newReport", false))
+#end
+
+{}

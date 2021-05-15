@@ -1,0 +1,17 @@
+## Req
+#if(!$ctx.stash.get("newReport"))
+    #return
+#end
+
+{
+    "version": "2018-05-29",
+    "statements": [
+        "UPDATE convos SET report_count = report_count + 1 WHERE id = :ID",
+    ],
+    "variableMap": {
+        ":ID": $util.toJson($ctx.args.cvid),
+    }
+}
+
+## Res
+{}

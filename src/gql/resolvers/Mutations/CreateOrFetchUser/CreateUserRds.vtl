@@ -1,0 +1,22 @@
+## Req
+#if($ctx.stash.get("exists"))
+    #return
+#end
+
+
+{
+    "version": "2018-05-29",
+    "statements": [
+        "INSERT INTO users VALUES (:UID, 0)",
+    ],
+    "variableMap": {
+        ":UID": $util.toJson($ctx.identity.sub),
+    }
+}
+
+##Res
+#if($ctx.error)
+    $utils.error($ctx.error.message, $ctx.error.type)
+#end
+
+{}

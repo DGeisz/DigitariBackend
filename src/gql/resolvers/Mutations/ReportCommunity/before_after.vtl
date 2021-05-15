@@ -1,0 +1,7 @@
+## Before
+$util.qr($ctx.stash.put("newReport", true))
+
+{}
+
+## After
+$util.toJson($ctx.args.report)
