@@ -17,7 +17,7 @@
                    sid, stier, sranking, sname, sanony, sviewed,
                    tid, ttier, tranking, tname, tviewed, target_msg_count as targetMsgCount,
                    response_cost as responseCost, convo_reward as convoReward
-                   FROM convos WHERE pid=:PID AND (status > 0 OR target_msg_count > 0)
+                   FROM convos WHERE pid=:PID AND status != -3 AND (status > 0 OR target_msg_count > 0)
                    $orderStatement LIMIT 50 $offsetStatement")
 
 {

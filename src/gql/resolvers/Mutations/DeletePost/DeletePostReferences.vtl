@@ -1,0 +1,16 @@
+## Req
+
+{
+    "version": "2018-05-29",
+    "statements": [
+        "UPDATE convos SET status = -3 WHERE pid=:PID",
+        "DELETE FROM posts WHERE id=:PID",
+    ],
+    "variableMap": {
+        ":PID": $util.toJson($ctx.args.pid)
+    }
+}
+
+## Res
+
+{}

@@ -17,7 +17,7 @@
                    sid, stier, sranking, sname, sanony, sviewed,
                    tid, ttier, tranking, tname, tviewed, target_msg_count as targetMsgCount,
                    response_cost as responseCost, convo_reward as convoReward
-                   FROM convos WHERE $userCondition
+                   FROM convos WHERE status != -3 AND $userCondition
                    $timeStatement ORDER BY last_time DESC LIMIT 50")
 
 {

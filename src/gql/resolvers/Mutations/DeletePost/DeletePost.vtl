@@ -1,0 +1,12 @@
+## Req
+
+{
+    "operation": "DeleteItem",
+    "key": {
+        "id": $util.dynamodb.toDynamoDBJson($ctx.args.pid),
+    }
+}
+
+## Res
+
+{}

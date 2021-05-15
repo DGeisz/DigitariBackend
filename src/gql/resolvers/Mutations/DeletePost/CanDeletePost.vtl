@@ -1,0 +1,16 @@
+## Req
+
+{
+    "operation": "GetItem",
+    "key": {
+        "id": $util.dynamodb.toDynamoDBJson($ctx.args.pid),
+    }
+}
+
+## Res
+
+#if($ctx.result.uid != $ctx.identity.sub)
+    $util.error("Can't delete someone else's post")
+#end
+
+{}

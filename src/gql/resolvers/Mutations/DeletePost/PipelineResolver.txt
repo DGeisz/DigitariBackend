@@ -1,0 +1,9 @@
+before
+
+CanDeletePost
+
+DeletePost
+
+DeletePostReferences
+
+after
