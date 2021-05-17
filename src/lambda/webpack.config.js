@@ -26,6 +26,7 @@ module.exports = {
         donate_to_post: "./src/lambdas/donate_to_post/donate_to_post.ts",
         block_post: "./src/lambdas/block_post/block_post.ts",
         delete_user: "./src/lambdas/delete_user/delete_user.ts",
+        delete_post: "./src/lambdas/delete_post/delete_post.ts",
     },
     externals: ["aws-sdk"],
     mode: "production",

@@ -15,7 +15,6 @@ import {
 } from "../../global_types/TransactionTypes";
 import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
-import { toRep } from "../../utils/value_rep_utils";
 import { challengeCheck } from "../../challenges/challenge_check";
 
 const dynamoClient = new DynamoDB.DocumentClient({
@@ -83,7 +82,7 @@ export async function handler(
     /*
      * Now from the post, get the user that posted
      */
-    const targetUser: ExtendedUserType = (
+    const targetUser = (
         await dynamoClient
             .get({
                 TableName: DIGITARI_USERS,
@@ -92,7 +91,7 @@ export async function handler(
                 },
             })
             .promise()
-    ).Item as ExtendedUserType;
+    ).Item as ExtendedUserType | undefined;
 
     /*
      * Ok, now then we need to check whether
@@ -132,19 +131,21 @@ export async function handler(
         })
         .promise();
 
+    const donationRecord: DonationRecord = {
+        uid,
+        pid,
+        tuid: !!targetUser ? targetUser.id : "",
+        amount: amount,
+        name: !!targetUser ? targetUser.firstName : "",
+    };
+
     /*
      * Ok, now create a donation record...
      */
     await dynamoClient
         .put({
             TableName: DIGITARI_DONATION_RECORDS,
-            Item: {
-                uid,
-                pid,
-                tuid: targetUser.id,
-                amount: amount,
-                name: targetUser.firstName,
-            },
+            Item: donationRecord,
         })
         .promise();
 
@@ -171,62 +172,72 @@ export async function handler(
     user.spentOnConvos += amount;
 
     /*
-     * Flag the poster's new transaction update
+     * If the target user exists, then create a transaction, and update
+     * the target user
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: targetUser.id,
-            },
-            UpdateExpression: `set newTransactionUpdate = :b,
+    if (!!targetUser) {
+        /*
+         * Flag the poster's new transaction update
+         */
+        await dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: targetUser.id,
+                },
+                UpdateExpression: `set newTransactionUpdate = :b,
                                    receivedFromConvos = receivedFromConvos + :amount`,
-            ExpressionAttributeValues: {
-                ":b": true,
-                ":amount": amount,
-            },
-        })
-        .promise();
+                ExpressionAttributeValues: {
+                    ":b": true,
+                    ":amount": amount,
+                },
+            })
+            .promise();
 
-    targetUser.newTransactionUpdate = true;
-    targetUser.receivedFromConvos += amount;
+        targetUser.newTransactionUpdate = true;
+        targetUser.receivedFromConvos += amount;
 
-    /*
-     * Create transaction for this bad boi
-     */
-    const transaction: TransactionType = {
-        tid: targetUser.id,
-        time,
-        coin: amount,
-        message: `${user.firstName} liked your post: "${post.content}"`,
-        transactionType: TransactionTypesEnum.User,
-        data: uid,
-        ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
-    };
+        /*
+         * Create transaction for this bad boi
+         */
+        const transaction: TransactionType = {
+            tid: targetUser.id,
+            time,
+            coin: amount,
+            message: `${user.firstName} liked your post: "${post.content}"`,
+            transactionType: TransactionTypesEnum.User,
+            data: uid,
+            ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
+        };
 
-    /*
-     * Send off the transaction
-     */
-    await dynamoClient
-        .put({
-            TableName: DIGITARI_TRANSACTIONS,
-            Item: transaction,
-        })
-        .promise();
+        /*
+         * Send off the transaction
+         */
+        await dynamoClient
+            .put({
+                TableName: DIGITARI_TRANSACTIONS,
+                Item: transaction,
+            })
+            .promise();
 
-    /*
-     * Send push notifications to the target
-     */
-    try {
-        await sendPushAndHandleReceipts(
-            targetUser.id,
-            PushNotificationType.CoinDonated,
-            uid,
-            "",
-            `${user.firstName} liked your post!`,
-            dynamoClient
-        );
-    } catch (e) {}
+        /*
+         * Send push notifications to the target
+         */
+        try {
+            await sendPushAndHandleReceipts(
+                targetUser.id,
+                PushNotificationType.CoinDonated,
+                uid,
+                "",
+                `${user.firstName} liked your post!`,
+                dynamoClient
+            );
+        } catch (e) {}
+
+        try {
+            await challengeCheck(targetUser, dynamoClient);
+        } catch (e) {}
+    }
 
     /*
      * Handle challenge updates
@@ -235,15 +246,5 @@ export async function handler(
         await challengeCheck(user, dynamoClient);
     } catch (e) {}
 
-    try {
-        await challengeCheck(targetUser, dynamoClient);
-    } catch (e) {}
-
-    return {
-        uid,
-        pid,
-        tuid: targetUser.id,
-        amount: amount,
-        name: targetUser.firstName,
-    };
+    return donationRecord;
 }

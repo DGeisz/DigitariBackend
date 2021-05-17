@@ -7,3 +7,5 @@ DeletePost
 DeletePostReferences
 
 after
+
+-- NOTE -- MOVED TO A LAMBDA RESOLVER TO DELETE IMAGES
