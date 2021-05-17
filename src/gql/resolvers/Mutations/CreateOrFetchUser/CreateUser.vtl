@@ -21,7 +21,7 @@
         "userName" : $util.dynamodb.toDynamoDBJson($ctx.args.firstName),
         "email" : $util.dynamodb.toDynamoDBJson($ctx.args.email),
         "timeCreated" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),
-        "lastCollectionTime" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),
+        "lastCollectionTime" : $util.dynamodb.toDynamoDBJson(0),
 
         ##  Fields for post distribution
         "lastCheckIn" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),

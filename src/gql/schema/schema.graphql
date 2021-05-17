@@ -254,6 +254,7 @@ type Mutation {
     ): User
 
     registerPush(token: String!): Boolean
+    deletePush(token: String!): Boolean
 
     createConvo(
         pid: ID
@@ -332,6 +333,8 @@ type Mutation {
 
     reportUser(uid: ID!, report: String!): String
     reportCommunity(cmid: ID!, report: String!): String
+
+    deleteUser: Boolean
 }
 
 type Subscription {
@@ -358,7 +361,6 @@ type Subscription {
 
     donationReceived(tuid: ID!): DonationRecord
         @aws_subscribe(mutations: ["donateToPost"])
-
 }
 
 schema {

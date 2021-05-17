@@ -5,6 +5,7 @@ export interface UserType {
     firstName: string;
     lastName: string;
     userName: string;
+    email: string;
 
     newUser?: boolean;
 

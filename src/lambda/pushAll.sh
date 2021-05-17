@@ -15,3 +15,4 @@
 ./zipNpush.sh unfollow_user unfollow_user
 ./zipNpush.sh unfollow_community unfollow_community
 ./zipNpush.sh update_profile_pic update_profile_pic
+./zipNpush.sh delete_user delete_user
