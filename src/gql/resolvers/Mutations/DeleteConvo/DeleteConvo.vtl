@@ -1,0 +1,14 @@
+## Req
+{
+    "version": "2018-05-29",
+    "statements": [
+        "UPDATE convos SET status = -3 WHERE id = :CVID AND (tid = :UID OR suid = :UID)",
+    ],
+    "variableMap": {
+        ":CVID": $util.toJson($ctx.args.cvid),
+        ":UID" : $util.toJson($ctx.identity.sub)
+    }
+}
+
+## Response
+$util.toJson(true)
