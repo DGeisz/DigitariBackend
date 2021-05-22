@@ -6,6 +6,7 @@ export interface UserType {
     lastName: string;
     userName: string;
     email: string;
+    remainingInvites: number;
 
     newUser?: boolean;
 

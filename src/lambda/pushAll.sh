@@ -17,3 +17,4 @@
 ./zipNpush.sh update_profile_pic update_profile_pic
 ./zipNpush.sh delete_user delete_user
 ./zipNpush.sh delete_post delete_post
+./zipNpush.sh gen_invite_code gen_invite_code

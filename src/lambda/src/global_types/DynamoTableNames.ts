@@ -8,3 +8,4 @@ export const DIGITARI_PUSH_TICKETS = "DigitariPushTickets";
 export const DIGITARI_TRANSACTIONS = "DigitariTransactions";
 export const DIGITARI_DONATION_RECORDS = "DigitariDonationRecords";
 export const DIGITARI_FEED_RECORDS = "DigitariFeedRecords";
+export const DIGITARI_INVITES = "DigitariInvites";
