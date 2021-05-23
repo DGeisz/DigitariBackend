@@ -18,3 +18,4 @@
 ./zipNpush.sh delete_user delete_user
 ./zipNpush.sh delete_post delete_post
 ./zipNpush.sh gen_invite_code gen_invite_code
+./zipNpush.sh create_user create_user

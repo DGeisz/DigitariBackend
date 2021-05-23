@@ -1,0 +1,9 @@
+before
+
+FetchUser -- From create or fetch user
+
+RdsCheckIn -- From create or fetch user
+
+UserCheckIn -- From create or fetch user
+
+after

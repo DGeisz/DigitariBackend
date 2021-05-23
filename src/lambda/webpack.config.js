@@ -28,6 +28,7 @@ module.exports = {
         delete_user: "./src/lambdas/delete_user/delete_user.ts",
         delete_post: "./src/lambdas/delete_post/delete_post.ts",
         gen_invite_code: "./src/lambdas/gen_invite_code/gen_invite_code.ts",
+        create_user: "./src/lambdas/create_user/create_user.ts",
     },
     externals: ["aws-sdk"],
     mode: "production",

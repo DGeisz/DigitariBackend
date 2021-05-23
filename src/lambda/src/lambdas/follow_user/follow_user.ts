@@ -26,8 +26,7 @@ const dynamoClient = new DynamoDB.DocumentClient({
 });
 
 const esClient = new Client({
-    host:
-        "https://search-digitari-actxnhry5uq2ipu3r6skwxcvfe.us-east-2.es.amazonaws.com",
+    host: process.env.ES_DOMAIN,
     connectionClass: require("http-aws-es"),
 });
 

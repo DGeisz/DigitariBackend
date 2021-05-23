@@ -1,0 +1,16 @@
+## Req
+
+{
+    "version": "2017-02-28",
+    "operation": "GetItem",
+    "key": {
+        "code": $util.dynamodb.toDynamoDBJson($ctx.args.code),
+    }
+}
+
+## Res
+#if($util.isNullOrEmpty($ctx.result))
+    $util.toJson(false)
+#else
+    $util.toJson(true)
+#end

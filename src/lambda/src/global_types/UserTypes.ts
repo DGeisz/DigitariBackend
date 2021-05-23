@@ -4,16 +4,11 @@ export interface UserType {
     id: string;
     firstName: string;
     lastName: string;
-    userName: string;
     email: string;
     remainingInvites: number;
 
-    newUser?: boolean;
-
     amFollowing: boolean;
-    followPrice: number;
 
-    level: number;
     bio: string;
     ranking: number;
     blocked: number;
@@ -54,4 +49,6 @@ export interface UserType {
 
 export interface ExtendedUserType extends UserType {
     hid: string;
+    timeCreated?: number;
+    lastCheckIn?: number;
 }

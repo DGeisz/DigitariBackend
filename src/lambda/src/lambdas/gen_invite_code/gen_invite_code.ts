@@ -2,7 +2,6 @@ import { DynamoDB } from "aws-sdk";
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { UserType } from "../../global_types/UserTypes";
 import {
-    DIGITARI_COMMUNITIES,
     DIGITARI_INVITES,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";

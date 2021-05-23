@@ -8,7 +8,6 @@ type User @aws_iam
     id: ID
     firstName: String
     lastName: String
-    userName: String
     email: String
     timeCreated: String
     imgUrl: String
@@ -18,14 +17,10 @@ type User @aws_iam
 
     # Indicates whether the person who fetched this user is following this user.
     amFollowing: Boolean
-    followPrice: Int
-
-    newUser: Boolean
 
     newConvoUpdate: Boolean
     newTransactionUpdate: Boolean
 
-    level: Int
     bio: String
     ranking: Int
     blocked: Int
@@ -219,8 +214,7 @@ type ImgUrl {
     presignedUrl: String
 }
 
-type Query @aws_iam
-@aws_cognito_user_pools {
+type Query @aws_cognito_user_pools @aws_iam {
     feed(lastTime: String): [Post]
     user(uid: ID!): User
     hid: String
@@ -245,14 +239,25 @@ type Query @aws_iam
     postResponseCheck(pid: ID): Boolean
     transactionAccumulation: Int
     transactions(lastTime: String): [Transaction]
+
+    validInviteCode(code: String): Boolean
 }
 
 type Mutation {
+    createUser(
+        firstName: String!
+        lastName: String!
+        email: String!
+        code: String!
+    ): User
+
     createOrFetchUser(
         firstName: String!
         lastName: String!
         email: String!
     ): User
+
+    checkInUser: User
 
     registerPush(token: String!): Boolean
     deletePush(token: String!): Boolean

@@ -1,6 +1,8 @@
+## Before
 $util.qr($ctx.stash.put("exists", true))
 $util.qr($ctx.stash.put("time", $util.time.nowEpochMilliSeconds()))
 
-$util.error("This mutation is deprecated")
-
 {}
+
+## After
+$util.toJson($ctx.stash.get("user"))

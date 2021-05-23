@@ -1,5 +1,5 @@
 ## Request
-#if($ctx.stash.get("time") - $ctx.stash.get("user").get("lastCheckin") < 86400000)
+#if(!$ctx.stash.get("exists") || $ctx.stash.get("time") - $ctx.stash.get("user").get("lastCheckin") < 86400000)
     #return
 #end
 

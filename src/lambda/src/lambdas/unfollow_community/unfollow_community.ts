@@ -3,7 +3,6 @@ import { DynamoDB } from "aws-sdk";
 import { Client } from "elasticsearch";
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { FollowEventArgs } from "../../global_types/follow_event_args";
-import { FollowEntityActivity } from "../../global_types/FollowEntityType";
 import { getFollowEntity } from "../unfollow_user/rds_queries/queries";
 import {
     DIGITARI_COMMUNITIES,
@@ -17,8 +16,7 @@ const dynamoClient = new DynamoDB.DocumentClient({
 });
 
 const esClient = new Client({
-    host:
-        "https://search-digitari-actxnhry5uq2ipu3r6skwxcvfe.us-east-2.es.amazonaws.com",
+    host: process.env.ES_DOMAIN,
     connectionClass: require("http-aws-es"),
 });
 

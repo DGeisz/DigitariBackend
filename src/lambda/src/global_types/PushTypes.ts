@@ -11,6 +11,7 @@ export enum PushNotificationType {
     CoinDonated,
     ChallengeComplete,
     PostBlocked,
+    UserJoined,
 }
 
 export interface PushNotification extends ExpoPushMessage {
