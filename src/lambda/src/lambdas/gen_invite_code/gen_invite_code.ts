@@ -46,7 +46,7 @@ export async function handler(
      * the code we generate doesn't already exist
      */
     while (true) {
-        code = randomString(6, "0123456789abcdefghijklmnopqrstuvwxyz");
+        code = randomString(7, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 
         /*
          * Attempt to fetch code from invites table
@@ -81,6 +81,7 @@ export async function handler(
             Item: {
                 code,
                 uid,
+                ttl: Math.round(Date.now() / 1000) + 14 * 24 * 60 * 60,
             },
         })
         .promise();
