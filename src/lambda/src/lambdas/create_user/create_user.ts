@@ -146,8 +146,8 @@ export async function handler(
     await rdsClient.executeSql(`INSERT INTO users VALUES ('${uid}', 0)`);
 
     /*
-    * Now let's index this user in elastic search
-    */
+     * Now let's index this user in elastic search
+     */
     await esClient.index({
         index: "search",
         type: "search_entity",
@@ -155,8 +155,8 @@ export async function handler(
         body: {
             id: uid,
             name: `${firstName} ${lastName}`,
-            followers: 1,
-            entityType: 1,
+            followers: 0,
+            entityType: 0,
         },
     });
 
@@ -169,7 +169,7 @@ export async function handler(
         coin: 100,
         message: `${firstName} joined Digitari!`,
         transactionType: TransactionTypesEnum.User,
-        data: invite.uid,
+        data: uid,
         ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
     };
 
@@ -200,7 +200,7 @@ export async function handler(
         await sendPushAndHandleReceipts(
             invite.uid,
             PushNotificationType.UserJoined,
-            invite.uid,
+            uid,
             "",
             `${firstName} joined Digitari! (+100 Digicoin)`,
             dynamoClient
