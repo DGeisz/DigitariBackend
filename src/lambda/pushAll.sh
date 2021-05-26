@@ -20,6 +20,7 @@ if [ "$(uname)" == "Darwin" ]; then
     bash ./zipNpush.sh delete_post delete_post
     bash ./zipNpush.sh gen_invite_code gen_invite_code
     bash ./zipNpush.sh create_user create_user
+    bash ./zipNpush.sh process_iap process_iap
 else
     ./zipNpush.sh activate_convo activate_convo
     ./zipNpush.sh block_convo block_convo
@@ -42,4 +43,5 @@ else
     ./zipNpush.sh delete_post delete_post
     ./zipNpush.sh gen_invite_code gen_invite_code
     ./zipNpush.sh create_user create_user
+    ./zipNpush.sh process_iap process_iap
 fi
