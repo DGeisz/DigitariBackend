@@ -25,6 +25,14 @@ IAP.config({
     },
 });
 
+/* 
+Lambda resolver that processes iap purchase receipts,
+and if the receipts are acceptable, fulfills the transactions
+by giving the proper amount of coin to each account.
+
+The resolver returns `true` if the transactions was successfully fulfilled,
+and `false` if something went wrong
+ */
 export async function handler(
     event: AppSyncResolverEvent<EventArgs>
 ): Promise<boolean> {
