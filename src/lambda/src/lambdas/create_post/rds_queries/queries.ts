@@ -12,7 +12,7 @@ export function getActiveFollowers(
 ): QueryPackage<string> {
     return {
         sql: `SELECT sid FROM follows
-              WHERE tid='${tid}' AND time > ${activeTime}
+              WHERE tid='${tid}' AND time >= ${activeTime}
               ORDER BY RAND()
               LIMIT ${numFollowers}`,
         resultParser: followersParser,

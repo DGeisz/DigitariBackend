@@ -43,11 +43,15 @@ export async function handler(
     /* Init the verification module */
     await IAP.setup();
 
+    let receiptId: string;
+
     /* First things first, let's verify the receipt, cause that's free */
     try {
         /* We use a slightly different receipt for ios vs android */
         if (ios) {
-            await IAP.validate(receipt);
+            const data: any = await IAP.validate(receipt);
+
+            receiptId = data.receipt.in_app[0].transaction_id;
         } else {
             await IAP.validate({
                 packageName: "com.playdigitari.digitari",
@@ -55,6 +59,8 @@ export async function handler(
                 purchaseToken: receipt,
                 subscription: false,
             });
+
+            receiptId = receipt;
         }
     } catch (e) {
         /* 
@@ -74,7 +80,7 @@ export async function handler(
             .get({
                 TableName: DIGITARI_RECEIPTS,
                 Key: {
-                    receipt,
+                    receipt: receiptId,
                 },
             })
             .promise()
@@ -114,7 +120,7 @@ export async function handler(
         .put({
             TableName: DIGITARI_RECEIPTS,
             Item: {
-                receipt,
+                receipt: receiptId,
                 uid,
             },
         })

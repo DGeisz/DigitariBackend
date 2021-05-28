@@ -30,6 +30,7 @@ import { challengeCheck } from "../../challenges/challenge_check";
 const BUCKET_NAME = "digitari-imgs";
 const s3Client = new S3();
 const MAX_BATCH_WRITE_ITEMS = 20;
+const COST_PER_RECIPIENT = 10;
 
 const rdsClient = new RdsClient();
 
@@ -164,8 +165,8 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
      * Do a coin check to be sure the user has enough coin to
      * go through with this
      */
-    if (finalRecipients > user.coin) {
-        throw new Error("Trying to send post to more users than OP has coin");
+    if (COST_PER_RECIPIENT * finalRecipients > user.coin) {
+        throw new Error("User doesn't have enough coin!");
     }
 
     const userTier = ranking2Tier(user.ranking);
@@ -260,7 +261,7 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
             )
         );
 
-        targetIds = targetIds.concat(inactiveTargets);
+        targetIds.push(...inactiveTargets);
     }
 
     /*
@@ -316,14 +317,14 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
                                    coinSpent = coinSpent + :price,
                                    postCount = postCount + :unit`,
             ExpressionAttributeValues: {
-                ":price": finalRecipients,
+                ":price": COST_PER_RECIPIENT * finalRecipients,
                 ":unit": 1,
             },
         })
         .promise();
 
-    user.coin -= finalRecipients;
-    user.coinSpent += finalRecipients;
+    user.coin -= COST_PER_RECIPIENT * finalRecipients;
+    user.coinSpent += COST_PER_RECIPIENT * finalRecipients;
     user.postCount += 1;
 
     /*
