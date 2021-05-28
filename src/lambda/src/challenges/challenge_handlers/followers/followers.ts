@@ -17,10 +17,10 @@ const silverCount = 10;
 const goldCount = 100;
 const supremeCount = 1000;
 
-const bronzeCoin = 100;
+const bronzeCoin = 500;
 const silverCoin = 1000;
 const goldCoin = 10000;
-const supremeCoin = 100000;
+const supremeCoin = 20000;
 
 export async function followersHandler(
     user: UserType,

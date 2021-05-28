@@ -18,9 +18,9 @@ const goldCount = 1000;
 const supremeCount = 10000;
 
 const bronzeCoin = 500;
-const silverCoin = 5000;
-const goldCoin = 50000;
-const supremeCoin = 500000;
+const silverCoin = 1000;
+const goldCoin = 5000;
+const supremeCoin = 10000;
 
 export async function receivedFromConvosHandler(
     user: UserType,
