@@ -1,7 +1,7 @@
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { DynamoDB } from "aws-sdk";
 import { DigitariPrice } from "../../global_types/DigitariPricesTypes";
-import { UserType } from "../../global_types/UserTypes";
+import { FOLLOW_USER_PRICE, UserType } from "../../global_types/UserTypes";
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import { followChecker, insertFollowRow } from "./rds_queries/queries";
 import { Client } from "elasticsearch";
@@ -47,20 +47,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     }
 
     /*
-     * Get the price of following another user
-     */
-    const followPrice = ((
-        await dynamoClient
-            .get({
-                TableName: DIGITARI_PRICES,
-                Key: {
-                    id: "Follow",
-                },
-            })
-            .promise()
-    ).Item as DigitariPrice).price;
-
-    /*
      * Get the source user
      */
     const source: UserType = (
@@ -74,7 +60,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             .promise()
     ).Item as UserType;
 
-    if (source.coin < followPrice) {
+    if (source.coin < FOLLOW_USER_PRICE) {
         throw new Error("Source doesn't have sufficient coin to follow target");
     }
 
@@ -192,7 +178,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                                        coinSpent = coinSpent + :price`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
-                    ":price": followPrice,
+                    ":price": FOLLOW_USER_PRICE,
                 },
             })
             .promise();
@@ -201,8 +187,8 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     }
 
     source.following += 1;
-    source.coin -= followPrice;
-    source.coinSpent += followPrice;
+    source.coin -= FOLLOW_USER_PRICE;
+    source.coinSpent += FOLLOW_USER_PRICE;
 
     const pushMessage = `${source.firstName} followed you!`;
 
@@ -212,7 +198,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     const transaction: TransactionType = {
         tid,
         time,
-        coin: followPrice,
+        coin: FOLLOW_USER_PRICE,
         message: pushMessage,
         transactionType: TransactionTypesEnum.User,
         data: source.id,

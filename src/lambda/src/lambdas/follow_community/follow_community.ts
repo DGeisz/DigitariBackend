@@ -9,7 +9,10 @@ import {
 } from "../follow_user/rds_queries/queries";
 import { DigitariPrice } from "../../global_types/DigitariPricesTypes";
 import { UserType } from "../../global_types/UserTypes";
-import { CommunityType } from "../../global_types/CommunityTypes";
+import {
+    CommunityType,
+    FOLLOW_COMMUNITY_PRICE,
+} from "../../global_types/CommunityTypes";
 import {
     DIGITARI_COMMUNITIES,
     DIGITARI_PRICES,
@@ -52,20 +55,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     }
 
     /*
-     * Get the price of following another user
-     */
-    const followPrice = ((
-        await dynamoClient
-            .get({
-                TableName: DIGITARI_PRICES,
-                Key: {
-                    id: "Follow",
-                },
-            })
-            .promise()
-    ).Item as DigitariPrice).price;
-
-    /*
      * Get the source user
      */
     const source: UserType = (
@@ -79,7 +68,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             .promise()
     ).Item as UserType;
 
-    if (source.coin < followPrice) {
+    if (source.coin < FOLLOW_COMMUNITY_PRICE) {
         throw new Error("Source doesn't have sufficient coin to follow target");
     }
 
@@ -173,7 +162,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                                        coinSpent = coin + :price`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
-                    ":price": followPrice,
+                    ":price": FOLLOW_COMMUNITY_PRICE,
                 },
             })
             .promise();
@@ -225,7 +214,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     const transaction: TransactionType = {
         tid: target.uid,
         time,
-        coin: followPrice,
+        coin: FOLLOW_COMMUNITY_PRICE,
         message: pushMessage,
         transactionType: TransactionTypesEnum.User,
         data: source.id,
