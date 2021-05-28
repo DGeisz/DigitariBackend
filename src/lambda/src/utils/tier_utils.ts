@@ -15,11 +15,11 @@ export function tier2convoReward(tier: number): number {
         case 3:
             return 100;
         case 4:
-            return 250;
+            return 150;
         case 5:
-            return 600;
+            return 250;
         case 6:
-            return 1500;
+            return 400;
         default:
             return 0;
     }
@@ -42,11 +42,11 @@ export function tier2responseCost(tier: number): number {
         case 3:
             return 35;
         case 4:
-            return 85;
+            return 50;
         case 5:
-            return 200;
+            return 85;
         case 6:
-            return 500;
+            return 135;
         default:
             return 0;
     }

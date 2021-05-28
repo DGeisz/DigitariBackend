@@ -66,13 +66,13 @@ export function ranking2Wage(ranking: number): [number, number] {
             dailyWage = 1500;
             break;
         case TierEnum.Sunglasses:
-            dailyWage = 3000;
+            dailyWage = 2000;
             break;
         case TierEnum.HeartEyes:
-            dailyWage = 8000;
+            dailyWage = 3000;
             break;
         case TierEnum.Angel:
-            dailyWage = 20000;
+            dailyWage = 5000;
             break;
     }
 
