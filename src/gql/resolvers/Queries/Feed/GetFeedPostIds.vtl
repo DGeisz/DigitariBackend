@@ -10,7 +10,7 @@
             },
         },
         "scanIndexForward": false,
-        "limit": $util.toJson(20)
+        "limit": $util.toJson(10)
     }
 #else
     {
@@ -28,7 +28,7 @@
 
         },
         "scanIndexForward": false,
-        "limit": $util.toJson(20)
+        "limit": $util.toJson(10)
     }
 #end
 
@@ -40,5 +40,6 @@
 #end
 
 $util.qr($ctx.stash.put("postIds", $postIds))
+$util.qr($ctx.stash.put("postRecords", $ctx.result.items))
 
 $util.toJson($postIds)

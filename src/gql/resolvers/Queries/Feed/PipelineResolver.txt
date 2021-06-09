@@ -1,9 +1,17 @@
 before
 
+GetFeedUser
+
 GetFeedPostIds
 
 GetPostsFromIds -- Global
 
 GetCoinDonated -- Global
+
+UpdateFeedUser
+
+CreateFeedTransaction
+
+DeleteFeedPostIds
 
 after

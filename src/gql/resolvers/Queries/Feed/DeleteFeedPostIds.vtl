@@ -1,0 +1,24 @@
+## Request
+#set($feedRecords = [])
+#foreach($record in ${ctx.stash.postRecords})
+    #set($recordMap = {})
+    $util.qr($recordMap.put("uid", $util.dynamodb.toString($record.uid)))
+    $util.qr($recordMap.put("time", $util.dynamodb.toDynamoDB($record.time)))
+
+    $util.qr($feedRecords.add($recordMap))
+#end
+
+#if($feedRecords.size() == 0)
+    #return
+#end
+
+{
+    "version": "2018-05-29",
+    "operation": "BatchDeleteItem",
+    "tables": {
+        "DigitariFeedRecords": $util.toJson($feedRecords)
+    }
+}
+
+## Response
+{}

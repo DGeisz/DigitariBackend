@@ -1,0 +1,27 @@
+## Request
+
+#if($util.isNullOrEmpty($ctx.args.lastTime) || !$ctx.stash.user.feedPendingCollection)
+    #return
+#end
+
+#set($ttl = $util.time.nowEpochSeconds() + (24 * 60 * 60))
+
+{
+    "version" : "2017-02-28",
+    "operation" : "PutItem",
+    "key" : {
+        "tid" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+        "time" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),
+    },
+    "attributeValues" : {
+        "coin" : $util.dynamodb.toDynamoDBJson(100),
+        "message" : $util.dynamodb.toDynamoDBJson("Viewed feed"),
+        "transactionType" : $util.dynamodb.toDynamoDBJson(3),
+        "data" : $util.dynamodb.toDynamoDBJson(""),
+        "ttl" : $util.dynamodb.toDynamoDBJson($ttl),
+    }
+}
+
+## Response
+
+{}
