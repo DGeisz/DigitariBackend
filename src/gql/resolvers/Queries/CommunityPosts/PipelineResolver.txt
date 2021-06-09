@@ -1,9 +1,15 @@
 before
 
+GetPostsUser -- Global
+
 GetCommunityPostIds
 
 GetPostsFromIds -- Global
 
 GetCoinDonated -- Global
+
+UpdatePostsUser -- Global
+
+CreateCommPostsTransaction
 
 after

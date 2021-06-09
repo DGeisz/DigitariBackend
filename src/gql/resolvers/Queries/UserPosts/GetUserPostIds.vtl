@@ -1,10 +1,10 @@
 ## Request
 #if($util.isNullOrEmpty($ctx.args.lastTime))
     #set($statement = "SELECT id FROM posts WHERE uid=:UID
-                            ORDER BY time DESC LIMIT 20")
+                            ORDER BY time DESC LIMIT 10")
 #else
     #set($statement = "SELECT id FROM posts WHERE uid=:UID and time < :LAST_TIME
-                            ORDER BY time DESC LIMIT 20")
+                            ORDER BY time DESC LIMIT 10")
 #end
 
 

@@ -1,0 +1,20 @@
+## Request
+#if($util.isNullOrEmpty($ctx.args.lastTime) || $ctx.args.skipReward)
+    #return
+#end
+
+{
+    "operation": "GetItem",
+    "key": {
+        "id": $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+    }
+}
+
+## Response
+#if($ctx.stash.get("time") - $ctx.result.lastPostsTime < 30000)
+    $util.error("Can't fetch next posts yet")
+#end
+
+$util.qr($ctx.stash.put("user", $ctx.result))
+
+{}

@@ -1,6 +1,6 @@
 ## Request
 
-#if($util.isNullOrEmpty($ctx.args.lastTime) || !$ctx.stash.user.feedPendingCollection)
+#if($util.isNullOrEmpty($ctx.args.lastTime) || $ctx.args.skipReward || !$ctx.stash.user.postsPendingCollection)
     #return
 #end
 
@@ -14,8 +14,8 @@
         "time" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),
     },
     "attributeValues" : {
-        "coin" : $util.dynamodb.toDynamoDBJson(80),
-        "message" : $util.dynamodb.toDynamoDBJson("Viewed feed"),
+        "coin" : $util.dynamodb.toDynamoDBJson(40),
+        "message" : $util.dynamodb.toDynamoDBJson("Viewed user posts"),
         "transactionType" : $util.dynamodb.toDynamoDBJson(3),
         "data" : $util.dynamodb.toDynamoDBJson(""),
         "ttl" : $util.dynamodb.toDynamoDBJson($ttl),
@@ -24,4 +24,9 @@
 
 ## Response
 
+#if($ctx.error)
+    $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+## Pass back the result from DynamoDB. **
 {}

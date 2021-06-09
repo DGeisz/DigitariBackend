@@ -1,0 +1,37 @@
+## Request
+#set($pendingCollection = $ctx.stash.posts.size() > 0)
+
+#set($noCollect = $util.isNullOrEmpty($ctx.args.lastTime) || $ctx.args.skipReward)
+
+#if($noCollect)
+    #set($updateStatement = "set lastPostsTime = :nt, postsPendingCollection = :pe")
+    #set($nu = false)
+#else
+    #set($updateStatement = "set lastPostsTime = :nt, postsPendingCollection = :pe, newTransactionUpdate = :nuww")
+    #set($nu = $ctx.stash.user.postsPendingCollection)
+#end
+
+{
+    "version" : "2017-02-28",
+    "operation" : "UpdateItem",
+    "key": {
+        "id" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+    },
+    "update" : {
+        "expression" : $util.toJson($updateStatement),
+        "expressionValues" : {
+            ":nt" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),
+            #if(!$noCollect)
+            ":nuww" : $util.dynamodb.toDynamoDBJson($nu),
+            #end
+            ":pe" : $util.dynamodb.toDynamoDBJson($pendingCollection),
+        },
+    },
+}
+
+## Response
+#if($ctx.error)
+    $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+{}
