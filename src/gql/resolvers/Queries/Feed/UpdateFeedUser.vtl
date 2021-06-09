@@ -1,11 +1,19 @@
 ## Request
 #set($pendingCollection = $ctx.stash.postRecords.size() > 0)
 
+#if($pendingCollection)
+    #set($amount = 80)
+#else
+    #set($amount = 0)
+#end
+
 #if($util.isNullOrEmpty($ctx.args.lastTime))
     #set($updateStatement = "set lastFeedTime = :nt, feedPendingCollection = :pe")
     #set($nu = false)
 #else
-    #set($updateStatement = "set lastFeedTime = :nt, feedPendingCollection = :pe, newTransactionUpdate = :nuww")
+    #set($updateStatement = "set lastFeedTime = :nt, feedPendingCollection = :pe,
+                                 newTransactionUpdate = :nuww,
+                                 transTotal = transTotal + :amount")
     #set($nu = $ctx.stash.user.feedPendingCollection)
 #end
 
@@ -21,6 +29,7 @@
             ":nt" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),
             #if(!$util.isNullOrEmpty($ctx.args.lastTime))
             ":nuww" : $util.dynamodb.toDynamoDBJson($nu),
+            ":amount" : $util.dynamodb.toDynamoDBJson($amount),
             #end
             ":pe" : $util.dynamodb.toDynamoDBJson($pendingCollection),
         },

@@ -3,11 +3,20 @@
 
 #set($noCollect = $util.isNullOrEmpty($ctx.args.lastTime) || $ctx.args.skipReward)
 
+#if($pendingCollection)
+    #set($amount = 40)
+#else
+    #set($amount = 0)
+#end
+
 #if($noCollect)
     #set($updateStatement = "set lastPostsTime = :nt, postsPendingCollection = :pe")
     #set($nu = false)
 #else
-    #set($updateStatement = "set lastPostsTime = :nt, postsPendingCollection = :pe, newTransactionUpdate = :nuww")
+    #set($updateStatement = "set lastPostsTime = :nt,
+                                 postsPendingCollection = :pe,
+                                 newTransactionUpdate = :nuww,
+                                 transTotal = transTotal + :amount")
     #set($nu = $ctx.stash.user.postsPendingCollection)
 #end
 
@@ -23,6 +32,7 @@
             ":nt" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),
             #if(!$noCollect)
             ":nuww" : $util.dynamodb.toDynamoDBJson($nu),
+            ":amount" : $util.dynamodb.toDynamoDBJson($amount),
             #end
             ":pe" : $util.dynamodb.toDynamoDBJson($pendingCollection),
         },
