@@ -136,7 +136,7 @@ export async function handler(
         pid,
         tuid: !!targetUser ? targetUser.id : "",
         amount: amount,
-        name: !!targetUser ? targetUser.firstName : "",
+        name: !!user ? user.firstName : "",
     };
 
     /*
