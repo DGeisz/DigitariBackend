@@ -85,7 +85,7 @@ export async function handler(
             Key: {
                 id: convo.suid,
             },
-            UpdateExpression: `set coin = coin + :reward,
+            UpdateExpression: `set transTotal = transTotal + :reward,
                                  successfulConvos = successfulConvos + :unit,
                                  ranking = ranking + :unit,
                                  newTransactionUpdate = :b`,

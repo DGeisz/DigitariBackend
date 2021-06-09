@@ -34,6 +34,7 @@ export async function postCountHandler(
     const challengeReceipts: string[] = [];
 
     let newIndex = 0;
+    let totalCoin = 0;
 
     /*
      * Handle bronze
@@ -51,6 +52,7 @@ export async function postCountHandler(
 
         newIndex = 1;
         challengeReceipts.push([PC, bronzeCount].join(":"));
+        totalCoin += bronzeCoin;
     }
 
     /*
@@ -71,6 +73,7 @@ export async function postCountHandler(
 
         newIndex = 2;
         challengeReceipts.push([PC, silverCount].join(":"));
+        totalCoin += silverCoin;
     }
 
     /*
@@ -91,6 +94,7 @@ export async function postCountHandler(
 
         newIndex = 3;
         challengeReceipts.push([PC, goldCount].join(":"));
+        totalCoin += goldCoin;
     }
 
     /*
@@ -111,6 +115,7 @@ export async function postCountHandler(
 
         newIndex = 4;
         challengeReceipts.push([PC, supremeCount].join(":"));
+        totalCoin += supremeCoin;
     }
 
     if (transactions.length > 0) {
@@ -139,10 +144,14 @@ export async function postCountHandler(
                     id: user.id,
                 },
                 UpdateExpression: `set pcChallengeIndex = :ni,
+                                       newTransactionUpdate = :b,
+                                       transTotal = transTotal + :coin,
                                        #cr = list_append(#cr, :cr)`,
                 ExpressionAttributeValues: {
                     ":ni": newIndex,
                     ":cr": challengeReceipts,
+                    ":b": true,
+                    ":coin": totalCoin,
                 },
                 ExpressionAttributeNames: {
                     "#cr": "challengeReceipts",

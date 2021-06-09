@@ -36,6 +36,7 @@ export async function followingHandler(
     const challengeReceipts: string[] = [];
 
     let newIndex = 0;
+    let totalCoin = 0;
 
     /*
      * Handle bronze
@@ -54,6 +55,7 @@ export async function followingHandler(
 
         newIndex = 1;
         challengeReceipts.push([FLW, bronzeCount].join(":"));
+        totalCoin += bronzeCoin;
     }
 
     /*
@@ -74,6 +76,7 @@ export async function followingHandler(
 
         newIndex = 2;
         challengeReceipts.push([FLW, silverCount].join(":"));
+        totalCoin += silverCoin;
     }
 
     /*
@@ -94,6 +97,7 @@ export async function followingHandler(
 
         newIndex = 3;
         challengeReceipts.push([FLW, goldCount].join(":"));
+        totalCoin += goldCoin;
     }
 
     /*
@@ -114,6 +118,7 @@ export async function followingHandler(
 
         newIndex = 4;
         challengeReceipts.push([FLW, supremeCount].join(":"));
+        totalCoin += supremeCoin;
     }
 
     if (transactions.length > 0) {
@@ -156,10 +161,14 @@ export async function followingHandler(
                     id: user.id,
                 },
                 UpdateExpression: `set followingChallengeIndex = :ni,
+                                       newTransactionUpdate = :b,
+                                       transTotal = transTotal + :coin,
                                        #cr = list_append(#cr, :cr)`,
                 ExpressionAttributeValues: {
                     ":ni": newIndex,
                     ":cr": challengeReceipts,
+                    ":b": true,
+                    ":coin": totalCoin,
                 },
                 ExpressionAttributeNames: {
                     "#cr": "challengeReceipts",

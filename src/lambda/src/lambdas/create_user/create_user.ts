@@ -163,6 +163,21 @@ export async function handler(
     /*
      * Ok, now let's reward the person who gave the invite
      */
+    await dynamoClient
+        .update({
+            TableName: DIGITARI_USERS,
+            Key: {
+                id: invite.uid,
+            },
+            UpdateExpression: `set newTransactionUpdate = :b,
+                                   transTotal = transTotal + :reward`,
+            ExpressionAttributeValues: {
+                ":b": true,
+                ":reward": 100,
+            },
+        })
+        .promise();
+
     const transaction: TransactionType = {
         tid: invite.uid,
         time,

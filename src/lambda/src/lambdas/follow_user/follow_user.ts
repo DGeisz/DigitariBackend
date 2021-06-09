@@ -1,6 +1,5 @@
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { DynamoDB } from "aws-sdk";
-import { DigitariPrice } from "../../global_types/DigitariPricesTypes";
 import { FOLLOW_USER_PRICE, UserType } from "../../global_types/UserTypes";
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import { followChecker, insertFollowRow } from "./rds_queries/queries";
@@ -78,26 +77,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             .promise()
     ).Item as UserType;
 
-    // /*
-    //  * Calculate the source's activity grouping
-    //  * for target
-    //  */
-    // let targetMean;
-    //
-    // if (target.followers > 0) {
-    //     targetMean =
-    //         sumReduce(target.postsRequestedForActivityGroupings) /
-    //         target.followers;
-    // } else {
-    //     targetMean = 0;
-    // }
-    //
-    // const activityGrouping = calculateActivityGrouping(
-    //     sourcePostsRequested,
-    //     targetMean,
-    //     target.stdPostsDesired
-    // );
-
     /*
      * Increment the target's search follows in elasticsearch
      * index
@@ -148,9 +127,11 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     id: tid,
                 },
                 UpdateExpression: `set followers = followers + :unit,
-                                        newTransactionUpdate = :b`,
+                                       transTotal = transTotal + :price,
+                                       newTransactionUpdate = :b`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
+                    ":price": FOLLOW_USER_PRICE,
                     ":b": true,
                 },
             })

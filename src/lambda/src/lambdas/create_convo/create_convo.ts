@@ -154,7 +154,8 @@ export async function handler(
     user.spentOnConvos -= post.responseCost;
 
     /*
-     * Flag the target user's new transaction update and new convo update
+     * Flag the target user's new transaction update and new convo update,
+     * also add response cost to transTotal
      */
     await dynamoClient
         .update({
@@ -164,6 +165,7 @@ export async function handler(
             },
             UpdateExpression: `set newTransactionUpdate = :b,
                                    newConvoUpdate = :b,
+                                   transTotal = transTotal + :price,
                                    receivedFromConvos = receivedFromConvos + :price`,
             ExpressionAttributeValues: {
                 ":b": true,

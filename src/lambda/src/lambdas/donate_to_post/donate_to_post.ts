@@ -186,6 +186,7 @@ export async function handler(
                     id: targetUser.id,
                 },
                 UpdateExpression: `set newTransactionUpdate = :b,
+                                   transTotal = transTotal + :amount,
                                    receivedFromConvos = receivedFromConvos + :amount`,
                 ExpressionAttributeValues: {
                     ":b": true,

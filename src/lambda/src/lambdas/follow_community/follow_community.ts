@@ -7,7 +7,6 @@ import {
     followChecker,
     insertFollowRow,
 } from "../follow_user/rds_queries/queries";
-import { DigitariPrice } from "../../global_types/DigitariPricesTypes";
 import { UserType } from "../../global_types/UserTypes";
 import {
     CommunityType,
@@ -201,9 +200,11 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             Key: {
                 id: target.uid,
             },
-            UpdateExpression: `set newTransactionUpdate = :b`,
+            UpdateExpression: `set newTransactionUpdate = :b,
+                                   transTotal = transTotal + :price`,
             ExpressionAttributeValues: {
                 ":b": true,
+                ":price": FOLLOW_COMMUNITY_PRICE,
             },
         })
         .promise();
