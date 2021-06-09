@@ -1,0 +1,7 @@
+before
+
+StashUser
+
+CollectEarnings
+
+after

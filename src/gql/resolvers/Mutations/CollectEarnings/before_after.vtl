@@ -1,0 +1,10 @@
+## Before
+$util.qr($ctx.stash.put("time", $util.time.nowEpochMilliSeconds()))
+
+{}
+
+## After
+{
+    "coin" : $util.toJson($ctx.stash.user.transTotal),
+    "time" : $util.toJson($ctx.stash.time)
+}

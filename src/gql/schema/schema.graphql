@@ -12,6 +12,7 @@ type User @aws_iam
     timeCreated: String
     imgUrl: String
     remainingInvites: Int
+    transTotal: Int
 
     lastCollectionTime: String
 

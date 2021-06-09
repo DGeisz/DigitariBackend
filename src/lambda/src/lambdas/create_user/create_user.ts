@@ -100,6 +100,12 @@ export async function handler(
 
         lastCollectionTime: 0,
 
+        lastFeedTime: 0,
+        feedPendingCollection: false,
+        lastPostsTime: 0,
+        postsPendingCollection: false,
+        transTotal: 0,
+
         newConvoUpdate: false,
         newTransactionUpdate: false,
 

@@ -1,11 +1,7 @@
 ## Request
 #set($pendingCollection = $ctx.stash.postRecords.size() > 0)
 
-#if($pendingCollection)
-    #set($amount = 80)
-#else
-    #set($amount = 0)
-#end
+#set($amount = 0)
 
 #if($util.isNullOrEmpty($ctx.args.lastTime))
     #set($updateStatement = "set lastFeedTime = :nt, feedPendingCollection = :pe")
@@ -15,6 +11,10 @@
                                  newTransactionUpdate = :nuww,
                                  transTotal = transTotal + :amount")
     #set($nu = $ctx.stash.user.feedPendingCollection)
+
+    #if($nu)
+        #set($amount = 80)
+    #end
 #end
 
 {

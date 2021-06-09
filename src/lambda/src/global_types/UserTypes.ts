@@ -53,4 +53,9 @@ export interface ExtendedUserType extends UserType {
     hid: string;
     timeCreated?: number;
     lastCheckIn?: number;
+    lastFeedTime: number;
+    feedPendingCollection: boolean;
+    lastPostsTime: number;
+    postsPendingCollection: boolean;
+    transTotal: number;
 }
