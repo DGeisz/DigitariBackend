@@ -11,7 +11,7 @@
 }
 
 ## Response
-#if($ctx.stash.get("time") - $ctx.result.lastPostsTime < 30000)
+#if($ctx.stash.get("time") - $ctx.result.lastPostsTime < 20000)
     $util.error("Can't fetch next posts yet")
 #end
 
