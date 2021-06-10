@@ -17,8 +17,8 @@ const supremeCount = 1000;
 
 const bronzeCoin = 250;
 const silverCoin = 500;
-const goldCoin = 2000;
-const supremeCoin = 5000;
+const goldCoin = 5000;
+const supremeCoin = 10000;
 
 export async function postCountHandler(
     user: UserType,

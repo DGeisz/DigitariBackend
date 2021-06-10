@@ -16,10 +16,10 @@ const silverCount = 100;
 const goldCount = 1000;
 const supremeCount = 10000;
 
-const bronzeCoin = 1000;
-const silverCoin = 5000;
-const goldCoin = 20000;
-const supremeCoin = 50000;
+const bronzeCoin = 2000;
+const silverCoin = 10000;
+const goldCoin = 100000;
+const supremeCoin = 500000;
 
 export async function communityFollowersHandler(
     uid: string,

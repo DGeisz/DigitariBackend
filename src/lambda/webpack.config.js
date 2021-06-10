@@ -30,6 +30,7 @@ module.exports = {
         gen_invite_code: "./src/lambdas/gen_invite_code/gen_invite_code.ts",
         create_user: "./src/lambdas/create_user/create_user.ts",
         process_iap: "./src/lambdas/process_iap/process_iap.ts",
+        delete_community: "./src/lambdas/delete_community/delete_community.ts",
     },
     externals: ["aws-sdk"],
     mode: "production",

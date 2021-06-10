@@ -19,8 +19,8 @@ const supremeCount = 1000;
 
 const bronzeCoin = 500;
 const silverCoin = 1000;
-const goldCoin = 10000;
-const supremeCoin = 20000;
+const goldCoin = 20000;
+const supremeCoin = 100000;
 
 export async function followersHandler(
     user: UserType,
