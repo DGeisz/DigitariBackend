@@ -265,43 +265,62 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
     }
 
     /*
-     * Now we do a series of batch writes to get all these
-     * suckers into dynamo
+     * Alright, we're going to try 5 times to send out the feed records
      */
-    for (let i = 0; i < targetIds.length; i += MAX_BATCH_WRITE_ITEMS) {
-        const writeRequests = [];
+    for (let t = 0; t < 5; ++t) {
+        const batchPromises: Promise<any>[] = [];
 
-        for (let j = 0; j < MAX_BATCH_WRITE_ITEMS; ++j) {
-            /*
-             * First check that we haven't reached the end
-             * of targetIds
-             */
-            if (j + i >= targetIds.length) {
-                break;
-            } else {
+        for (let i = 0; i < targetIds.length; i += MAX_BATCH_WRITE_ITEMS) {
+            const writeRequests = [];
+
+            for (let j = 0; j < MAX_BATCH_WRITE_ITEMS; ++j) {
                 /*
-                 * Otherwise, add a record
-                 * to the list of write requests
+                 * First check that we haven't reached the end
+                 * of targetIds
                  */
-                writeRequests.push({
-                    PutRequest: {
-                        Item: {
-                            uid: targetIds[i + j],
-                            time,
-                            pid,
+                if (j + i >= targetIds.length) {
+                    break;
+                } else {
+                    /*
+                     * Otherwise, add a record
+                     * to the list of write requests
+                     */
+                    writeRequests.push({
+                        PutRequest: {
+                            Item: {
+                                uid: targetIds[i + j],
+                                time,
+                                pid,
+                            },
                         },
-                    },
-                });
+                    });
+                }
             }
+
+            batchPromises.push(
+                dynamoClient
+                    .batchWrite({
+                        RequestItems: {
+                            DigitariFeedRecords: writeRequests,
+                        },
+                    })
+                    .promise()
+            );
         }
 
-        await dynamoClient
-            .batchWrite({
-                RequestItems: {
-                    DigitariFeedRecords: writeRequests,
-                },
-            })
-            .promise();
+        try {
+            await Promise.all(batchPromises);
+
+            /*
+             * If all the above promises successfully resolved,
+             * break out of the retry loop, and go on our merry way
+             */
+            break;
+        } catch (_) {
+            /*
+             * If we hit an error, then we simply try again, up to 5 times
+             */
+        }
     }
 
     /*
