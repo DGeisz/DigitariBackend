@@ -17,6 +17,9 @@ import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import { Client } from "elasticsearch";
+import { toCommaRep } from "../../utils/value_rep_utils";
+
+const INVITE_REWARD = 500;
 
 const rdsClient = new RdsClient();
 
@@ -179,7 +182,7 @@ export async function handler(
                                    transTotal = transTotal + :reward`,
             ExpressionAttributeValues: {
                 ":b": true,
-                ":reward": 100,
+                ":reward": INVITE_REWARD,
             },
         })
         .promise();
@@ -187,7 +190,7 @@ export async function handler(
     const transaction: TransactionType = {
         tid: invite.uid,
         time,
-        coin: 100,
+        coin: INVITE_REWARD,
         message: `${firstName} joined Digitari!`,
         transactionType: TransactionTypesEnum.User,
         data: uid,
@@ -223,7 +226,9 @@ export async function handler(
             PushNotificationType.UserJoined,
             uid,
             "",
-            `${firstName} joined Digitari! (+100 Digicoin)`,
+            `${firstName} joined Digitari! (+${toCommaRep(
+                INVITE_REWARD
+            )} Digicoin)`,
             dynamoClient
         );
     } catch (e) {}

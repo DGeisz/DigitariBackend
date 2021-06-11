@@ -1,6 +1,6 @@
 export const USER_TYPENAME = "User";
 
-export const FOLLOW_USER_PRICE = 20;
+export const FOLLOW_USER_PRICE = 200;
 
 export interface UserType {
     id: string;

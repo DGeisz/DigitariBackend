@@ -15,6 +15,7 @@ import { insertFollowRow } from "../follow_user/rds_queries/queries";
 import {
     COMMUNITY_DESCRIPTION_MAX_LEN,
     COMMUNITY_NAME_MAX_LEN,
+    CREATE_COMMUNITY_PRICE,
 } from "../../global_types/CommunityTypes";
 import { insertCommunityRow } from "./rds_queries/queries";
 
@@ -40,20 +41,6 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
         throw new Error("New Community name or description is too long");
     }
 
-    /*
-     * Get the price of following another user
-     */
-    const price = ((
-        await dynamoClient
-            .get({
-                TableName: DIGITARI_PRICES,
-                Key: {
-                    id: "CreateCommunity",
-                },
-            })
-            .promise()
-    ).Item as DigitariPrice).price;
-
     const user: UserType = (
         await dynamoClient
             .get({
@@ -65,7 +52,7 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
             .promise()
     ).Item as UserType;
 
-    if (user.coin < price) {
+    if (user.coin < CREATE_COMMUNITY_PRICE) {
         throw new Error(
             "User doesn't have sufficient coin to create community"
         );
@@ -150,7 +137,7 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
                                        coinSpent = coinSpent + :price`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
-                    ":price": price,
+                    ":price": CREATE_COMMUNITY_PRICE,
                 },
             })
             .promise();
