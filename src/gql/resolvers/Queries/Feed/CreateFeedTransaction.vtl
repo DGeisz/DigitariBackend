@@ -1,6 +1,6 @@
 ## Request
 
-#if($util.isNullOrEmpty($ctx.args.lastTime) || !$ctx.stash.user.feedPendingCollection)
+#if($ctx.stash.noCollect || !$ctx.stash.user.feedPendingCollection)
     #return
 #end
 

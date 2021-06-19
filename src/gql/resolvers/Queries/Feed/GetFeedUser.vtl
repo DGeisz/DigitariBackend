@@ -1,5 +1,5 @@
 ## Request
-#if($util.isNullOrEmpty($ctx.args.lastTime))
+#if($ctx.stash.noCollect)
     #return
 #end
 

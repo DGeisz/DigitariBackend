@@ -3,7 +3,7 @@
 
 #set($amount = 0)
 
-#if($util.isNullOrEmpty($ctx.args.lastTime))
+#if($ctx.stash.noCollect)
     #set($updateStatement = "set lastFeedTime = :nt, feedPendingCollection = :pe")
     #set($nu = false)
 #else

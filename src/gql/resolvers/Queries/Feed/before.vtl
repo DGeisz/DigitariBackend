@@ -1,3 +1,7 @@
 $util.qr($ctx.stash.put("time", $util.time.nowEpochMilliSeconds()))
 
+#set($noCollect = $util.isNullOrEmpty($ctx.args.lastTime) || $ctx.args.skipReward)
+$util.qr($ctx.stash.put("noCollect", $noCollect))
+
+
 {}
