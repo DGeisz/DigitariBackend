@@ -27,7 +27,7 @@
         "expression" : $util.toJson($updateStatement),
         "expressionValues" : {
             ":nt" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),
-            #if(!$util.isNullOrEmpty($ctx.args.lastTime))
+            #if(!$ctx.stash.noCollect)
             ":nuww" : $util.dynamodb.toDynamoDBJson($nu),
             ":amount" : $util.dynamodb.toDynamoDBJson($amount),
             #end
