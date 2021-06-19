@@ -6,7 +6,6 @@ import { followChecker, insertFollowRow } from "./rds_queries/queries";
 import { Client } from "elasticsearch";
 import { FollowEventArgs } from "../../global_types/follow_event_args";
 import {
-    DIGITARI_PRICES,
     DIGITARI_TRANSACTIONS,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";

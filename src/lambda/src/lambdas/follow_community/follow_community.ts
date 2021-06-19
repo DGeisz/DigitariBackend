@@ -14,7 +14,6 @@ import {
 } from "../../global_types/CommunityTypes";
 import {
     DIGITARI_COMMUNITIES,
-    DIGITARI_PRICES,
     DIGITARI_TRANSACTIONS,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";

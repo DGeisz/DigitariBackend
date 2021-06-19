@@ -4,7 +4,6 @@ import { Client } from "elasticsearch";
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import {
     DIGITARI_COMMUNITIES,
-    DIGITARI_PRICES,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import { EventArgs } from "./lambda_types/event_args";
