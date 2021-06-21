@@ -55,7 +55,11 @@ export async function handler(
             .promise()
     ).Item as ExtendedUserType;
 
-    if (!!user) {
+    /*
+     * The extra fields are to prevent the
+     * bug where the user isn't fully created
+     */
+    if (!!user && !!user.firstName && !!user.lastName && !!user.email) {
         return user;
     }
 

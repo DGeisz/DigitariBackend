@@ -2,8 +2,6 @@ before
 
 GetAmFollowingUser
 
-StashFollowPrice -- Global Function
-
 GetUser
 
 after
