@@ -92,7 +92,7 @@ export async function handler(
         firstName,
         lastName,
         email,
-        remainingInvites: 20,
+        remainingInvites: 30,
 
         timeCreated: time,
         lastCheckIn: time,
@@ -103,7 +103,7 @@ export async function handler(
         ranking: 0,
         blocked: 0,
         beenBlocked: 0,
-        coin: 0,
+        coin: 1000,
 
         lastCollectionTime: 0,
 
