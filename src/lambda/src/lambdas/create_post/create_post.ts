@@ -18,18 +18,11 @@ import {
 import { CommunityType } from "../../global_types/CommunityTypes";
 import { v4 } from "uuid";
 import { randomString } from "../../utils/string_utils";
-import {
-    getActiveFollowers,
-    getInactiveFollowers,
-} from "./rds_queries/queries";
-import { millisInDay } from "../../utils/time_utils";
 import { tier2convoReward, tier2responseCost } from "../../utils/tier_utils";
 import { ranking2Tier } from "../../global_types/TierTypes";
-import { challengeCheck } from "../../challenges/challenge_check";
 
 const BUCKET_NAME = "digitari-imgs";
 const s3Client = new S3();
-const MAX_BATCH_WRITE_ITEMS = 20;
 const COST_PER_RECIPIENT = 10;
 
 const rdsClient = new RdsClient();
@@ -206,6 +199,8 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
             Item: {
                 id: pid,
                 uid,
+                recipients: finalRecipients,
+                distributed: false,
 
                 user: user.firstName,
                 tier: ranking2Tier(user.ranking),
@@ -237,121 +232,6 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
         await rdsClient.executeSql(`INSERT INTO posts (uid, id, tier, time)
                                         VALUES ('${uid}', '${pid}', '${userTier}', ${time});`);
     }
-
-    /*
-     * Get the active time window (within the last three days)
-     * and start out by randomly fetching as many active user as you
-     * can
-     */
-    const activeTime = Date.now() - 3 * millisInDay;
-
-    let targetIds = await rdsClient.executeQuery<string>(
-        getActiveFollowers(tid, activeTime, finalRecipients)
-    );
-
-    /*
-     * Now we fetch from inactive followers just to pick up any slack
-     */
-    if (targetIds.length < finalRecipients) {
-        const inactiveTargets = await rdsClient.executeQuery<string>(
-            getInactiveFollowers(
-                tid,
-                activeTime,
-                finalRecipients - targetIds.length
-            )
-        );
-
-        targetIds.push(...inactiveTargets);
-    }
-
-    /*
-     * Alright, we're going to try 5 times to send out the feed records
-     */
-    for (let t = 0; t < 5; ++t) {
-        const batchPromises: Promise<any>[] = [];
-
-        for (let i = 0; i < targetIds.length; i += MAX_BATCH_WRITE_ITEMS) {
-            const writeRequests = [];
-
-            for (let j = 0; j < MAX_BATCH_WRITE_ITEMS; ++j) {
-                /*
-                 * First check that we haven't reached the end
-                 * of targetIds
-                 */
-                if (j + i >= targetIds.length) {
-                    break;
-                } else {
-                    /*
-                     * Otherwise, add a record
-                     * to the list of write requests
-                     */
-                    writeRequests.push({
-                        PutRequest: {
-                            Item: {
-                                uid: targetIds[i + j],
-                                time,
-                                pid,
-                            },
-                        },
-                    });
-                }
-            }
-
-            batchPromises.push(
-                dynamoClient
-                    .batchWrite({
-                        RequestItems: {
-                            DigitariFeedRecords: writeRequests,
-                        },
-                    })
-                    .promise()
-            );
-        }
-
-        try {
-            await Promise.all(batchPromises);
-
-            /*
-             * If all the above promises successfully resolved,
-             * break out of the retry loop, and go on our merry way
-             */
-            break;
-        } catch (_) {
-            /*
-             * If we hit an error, then we simply try again, up to 5 times
-             */
-        }
-    }
-
-    /*
-     * Now charge the user for the transaction
-     */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: uid,
-            },
-            UpdateExpression: `set coin = coin - :price,
-                                   coinSpent = coinSpent + :price,
-                                   postCount = postCount + :unit`,
-            ExpressionAttributeValues: {
-                ":price": COST_PER_RECIPIENT * finalRecipients,
-                ":unit": 1,
-            },
-        })
-        .promise();
-
-    user.coin -= COST_PER_RECIPIENT * finalRecipients;
-    user.coinSpent += COST_PER_RECIPIENT * finalRecipients;
-    user.postCount += 1;
-
-    /*
-     * Handle challenge updates
-     */
-    try {
-        await challengeCheck(user, dynamoClient);
-    } catch (e) {}
 
     return {
         post,

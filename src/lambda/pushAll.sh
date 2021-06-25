@@ -7,6 +7,7 @@ if [ "$(uname)" == "Darwin" ]; then
     bash ./zipNpush.sh create_convo create_convo
     bash ./zipNpush.sh create_message create_message
     bash ./zipNpush.sh create_post digitari_create_post
+    bash ./zipNpush.sh distribute_post distribute_post
     bash ./zipNpush.sh dismiss_convo dismiss_convo
     bash ./zipNpush.sh donate_to_post donate_to_post
     bash ./zipNpush.sh finish_convo finish_convo
@@ -30,6 +31,7 @@ else
     ./zipNpush.sh create_convo create_convo
     ./zipNpush.sh create_message create_message
     ./zipNpush.sh create_post digitari_create_post
+    ./zipNpush.sh distribute_post distribute_post
     ./zipNpush.sh dismiss_convo dismiss_convo
     ./zipNpush.sh donate_to_post donate_to_post
     ./zipNpush.sh finish_convo finish_convo

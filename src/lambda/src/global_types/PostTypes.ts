@@ -40,6 +40,11 @@ export interface PostType {
     responseCount: number;
 }
 
+export interface ExtendedPostType extends PostType {
+    recipients: number;
+    distributed: boolean;
+}
+
 export interface StrippedPostType {
     id: string;
     uid: string;

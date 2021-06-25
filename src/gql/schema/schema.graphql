@@ -312,6 +312,10 @@ type Mutation {
         recipients: Int
     ): PostPackage
 
+    distributePost(
+        pid: ID
+    ): Boolean
+
     donateToPost(
         pid: ID!,
         amount: Int!,

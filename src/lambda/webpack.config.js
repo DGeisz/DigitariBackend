@@ -31,6 +31,7 @@ module.exports = {
         create_user: "./src/lambdas/create_user/create_user.ts",
         process_iap: "./src/lambdas/process_iap/process_iap.ts",
         delete_community: "./src/lambdas/delete_community/delete_community.ts",
+        distribute_post: "./src/lambdas/distribute_post/distribute_post.ts",
     },
     externals: ["aws-sdk"],
     mode: "production",
