@@ -20,5 +20,7 @@
 }
 
 ## Response
+$util.qr($ctx.stash.put("posts", $ctx.result.data.DigitariPosts))
+
 $util.toJson($ctx.result.data.DigitariPosts)
 

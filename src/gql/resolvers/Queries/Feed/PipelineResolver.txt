@@ -6,8 +6,6 @@ GetFeedPostIds
 
 GetPostsFromIds -- Global
 
-GetCoinDonated -- Global
-
 UpdateFeedUser
 
 CreateFeedTransaction

@@ -91,6 +91,13 @@ export async function handler(
     }
 
     /*
+     * Make sure the source user has enough bolts
+     */
+    if (user.bolts < post.responseCost) {
+        throw new Error("User doesn't have enough bolts");
+    }
+
+    /*
      * ...And grab the target user
      */
     const targetUser: UserType = (

@@ -23,10 +23,19 @@ type User @aws_iam
     newTransactionUpdate: Boolean
 
     bio: String
+    link: String
     ranking: Int
     blocked: Int
     beenBlocked: Int
     coin: Int
+    bolts: Int
+
+    # Profile customizations
+    nameFont: Int
+    nameColor: Int
+    bioFont: Int
+    bioColor: Int
+    nameSticker: Int
 
     challengeReceipts: [String]
 
@@ -74,15 +83,19 @@ type Convo {
     sname: String
     sanony: Boolean
     sviewed: Boolean
+    sourceMsgCount: Int
 
     tid: ID
     ttier: Int
     tranking: Int
     tname: String
     tviewed: Boolean
-
     targetMsgCount: Int
+
+    # Convo reward is digicoin
     convoReward: Int
+
+    # Response cost is in bolts
     responseCost: Int
 }
 
@@ -122,7 +135,6 @@ type Post {
     convoReward: Int
     responseCost: Int
     coin: Int
-    coinDonated: Boolean
 
     # Convos
     convoCount: Int
@@ -285,11 +297,6 @@ type Mutation {
         name: String
         description: String
     ): Community
-    indexUser(
-        id: ID,
-        firstName: String
-        lastName: String
-    ): SearchEntity
     followUser(
         tid: ID!
     ): FollowEntity
@@ -327,9 +334,6 @@ type Mutation {
     updateProfilePic(
         imgName: String
     ): ImgUrl
-    deleteSearchEntity(
-        id: String
-    ): SearchEntity
 
     collectEarnings: EarningsReceipt
 

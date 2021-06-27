@@ -1,6 +1,12 @@
 import { DynamoDB } from "aws-sdk";
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
-import { ExtendedUserType, UserType } from "../../global_types/UserTypes";
+import {
+    ExtendedUserType,
+    NameStickers,
+    ProfileColors,
+    ProfileFonts,
+    UserType,
+} from "../../global_types/UserTypes";
 import { EventArgs } from "./lambda_types/event_args";
 import { v4 } from "uuid";
 import {
@@ -100,10 +106,18 @@ export async function handler(
         amFollowing: false,
 
         bio: "",
+        link: "",
         ranking: 0,
         blocked: 0,
         beenBlocked: 0,
-        coin: 1000,
+        coin: 100,
+        bolts: 0,
+
+        nameFont: ProfileFonts.Default,
+        nameColor: ProfileColors.Default,
+        bioFont: ProfileFonts.Default,
+        bioColor: ProfileColors.Default,
+        nameSticker: NameStickers.Default,
 
         lastCollectionTime: 0,
 
@@ -212,17 +226,39 @@ export async function handler(
         .promise();
 
     /*
-     * Finally, now that the transaction has
-     * been written, let's delete the invite
+     * Let's check if the invite is a super invite
+     * code
      */
-    await dynamoClient
-        .delete({
-            TableName: DIGITARI_INVITES,
-            Key: {
-                code,
-            },
-        })
-        .promise();
+    if (!!invite.count) {
+        /*
+         * This means the count is >1, so decrement
+         * the count
+         */
+        await dynamoClient
+            .update({
+                TableName: DIGITARI_INVITES,
+                Key: {
+                    code,
+                },
+                UpdateExpression: `set count = count - :unit`,
+                ExpressionAttributeValues: {
+                    ":unit": 1,
+                },
+            })
+            .promise();
+    } else {
+        /*
+         * Otherwise, just delete the invite
+         */
+        await dynamoClient
+            .delete({
+                TableName: DIGITARI_INVITES,
+                Key: {
+                    code,
+                },
+            })
+            .promise();
+    }
 
     try {
         await sendPushAndHandleReceipts(

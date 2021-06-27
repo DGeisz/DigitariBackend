@@ -12,10 +12,18 @@ export interface UserType {
     amFollowing: boolean;
 
     bio: string;
+    link: string;
     ranking: number;
     blocked: number;
     beenBlocked: number;
     coin: number;
+    bolts: number;
+
+    nameFont: ProfileFonts;
+    nameColor: ProfileColors;
+    bioFont: ProfileFonts;
+    bioColor: ProfileColors;
+    nameSticker: NameStickers;
 
     lastCollectionTime: number;
 
@@ -58,4 +66,16 @@ export interface ExtendedUserType extends UserType {
     lastPostsTime: number;
     postsPendingCollection: boolean;
     transTotal: number;
+}
+
+export enum ProfileFonts {
+    Default,
+}
+
+export enum ProfileColors {
+    Default,
+}
+
+export enum NameStickers {
+    Default,
 }

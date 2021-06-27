@@ -6,8 +6,6 @@ GetCommunityPostIds
 
 GetPostsFromIds -- Global
 
-GetCoinDonated -- Global
-
 UpdatePostsUser -- Global
 
 CreateCommPostsTransaction
