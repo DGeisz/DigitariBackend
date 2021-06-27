@@ -70,37 +70,45 @@ export async function handler(
         }
     }
 
+    const updatePromises: Promise<any>[] = [];
+
     /*
      * Ok, so first we're going to create an invite with this
      * code and user id
      */
-    await dynamoClient
-        .put({
-            TableName: DIGITARI_INVITES,
-            Item: {
-                code,
-                uid,
-                ttl: Math.round(Date.now() / 1000) + 14 * 24 * 60 * 60,
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_INVITES,
+                Item: {
+                    code,
+                    uid,
+                    ttl: Math.round(Date.now() / 1000) + 14 * 24 * 60 * 60,
+                },
+            })
+            .promise()
+    );
 
     /*
      * Now we're going to decrease the user's remaining
      * number of invites
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: uid,
-            },
-            UpdateExpression: `set remainingInvites = remainingInvites - :unit`,
-            ExpressionAttributeValues: {
-                ":unit": 1,
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: uid,
+                },
+                UpdateExpression: `set remainingInvites = remainingInvites - :unit`,
+                ExpressionAttributeValues: {
+                    ":unit": 1,
+                },
+            })
+            .promise()
+    );
+
+    await Promise.all(updatePromises);
 
     return code;
 }

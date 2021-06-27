@@ -11,10 +11,14 @@ export async function challengeCheck(
     user: UserType,
     dynamoClient: DynamoDB.DocumentClient
 ) {
-    await receivedFromConvosHandler(user, dynamoClient);
-    await spentOnConvosHandler(user, dynamoClient);
-    await successfulConvosHandler(user, dynamoClient);
-    await postCountHandler(user, dynamoClient);
-    await followersHandler(user, dynamoClient);
-    await followingHandler(user, dynamoClient);
+    const promises: Promise<any>[] = [];
+
+    promises.push(receivedFromConvosHandler(user, dynamoClient));
+    promises.push(spentOnConvosHandler(user, dynamoClient));
+    promises.push(successfulConvosHandler(user, dynamoClient));
+    promises.push(postCountHandler(user, dynamoClient));
+    promises.push(followersHandler(user, dynamoClient));
+    promises.push(followingHandler(user, dynamoClient));
+
+    return Promise.all(promises);
 }

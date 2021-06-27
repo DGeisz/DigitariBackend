@@ -84,12 +84,15 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             .promise()
     ).Item as CommunityType;
 
+    const updatePromises: Promise<any>[] = [];
+    const finalPromises: Promise<any>[] = [];
+
     /*
      * Increment the target's search follows in elasticsearch
      * index
      */
-    try {
-        await esClient.updateByQuery({
+    updatePromises.push(
+        esClient.updateByQuery({
             index: "search",
             type: "search_entity",
             body: {
@@ -103,16 +106,14 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     lang: "painless",
                 },
             },
-        });
-    } catch (e) {
-        throw new Error("ES Error: " + e);
-    }
+        })
+    );
 
     /*
      * Create follower row in rds follows table
      */
-    try {
-        await rdsClient.executeQuery<boolean>(
+    updatePromises.push(
+        rdsClient.executeQuery<boolean>(
             insertFollowRow(
                 tid,
                 sid,
@@ -121,16 +122,14 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                 time,
                 1
             )
-        );
-    } catch (e) {
-        throw new Error("RDS error: " + e);
-    }
+        )
+    );
 
     /*
      * Update the target
      */
-    try {
-        await dynamoClient
+    updatePromises.push(
+        dynamoClient
             .update({
                 TableName: DIGITARI_COMMUNITIES,
                 Key: {
@@ -141,15 +140,13 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     ":unit": 1,
                 },
             })
-            .promise();
-    } catch (e) {
-        throw new Error("Target update error: " + e);
-    }
+            .promise()
+    );
 
     target.followers += 1;
 
-    try {
-        await dynamoClient
+    updatePromises.push(
+        dynamoClient
             .update({
                 TableName: DIGITARI_USERS,
                 Key: {
@@ -163,17 +160,15 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     ":price": FOLLOW_COMMUNITY_PRICE,
                 },
             })
-            .promise();
-    } catch (e) {
-        throw new Error("Source update error: " + e);
-    }
+            .promise()
+    );
 
     /*
      * Update the community creator's max community followers
      * if this community has more followers than their current max
      */
-    try {
-        await dynamoClient
+    updatePromises.push(
+        dynamoClient
             .update({
                 TableName: DIGITARI_USERS,
                 Key: {
@@ -185,28 +180,30 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     ":followers": target.followers,
                 },
             })
-            .promise();
-    } catch (e) {}
+            .promise()
+    );
 
     const pushMessage = `${source.firstName} followed your community: "${target.name}"`;
 
     /*
      * Flag the target's newTransactionUpdate as true
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: target.uid,
-            },
-            UpdateExpression: `set newTransactionUpdate = :b,
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: target.uid,
+                },
+                UpdateExpression: `set newTransactionUpdate = :b,
                                    transTotal = transTotal + :price`,
-            ExpressionAttributeValues: {
-                ":b": true,
-                ":price": FOLLOW_COMMUNITY_PRICE,
-            },
-        })
-        .promise();
+                ExpressionAttributeValues: {
+                    ":b": true,
+                    ":price": FOLLOW_COMMUNITY_PRICE,
+                },
+            })
+            .promise()
+    );
 
     /*
      * Create transaction for this bad boi
@@ -224,34 +221,42 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     /*
      * Send off the transaction
      */
-    await dynamoClient
-        .put({
-            TableName: DIGITARI_TRANSACTIONS,
-            Item: transaction,
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_TRANSACTIONS,
+                Item: transaction,
+            })
+            .promise()
+    );
 
-    try {
-        await sendPushAndHandleReceipts(
+    finalPromises.push(Promise.all(updatePromises));
+
+    finalPromises.push(
+        sendPushAndHandleReceipts(
             target.uid,
             PushNotificationType.UserFollowedCommunity,
             sid,
             "",
             pushMessage,
             dynamoClient
-        );
-    } catch (e) {}
+        )
+    );
 
     /*
      * Handle challenge updates
      */
-    try {
-        await communityFollowersHandler(
-            target.uid,
-            target.followers,
-            dynamoClient
+    finalPromises.push(
+        communityFollowersHandler(target.uid, target.followers, dynamoClient)
+    );
+
+    const finalResolution = await Promise.allSettled(finalPromises);
+
+    if (finalResolution[0].status === "rejected") {
+        throw new Error(
+            "Well, that didn't work, and I guess it's our fault. What are you going to do about it?"
         );
-    } catch (e) {}
+    }
 
     return {
         tid,

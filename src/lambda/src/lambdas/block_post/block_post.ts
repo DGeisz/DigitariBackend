@@ -65,54 +65,63 @@ export async function handler(
         throw new Error("Post doesn't exist");
     }
 
+    const updatePromises: Promise<any>[] = [];
+    const finalPromises: Promise<any>[] = [];
+
     /*
      * First delete the post record to remove from the user's feed
      */
-    await dynamoClient
-        .delete({
-            TableName: DIGITARI_FEED_RECORDS,
-            Key: {
-                uid,
-                time: post.time,
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .delete({
+                TableName: DIGITARI_FEED_RECORDS,
+                Key: {
+                    uid,
+                    time: post.time,
+                },
+            })
+            .promise()
+    );
 
     /*
      * Now update the original user
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: uid,
-            },
-            UpdateExpression: `set coin = coin - :amount,
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: uid,
+                },
+                UpdateExpression: `set coin = coin - :amount,
                                    blocked = blocked + :unit,
                                    ranking = ranking - :unit`,
-            ExpressionAttributeValues: {
-                ":amount": POST_BLOCK_COST,
-                ":unit": 1,
-            },
-        })
-        .promise();
+                ExpressionAttributeValues: {
+                    ":amount": POST_BLOCK_COST,
+                    ":unit": 1,
+                },
+            })
+            .promise()
+    );
 
     /*
      * Update the target user
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: post.uid,
-            },
-            UpdateExpression: `set beenBlocked = beenBlocked + :unit,
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: post.uid,
+                },
+                UpdateExpression: `set beenBlocked = beenBlocked + :unit,
                                    ranking = ranking - :unit`,
-            ExpressionAttributeValues: {
-                ":unit": 1,
-            },
-        })
-        .promise();
+                ExpressionAttributeValues: {
+                    ":unit": 1,
+                },
+            })
+            .promise()
+    );
 
     const time = Date.now();
 
@@ -132,26 +141,36 @@ export async function handler(
     /*
      * Send off the transaction
      */
-    await dynamoClient
-        .put({
-            TableName: DIGITARI_TRANSACTIONS,
-            Item: transaction,
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_TRANSACTIONS,
+                Item: transaction,
+            })
+            .promise()
+    );
+
+    finalPromises.push(Promise.all(updatePromises));
 
     /*
      * Send push notifications to the target
      */
-    try {
-        await sendPushAndHandleReceipts(
+    finalPromises.push(
+        sendPushAndHandleReceipts(
             post.uid,
             PushNotificationType.PostBlocked,
             uid,
             "",
             `${user.firstName} blocked your post`,
             dynamoClient
-        );
-    } catch (e) {}
+        )
+    );
+
+    const finalResolution = await Promise.allSettled(finalPromises);
+
+    if (finalResolution[0].status === "rejected") {
+        throw new Error("Guess what! There was a server error! Yay!!");
+    }
 
     /*
      * Finally, return the post

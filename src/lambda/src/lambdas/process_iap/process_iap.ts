@@ -95,36 +95,44 @@ export async function handler(
         return false;
     }
 
+    const updatePromises: Promise<any>[] = [];
+
     /* 
     Ok, now we actually give the user the coin
     they so desperately want
     */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: uid,
-            },
-            UpdateExpression: `set coin = coin + :amount`,
-            ExpressionAttributeValues: {
-                ":amount": products[productId],
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: uid,
+                },
+                UpdateExpression: `set coin = coin + :amount`,
+                ExpressionAttributeValues: {
+                    ":amount": products[productId],
+                },
+            })
+            .promise()
+    );
 
     /* 
     Now we store the receipt, to, you know,
     prevent fraud
     */
-    await dynamoClient
-        .put({
-            TableName: DIGITARI_RECEIPTS,
-            Item: {
-                receipt: receiptId,
-                uid,
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_RECEIPTS,
+                Item: {
+                    receipt: receiptId,
+                    uid,
+                },
+            })
+            .promise()
+    );
+
+    await Promise.all(updatePromises);
 
     return true;
 }

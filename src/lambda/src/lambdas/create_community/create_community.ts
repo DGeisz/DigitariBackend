@@ -62,31 +62,32 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
      */
     const cid = v4();
 
+    const updatePromises: Promise<any>[] = [];
+
     /*
      * Now actually make the community
      */
-    await dynamoClient
-        .put({
-            TableName: DIGITARI_COMMUNITIES,
-            Item: {
-                id: cid,
-                uid,
-                name: event.arguments.name,
-                description: event.arguments.description,
-                followers: 1,
-                timeCreated: time,
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_COMMUNITIES,
+                Item: {
+                    id: cid,
+                    uid,
+                    name: event.arguments.name,
+                    description: event.arguments.description,
+                    followers: 1,
+                    timeCreated: time,
+                },
+            })
+            .promise()
+    );
 
     /*
-     * Make the following entity
+     * Add the follower row
      */
-    try {
-        /*
-         * Add the follower row
-         */
-        await rdsClient.executeQuery<boolean>(
+    updatePromises.push(
+        rdsClient.executeQuery<boolean>(
             insertFollowRow(
                 cid,
                 uid,
@@ -95,37 +96,39 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
                 time,
                 1
             )
-        );
+        )
+    );
 
-        /*
-         * Add the community to rds for reports
-         */
-        await rdsClient.executeQuery<boolean>(insertCommunityRow(cid));
-    } catch (e) {
-        throw new Error("RDS error: " + e);
-    }
+    /*
+     * Add the community to rds for reports
+     */
+    updatePromises.push(
+        rdsClient.executeQuery<boolean>(insertCommunityRow(cid))
+    );
 
     /*
      * Index the community
      */
-    await esClient.index({
-        index: "search",
-        type: "search_entity",
-        id: cid,
-        body: {
+    updatePromises.push(
+        esClient.index({
+            index: "search",
+            type: "search_entity",
             id: cid,
-            name: event.arguments.name,
-            followers: 1,
-            entityType: 1,
-        },
-    });
+            body: {
+                id: cid,
+                name: event.arguments.name,
+                followers: 1,
+                entityType: 1,
+            },
+        })
+    );
 
     /*
      * Increment the source's following field, and decrease the
      * users coin
      */
-    try {
-        await dynamoClient
+    updatePromises.push(
+        dynamoClient
             .update({
                 TableName: DIGITARI_USERS,
                 Key: {
@@ -139,10 +142,10 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
                     ":price": CREATE_COMMUNITY_PRICE,
                 },
             })
-            .promise();
-    } catch (e) {
-        throw new Error("Source update error: " + e);
-    }
+            .promise()
+    );
+
+    await Promise.all(updatePromises);
 
     /*
      * Return the fields corresponding to the community

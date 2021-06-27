@@ -76,12 +76,15 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             .promise()
     ).Item as UserType;
 
+    const updatePromises: Promise<any>[] = [];
+    const finalPromises: Promise<any>[] = [];
+
     /*
      * Increment the target's search follows in elasticsearch
      * index
      */
-    try {
-        await esClient.updateByQuery({
+    updatePromises.push(
+        esClient.updateByQuery({
             index: "search",
             type: "search_entity",
             body: {
@@ -95,16 +98,14 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     lang: "painless",
                 },
             },
-        });
-    } catch (e) {
-        throw new Error("ES Error: " + e);
-    }
+        })
+    );
 
     /*
      * Create follower row in rds follows table
      */
-    try {
-        await rdsClient.executeQuery<boolean>(
+    updatePromises.push(
+        rdsClient.executeQuery<boolean>(
             insertFollowRow(
                 tid,
                 sid,
@@ -113,13 +114,11 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                 time,
                 0
             )
-        );
-    } catch (e) {
-        throw new Error("RDS error: " + e);
-    }
+        )
+    );
 
-    try {
-        await dynamoClient
+    updatePromises.push(
+        dynamoClient
             .update({
                 TableName: DIGITARI_USERS,
                 Key: {
@@ -134,10 +133,8 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     ":b": true,
                 },
             })
-            .promise();
-    } catch (e) {
-        throw new Error("Target update error: " + e);
-    }
+            .promise()
+    );
 
     target.followers += 1;
     target.newTransactionUpdate = true;
@@ -146,8 +143,8 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
      * Increment the source's following field, and decrease the
      * users coin
      */
-    try {
-        await dynamoClient
+    updatePromises.push(
+        dynamoClient
             .update({
                 TableName: DIGITARI_USERS,
                 Key: {
@@ -161,10 +158,8 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     ":price": FOLLOW_USER_PRICE,
                 },
             })
-            .promise();
-    } catch (e) {
-        throw new Error("Source update error: " + e);
-    }
+            .promise()
+    );
 
     source.following += 1;
     source.coin -= FOLLOW_USER_PRICE;
@@ -188,34 +183,43 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     /*
      * Send off the transaction
      */
-    await dynamoClient
-        .put({
-            TableName: DIGITARI_TRANSACTIONS,
-            Item: transaction,
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_TRANSACTIONS,
+                Item: transaction,
+            })
+            .promise()
+    );
 
-    try {
-        await sendPushAndHandleReceipts(
+    finalPromises.push(Promise.all(updatePromises));
+
+    finalPromises.push(
+        sendPushAndHandleReceipts(
             tid,
             PushNotificationType.UserFollowed,
             sid,
             "",
             pushMessage,
             dynamoClient
-        );
-    } catch (e) {}
+        )
+    );
 
     /*
      * Handle challenges
      */
-    try {
-        await challengeCheck(source, dynamoClient);
-    } catch (e) {}
+    finalPromises.push(challengeCheck(source, dynamoClient));
 
-    try {
-        await challengeCheck(target, dynamoClient);
-    } catch (e) {}
+    finalPromises.push(challengeCheck(target, dynamoClient));
+
+    /*
+     * Resolve everything
+     */
+    const finalResolution = await Promise.allSettled(finalPromises);
+
+    if (finalResolution[0].status === "rejected") {
+        throw new Error("Whelp, something broke. ¯\\_(ツ)_/¯");
+    }
 
     return {
         tid,

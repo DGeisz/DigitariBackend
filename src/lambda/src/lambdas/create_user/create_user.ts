@@ -156,54 +156,65 @@ export async function handler(
         maxCommunityFollowers: 0,
     };
 
+    const updatePromises: Promise<any>[] = [];
+    const finalPromises: Promise<any>[] = [];
+
     /*
      * Alright, now that we have the user in memory, let's
      * create the bad boi
      */
-    await dynamoClient
-        .put({
-            TableName: DIGITARI_USERS,
-            Item: newUser,
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_USERS,
+                Item: newUser,
+            })
+            .promise()
+    );
 
     /*
      * Now add the user's rds row
      */
-    await rdsClient.executeSql(`INSERT INTO users VALUES ('${uid}', 0)`);
+    updatePromises.push(
+        rdsClient.executeSql(`INSERT INTO users VALUES ('${uid}', 0)`)
+    );
 
     /*
      * Now let's index this user in elastic search
      */
-    await esClient.index({
-        index: "search",
-        type: "search_entity",
-        id: uid,
-        body: {
+    updatePromises.push(
+        esClient.index({
+            index: "search",
+            type: "search_entity",
             id: uid,
-            name: `${firstName} ${lastName}`,
-            followers: 0,
-            entityType: 0,
-        },
-    });
+            body: {
+                id: uid,
+                name: `${firstName} ${lastName}`,
+                followers: 0,
+                entityType: 0,
+            },
+        })
+    );
 
     /*
      * Ok, now let's reward the person who gave the invite
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: invite.uid,
-            },
-            UpdateExpression: `set newTransactionUpdate = :b,
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: invite.uid,
+                },
+                UpdateExpression: `set newTransactionUpdate = :b,
                                    transTotal = transTotal + :reward`,
-            ExpressionAttributeValues: {
-                ":b": true,
-                ":reward": INVITE_REWARD,
-            },
-        })
-        .promise();
+                ExpressionAttributeValues: {
+                    ":b": true,
+                    ":reward": INVITE_REWARD,
+                },
+            })
+            .promise()
+    );
 
     const transaction: TransactionType = {
         tid: invite.uid,
@@ -218,12 +229,14 @@ export async function handler(
     /*
      * Send off the transaction
      */
-    await dynamoClient
-        .put({
-            TableName: DIGITARI_TRANSACTIONS,
-            Item: transaction,
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_TRANSACTIONS,
+                Item: transaction,
+            })
+            .promise()
+    );
 
     /*
      * Let's check if the invite is a super invite
@@ -234,34 +247,40 @@ export async function handler(
          * This means the count is >1, so decrement
          * the count
          */
-        await dynamoClient
-            .update({
-                TableName: DIGITARI_INVITES,
-                Key: {
-                    code,
-                },
-                UpdateExpression: `set count = count - :unit`,
-                ExpressionAttributeValues: {
-                    ":unit": 1,
-                },
-            })
-            .promise();
+        updatePromises.push(
+            dynamoClient
+                .update({
+                    TableName: DIGITARI_INVITES,
+                    Key: {
+                        code,
+                    },
+                    UpdateExpression: `set count = count - :unit`,
+                    ExpressionAttributeValues: {
+                        ":unit": 1,
+                    },
+                })
+                .promise()
+        );
     } else {
         /*
          * Otherwise, just delete the invite
          */
-        await dynamoClient
-            .delete({
-                TableName: DIGITARI_INVITES,
-                Key: {
-                    code,
-                },
-            })
-            .promise();
+        updatePromises.push(
+            dynamoClient
+                .delete({
+                    TableName: DIGITARI_INVITES,
+                    Key: {
+                        code,
+                    },
+                })
+                .promise()
+        );
     }
 
-    try {
-        await sendPushAndHandleReceipts(
+    finalPromises.push(Promise.all(updatePromises));
+
+    finalPromises.push(
+        sendPushAndHandleReceipts(
             invite.uid,
             PushNotificationType.UserJoined,
             uid,
@@ -270,8 +289,14 @@ export async function handler(
                 INVITE_REWARD
             )} Digicoin)`,
             dynamoClient
-        );
-    } catch (e) {}
+        )
+    );
+
+    const finalResolution = await Promise.allSettled(finalPromises);
+
+    if (finalResolution[0].status === "rejected") {
+        throw new Error("Ran into an error creating the user");
+    }
 
     return newUser;
 }

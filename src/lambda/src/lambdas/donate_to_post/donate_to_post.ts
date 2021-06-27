@@ -2,9 +2,8 @@ import { DynamoDB } from "aws-sdk";
 import { DonationRecord, PostType } from "../../global_types/PostTypes";
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { EventArgs } from "./lambda_types/event_args";
-import { ExtendedUserType } from "../../global_types/UserTypes";
+import { DIGIBOLT_PRICE, ExtendedUserType } from "../../global_types/UserTypes";
 import {
-    DIGITARI_DONATION_RECORDS,
     DIGITARI_POSTS,
     DIGITARI_TRANSACTIONS,
     DIGITARI_USERS,
@@ -16,6 +15,7 @@ import {
 import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
 import { challengeCheck } from "../../challenges/challenge_check";
+import { toRep } from "../../utils/value_rep_utils";
 
 const dynamoClient = new DynamoDB.DocumentClient({
     apiVersion: "2012-08-10",
@@ -26,15 +26,16 @@ export async function handler(
 ): Promise<DonationRecord> {
     const time = Date.now();
     const uid = (event.identity as AppSyncIdentityCognito).sub;
-
     const { pid, amount } = event.arguments;
 
     /*
      * Make sure the amount is all good
      */
     if (amount === 0) {
-        throw new Error("A donation must have at least one coin");
+        throw new Error("Must get at least one bolt");
     }
+
+    const coinTotal = amount * DIGIBOLT_PRICE;
 
     /*
      * First, fetch the user in its full glory
@@ -54,7 +55,7 @@ export async function handler(
      * Now check that the user has enough digicoin to make
      * this donation
      */
-    if (user.coin < amount) {
+    if (user.coin < coinTotal) {
         throw new Error("User doesn't have enough coin to donate this amount");
     }
 
@@ -93,83 +94,54 @@ export async function handler(
             .promise()
     ).Item as ExtendedUserType | undefined;
 
-    /*
-     * Ok, now then we need to check whether
-     * this user has already donated to this post
-     */
-    const record = await dynamoClient
-        .get({
-            TableName: DIGITARI_DONATION_RECORDS,
-            Key: {
-                uid,
-                pid,
-            },
-        })
-        .promise();
-
-    /*
-     * If the item wasn't null, then we throw an error indicating the post
-     * has already been donated to by this user
-     */
-    if (!!record.Item) {
-        throw new Error("This user has already donated to this post");
-    }
+    const updatePromises: Promise<any>[] = [];
+    const finalPromises: Promise<any>[] = [];
 
     /*
      * Add coin to the actual post
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_POSTS,
-            Key: {
-                id: pid,
-            },
-            UpdateExpression: `set coin = coin + :amount`,
-            ExpressionAttributeValues: {
-                ":amount": amount,
-            },
-        })
-        .promise();
-
-    const donationRecord: DonationRecord = {
-        uid,
-        pid,
-        tuid: !!targetUser ? targetUser.id : "",
-        amount: amount,
-        name: !!user ? user.firstName : "",
-    };
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_POSTS,
+                Key: {
+                    id: pid,
+                },
+                UpdateExpression: `set coin = coin + :c`,
+                ExpressionAttributeValues: {
+                    ":c": coinTotal,
+                },
+            })
+            .promise()
+    );
 
     /*
-     * Ok, now create a donation record...
+     * Now deduct the coin from the user,
+     * and give them their bolts
      */
-    await dynamoClient
-        .put({
-            TableName: DIGITARI_DONATION_RECORDS,
-            Item: donationRecord,
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: uid,
+                },
+                UpdateExpression: `set coin = coin - :c,
+                                   bolts = bolts + :bolts,
+                                   coinSpent = coinSpent + :c,
+                                   spentOnConvos = spentOnConvos + :c`,
+                ExpressionAttributeValues: {
+                    ":c": coinTotal,
+                    ":bolts": amount,
+                },
+            })
+            .promise()
+    );
 
-    /*
-     * Now deduct the coin from the user
-     */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: uid,
-            },
-            UpdateExpression: `set coin = coin - :amount,
-                                   coinSpent = coinSpent + :amount,
-                                   spentOnConvos = spentOnConvos + :amount`,
-            ExpressionAttributeValues: {
-                ":amount": amount,
-            },
-        })
-        .promise();
-
-    user.coin -= amount;
-    user.coinSpent += amount;
-    user.spentOnConvos += amount;
+    user.coin -= coinTotal;
+    user.bolts += amount;
+    user.coinSpent += coinTotal;
+    user.spentOnConvos += coinTotal;
 
     /*
      * If the target user exists, then create a transaction, and update
@@ -179,24 +151,26 @@ export async function handler(
         /*
          * Flag the poster's new transaction update
          */
-        await dynamoClient
-            .update({
-                TableName: DIGITARI_USERS,
-                Key: {
-                    id: targetUser.id,
-                },
-                UpdateExpression: `set newTransactionUpdate = :b,
+        updatePromises.push(
+            dynamoClient
+                .update({
+                    TableName: DIGITARI_USERS,
+                    Key: {
+                        id: targetUser.id,
+                    },
+                    UpdateExpression: `set newTransactionUpdate = :b,
                                    transTotal = transTotal + :amount,
                                    receivedFromConvos = receivedFromConvos + :amount`,
-                ExpressionAttributeValues: {
-                    ":b": true,
-                    ":amount": amount,
-                },
-            })
-            .promise();
+                    ExpressionAttributeValues: {
+                        ":b": true,
+                        ":amount": coinTotal,
+                    },
+                })
+                .promise()
+        );
 
         targetUser.newTransactionUpdate = true;
-        targetUser.receivedFromConvos += amount;
+        targetUser.receivedFromConvos += coinTotal;
 
         /*
          * Create transaction for this bad boi
@@ -204,8 +178,10 @@ export async function handler(
         const transaction: TransactionType = {
             tid: targetUser.id,
             time,
-            coin: amount,
-            message: `${user.firstName} liked your post: "${post.content}"`,
+            coin: coinTotal,
+            message: `${user.firstName} spent ${toRep(
+                coinTotal
+            )} digicoin on your post: "${post.content}"`,
             transactionType: TransactionTypesEnum.User,
             data: uid,
             ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
@@ -214,38 +190,53 @@ export async function handler(
         /*
          * Send off the transaction
          */
-        await dynamoClient
-            .put({
-                TableName: DIGITARI_TRANSACTIONS,
-                Item: transaction,
-            })
-            .promise();
+        updatePromises.push(
+            dynamoClient
+                .put({
+                    TableName: DIGITARI_TRANSACTIONS,
+                    Item: transaction,
+                })
+                .promise()
+        );
 
         /*
          * Send push notifications to the target
          */
-        try {
-            await sendPushAndHandleReceipts(
+        finalPromises.push(
+            sendPushAndHandleReceipts(
                 targetUser.id,
                 PushNotificationType.CoinDonated,
                 uid,
                 "",
-                `${user.firstName} liked your post!`,
+                `${user.firstName} spent coin on your post`,
                 dynamoClient
-            );
-        } catch (e) {}
+            )
+        );
 
-        try {
-            await challengeCheck(targetUser, dynamoClient);
-        } catch (e) {}
+        finalPromises.push(challengeCheck(targetUser, dynamoClient));
     }
 
     /*
      * Handle challenge updates
      */
-    try {
-        await challengeCheck(user, dynamoClient);
-    } catch (e) {}
+    finalPromises.push(challengeCheck(user, dynamoClient));
 
-    return donationRecord;
+    const finalResolution = await Promise.allSettled([
+        Promise.all(updatePromises),
+        ...finalPromises,
+    ]);
+
+    if (finalResolution[0].status === "rejected") {
+        throw new Error(
+            "Server error. We're going to live forever or die trying"
+        );
+    }
+
+    return {
+        uid,
+        pid,
+        tuid: !!targetUser ? targetUser.id : "",
+        amount: amount,
+        name: !!user ? user.firstName : "",
+    };
 }

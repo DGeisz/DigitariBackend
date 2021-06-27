@@ -52,48 +52,54 @@ export async function handler(
         throw new Error("Only the convo target can block a new convo");
     }
 
+    const updatePromises: Promise<any>[] = [];
+
     /*
      * Update rds
      */
-    await rdsClient.executeSql(
-        `UPDATE convos SET status = -1 WHERE id='${cvid}'`
+    updatePromises.push(
+        rdsClient.executeSql(`UPDATE convos SET status = -1 WHERE id='${cvid}'`)
     );
 
     /*
      * Update users big three values and overall ranking
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: uid,
-            },
-            UpdateExpression: `set blocked = blocked + :unit,
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: uid,
+                },
+                UpdateExpression: `set blocked = blocked + :unit,
                                     ranking = ranking - :unit`,
-            ExpressionAttributeValues: {
-                ":unit": 1,
-            },
-        })
-        .promise();
+                ExpressionAttributeValues: {
+                    ":unit": 1,
+                },
+            })
+            .promise()
+    );
 
     /*
      * Update other user, flag new transaction update
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: uid === convo.tid ? convo.suid : convo.tid,
-            },
-            UpdateExpression: `set beenBlocked = beenBlocked + :unit,
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: uid === convo.tid ? convo.suid : convo.tid,
+                },
+                UpdateExpression: `set beenBlocked = beenBlocked + :unit,
                                     ranking = ranking - :unit,
                                     newTransactionUpdate = :b`,
-            ExpressionAttributeValues: {
-                ":unit": 1,
-                ":b": true,
-            },
-        })
-        .promise();
+                ExpressionAttributeValues: {
+                    ":unit": 1,
+                    ":b": true,
+                },
+            })
+            .promise()
+    );
 
     /*
      * If the convo is active (status = 1), and the
@@ -104,18 +110,20 @@ export async function handler(
      * convos
      */
     if (convo.targetMsgCount === 0 && convo.status === 1) {
-        await dynamoClient
-            .update({
-                TableName: DIGITARI_POSTS,
-                Key: {
-                    id: convo.pid,
-                },
-                UpdateExpression: `set convoCount = convoCount - :unit`,
-                ExpressionAttributeValues: {
-                    ":unit": 1,
-                },
-            })
-            .promise();
+        updatePromises.push(
+            dynamoClient
+                .update({
+                    TableName: DIGITARI_POSTS,
+                    Key: {
+                        id: convo.pid,
+                    },
+                    UpdateExpression: `set convoCount = convoCount - :unit`,
+                    ExpressionAttributeValues: {
+                        ":unit": 1,
+                    },
+                })
+                .promise()
+        );
     }
 
     const pushMessage =
@@ -143,26 +151,40 @@ export async function handler(
     /*
      * Send off the transaction
      */
-    await dynamoClient
-        .put({
-            TableName: DIGITARI_TRANSACTIONS,
-            Item: transaction,
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_TRANSACTIONS,
+                Item: transaction,
+            })
+            .promise()
+    );
+
+    const finalPromises: Promise<any>[] = [];
+
+    finalPromises.push(Promise.all(updatePromises));
 
     /*
      * Send push notifications to the target
      */
-    try {
-        await sendPushAndHandleReceipts(
+    finalPromises.push(
+        sendPushAndHandleReceipts(
             convo.tid === uid ? convo.suid : convo.tid,
             PushNotificationType.ConvoBlocked,
             `${cvid}/${convo.pid}`,
             "",
             pushMessage,
             dynamoClient
+        )
+    );
+
+    const finalResolution = await Promise.allSettled(finalPromises);
+
+    if (finalResolution[0].status === "rejected") {
+        throw new Error(
+            "Server error, and there's nothing you can do about it"
         );
-    } catch (e) {}
+    }
 
     /*
      * Update in memory convo object and return it

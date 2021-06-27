@@ -7,7 +7,6 @@ import { ExtendedUserType, UserType } from "../../global_types/UserTypes";
 import {
     DIGITARI_MESSAGES,
     DIGITARI_POSTS,
-    DIGITARI_TRANSACTIONS,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import { checkForConvo, createConvo } from "./rds_queries/queries";
@@ -17,11 +16,6 @@ import { ranking2Tier } from "../../global_types/TierTypes";
 import { ConvoType } from "../../global_types/ConvoTypes";
 import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
-import {
-    TransactionType,
-    TransactionTypesEnum,
-} from "../../global_types/TransactionTypes";
-import { challengeCheck } from "../../challenges/challenge_check";
 
 const rdsClient = new RdsClient();
 
@@ -111,160 +105,134 @@ export async function handler(
             .promise()
     ).Item as UserType;
 
+    const updatePromises: Promise<any>[] = [];
+    const finalPromises: Promise<any>[] = [];
+
     /*
      * Create the table with all its fields in rds
      */
-    await rdsClient.executeQuery(
-        createConvo(
-            cvid,
-            pid,
-            !!post.cmid ? post.cmid : "",
-            time,
-            message,
-            sid,
-            uid,
-            ranking2Tier(user.ranking),
-            user.ranking,
-            sname,
-            anonymous,
+    updatePromises.push(
+        rdsClient.executeQuery(
+            createConvo(
+                cvid,
+                pid,
+                !!post.cmid ? post.cmid : "",
+                time,
+                message,
+                sid,
+                uid,
+                ranking2Tier(user.ranking),
+                user.ranking,
+                sname,
+                anonymous,
 
-            targetUser.id,
-            ranking2Tier(targetUser.ranking),
-            targetUser.ranking,
-            targetUser.firstName,
+                targetUser.id,
+                ranking2Tier(targetUser.ranking),
+                targetUser.ranking,
+                targetUser.firstName,
 
-            post.responseCost,
-            post.convoReward
+                post.responseCost,
+                post.convoReward
+            )
         )
     );
 
     /*
-     * Decrease the callers coin
+     * Decrease the callers bolts
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: uid,
-            },
-            UpdateExpression: `set coin = coin - :price,
-                                   coinSpent = coinSpent + :price,
-                                   spentOnConvos = spentOnConvos + :price`,
-            ExpressionAttributeValues: {
-                ":price": post.responseCost,
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: uid,
+                },
+                UpdateExpression: `set bolts = bolts - :price`,
+                ExpressionAttributeValues: {
+                    ":price": post.responseCost,
+                },
+            })
+            .promise()
+    );
 
-    user.coin -= post.responseCost;
-    user.coinSpent -= post.responseCost;
-    user.spentOnConvos -= post.responseCost;
+    user.bolts -= post.responseCost;
 
     /*
-     * Flag the target user's new transaction update and new convo update,
-     * also add response cost to transTotal
+     * Flag the target user's new convo update
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: targetUser.id,
-            },
-            UpdateExpression: `set newTransactionUpdate = :b,
-                                   newConvoUpdate = :b,
-                                   transTotal = transTotal + :price,
-                                   receivedFromConvos = receivedFromConvos + :price`,
-            ExpressionAttributeValues: {
-                ":b": true,
-                ":price": post.responseCost,
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: targetUser.id,
+                },
+                UpdateExpression: `set newConvoUpdate = :b`,
+                ExpressionAttributeValues: {
+                    ":b": true,
+                },
+            })
+            .promise()
+    );
 
-    targetUser.newTransactionUpdate = true;
     targetUser.newConvoUpdate = true;
-    targetUser.receivedFromConvos += post.responseCost;
 
     /*
      * Create the initial message
      */
-    await dynamoClient
-        .put({
-            TableName: DIGITARI_MESSAGES,
-            Item: {
-                id: cvid,
-                anonymous,
-                content: message,
-                time,
-                uid: sid,
-                tid: targetUser.id,
-                user: sname,
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_MESSAGES,
+                Item: {
+                    id: cvid,
+                    anonymous,
+                    content: message,
+                    time,
+                    uid: sid,
+                    tid: targetUser.id,
+                    user: sname,
+                },
+            })
+            .promise()
+    );
 
     /*
      * Increase the post's response count
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_POSTS,
-            Key: {
-                id: pid,
-            },
-            UpdateExpression: `set responseCount = responseCount + :unit,
-                                    coin = coin + :cost`,
-            ExpressionAttributeValues: {
-                ":unit": 1,
-                ":cost": post.responseCost,
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_POSTS,
+                Key: {
+                    id: pid,
+                },
+                UpdateExpression: `set responseCount = responseCount + :unit`,
+                ExpressionAttributeValues: {
+                    ":unit": 1,
+                },
+            })
+            .promise()
+    );
 
-    /*
-     * Create transaction for this bad boi
-     */
-    const transaction: TransactionType = {
-        tid: targetUser.id,
-        time,
-        coin: post.responseCost,
-        message: `Your post received a new response: "${message}"`,
-        transactionType: TransactionTypesEnum.Convo,
-        data: `${cvid}:${pid}`,
-        ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
-    };
+    finalPromises.push(Promise.all(updatePromises));
 
-    /*
-     * Send off the transaction
-     */
-    await dynamoClient
-        .put({
-            TableName: DIGITARI_TRANSACTIONS,
-            Item: transaction,
-        })
-        .promise();
-
-    try {
-        await sendPushAndHandleReceipts(
+    finalPromises.push(
+        sendPushAndHandleReceipts(
             targetUser.id,
             PushNotificationType.NewConvo,
             `${cvid}/${pid}`,
             "",
             `Your post received a new response: "${message}"`,
             dynamoClient
-        );
-    } catch (e) {}
+        )
+    );
 
-    /*
-     * Handle challenge updates
-     */
-    try {
-        await challengeCheck(user, dynamoClient);
-    } catch (e) {}
+    const finalResolution = await Promise.allSettled(finalPromises);
 
-    try {
-        await challengeCheck(targetUser, dynamoClient);
-    } catch (e) {}
+    if (finalResolution[0].status === "rejected") {
+        throw new Error("There was a server error, baby!");
+    }
 
     return {
         id: cvid,
@@ -285,6 +253,7 @@ export async function handler(
         sname,
         sanony: anonymous,
         sviewed: true,
+        sourceMsgCount: 1,
 
         tid: targetUser.id,
         ttier: ranking2Tier(targetUser.ranking),

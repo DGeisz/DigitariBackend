@@ -30,18 +30,22 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
         throw new Error("Source can't unfollow target");
     }
 
+    const updatePromises: Promise<any>[] = [];
+
     /*
      * Delete row from follows activity
      */
-    await rdsClient.executeSql(
-        `DELETE FROM follows WHERE tid='${tid}' AND sid='${sid}'`
+    updatePromises.push(
+        rdsClient.executeSql(
+            `DELETE FROM follows WHERE tid='${tid}' AND sid='${sid}'`
+        )
     );
 
     /*
      * Reduce number of follows in elastic search index
      */
-    try {
-        await esClient.updateByQuery({
+    updatePromises.push(
+        esClient.updateByQuery({
             index: "search",
             type: "search_entity",
             body: {
@@ -55,16 +59,14 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     lang: "painless",
                 },
             },
-        });
-    } catch (e) {
-        throw new Error("ES Error: " + e);
-    }
+        })
+    );
 
     /*
      * Decrease the source's following count
      */
-    try {
-        await dynamoClient
+    updatePromises.push(
+        dynamoClient
             .update({
                 TableName: DIGITARI_USERS,
                 Key: {
@@ -75,13 +77,11 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     ":unit": 1,
                 },
             })
-            .promise();
-    } catch (e) {
-        throw new Error("Source update error: " + e);
-    }
+            .promise()
+    );
 
-    try {
-        await dynamoClient
+    updatePromises.push(
+        dynamoClient
             .update({
                 TableName: DIGITARI_USERS,
                 Key: {
@@ -92,10 +92,10 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     ":unit": 1,
                 },
             })
-            .promise();
-    } catch (e) {
-        throw new Error("Target update error: " + e);
-    }
+            .promise()
+    );
+
+    await Promise.all(updatePromises);
 
     return {
         tid,

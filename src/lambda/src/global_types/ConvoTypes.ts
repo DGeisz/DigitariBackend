@@ -1,6 +1,6 @@
 export const CONVO_TYPENAME = "Convo";
 
-export const TARGET_MESSAGE_COUNT_THRESHOLD = 2;
+export const MESSAGE_COUNT_THRESHOLD = 2;
 
 export interface ConvoType {
     id: string;
@@ -21,14 +21,15 @@ export interface ConvoType {
     sname: string;
     sanony: boolean;
     sviewed: boolean;
+    sourceMsgCount: number;
 
     tid: string;
     ttier: number;
     tranking: number;
     tname: string;
     tviewed: boolean;
-
     targetMsgCount: number;
+
     convoReward: number;
     responseCost: number;
 }

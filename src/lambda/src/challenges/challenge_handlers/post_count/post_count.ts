@@ -119,44 +119,54 @@ export async function postCountHandler(
     }
 
     if (transactions.length > 0) {
+        const promises: Promise<any>[] = [];
+
         /*
          * Write all the transactions
          */
-        await dynamoClient
-            .batchWrite({
-                RequestItems: {
-                    DigitariTransactions: transactions.map((transaction) => ({
-                        PutRequest: {
-                            Item: transaction,
-                        },
-                    })),
-                },
-            })
-            .promise();
+        promises.push(
+            dynamoClient
+                .batchWrite({
+                    RequestItems: {
+                        DigitariTransactions: transactions.map(
+                            (transaction) => ({
+                                PutRequest: {
+                                    Item: transaction,
+                                },
+                            })
+                        ),
+                    },
+                })
+                .promise()
+        );
 
         /*
          * Modify user
          */
-        await dynamoClient
-            .update({
-                TableName: DIGITARI_USERS,
-                Key: {
-                    id: user.id,
-                },
-                UpdateExpression: `set pcChallengeIndex = :ni,
+        promises.push(
+            dynamoClient
+                .update({
+                    TableName: DIGITARI_USERS,
+                    Key: {
+                        id: user.id,
+                    },
+                    UpdateExpression: `set pcChallengeIndex = :ni,
                                        newTransactionUpdate = :b,
                                        transTotal = transTotal + :coin,
                                        #cr = list_append(#cr, :cr)`,
-                ExpressionAttributeValues: {
-                    ":ni": newIndex,
-                    ":cr": challengeReceipts,
-                    ":b": true,
-                    ":coin": totalCoin,
-                },
-                ExpressionAttributeNames: {
-                    "#cr": "challengeReceipts",
-                },
-            })
-            .promise();
+                    ExpressionAttributeValues: {
+                        ":ni": newIndex,
+                        ":cr": challengeReceipts,
+                        ":b": true,
+                        ":coin": totalCoin,
+                    },
+                    ExpressionAttributeNames: {
+                        "#cr": "challengeReceipts",
+                    },
+                })
+                .promise()
+        );
+
+        await Promise.allSettled(promises);
     }
 }

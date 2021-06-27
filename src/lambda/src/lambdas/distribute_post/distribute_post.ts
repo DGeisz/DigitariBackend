@@ -5,7 +5,11 @@ import {
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import { DynamoDB } from "aws-sdk";
-import { ExtendedPostType, PostTarget } from "../../global_types/PostTypes";
+import {
+    ExtendedPostType,
+    PostTarget,
+    PostType,
+} from "../../global_types/PostTypes";
 import { millisInDay } from "../../utils/time_utils";
 import { challengeCheck } from "../../challenges/challenge_check";
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
@@ -32,27 +36,30 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
     const uid = (event.identity as AppSyncIdentityCognito).sub;
     const time = Date.now();
 
-    const user: UserType = (
-        await dynamoClient
+    /*
+     * Get the user and post
+     */
+    const [preUser, prePost] = await Promise.all([
+        dynamoClient
             .get({
                 TableName: DIGITARI_USERS,
                 Key: {
                     id: uid,
                 },
             })
-            .promise()
-    ).Item as UserType;
-
-    const post: ExtendedPostType = (
-        await dynamoClient
+            .promise(),
+        dynamoClient
             .get({
                 TableName: DIGITARI_POSTS,
                 Key: {
                     id: pid,
                 },
             })
-            .promise()
-    ).Item as ExtendedPostType;
+            .promise(),
+    ]);
+
+    const user = preUser.Item as UserType;
+    const post = prePost.Item as ExtendedPostType;
 
     if (post.uid !== uid) {
         throw new Error("Only user can distribute their own post");
@@ -149,41 +156,49 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
              */
         }
     }
+    const updatePromises: Promise<any>[] = [];
+    const finalPromises: Promise<any>[] = [];
 
     /*
      * Mark post as distributed
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_POSTS,
-            Key: {
-                id: pid,
-            },
-            UpdateExpression: `set distributed = :t`,
-            ExpressionAttributeValues: {
-                ":t": true,
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_POSTS,
+                Key: {
+                    id: pid,
+                },
+                UpdateExpression: `set distributed = :t`,
+                ExpressionAttributeValues: {
+                    ":t": true,
+                },
+            })
+            .promise()
+    );
 
     /*
      * Now charge the user for the transaction
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: uid,
-            },
-            UpdateExpression: `set coin = coin - :price,
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: uid,
+                },
+                UpdateExpression: `set coin = coin - :price,
                                    coinSpent = coinSpent + :price,
                                    postCount = postCount + :unit`,
-            ExpressionAttributeValues: {
-                ":price": COST_PER_RECIPIENT * finalRecipients,
-                ":unit": 1,
-            },
-        })
-        .promise();
+                ExpressionAttributeValues: {
+                    ":price": COST_PER_RECIPIENT * finalRecipients,
+                    ":unit": 1,
+                },
+            })
+            .promise()
+    );
+
+    finalPromises.push(Promise.all(updatePromises));
 
     user.coin -= COST_PER_RECIPIENT * finalRecipients;
     user.coinSpent += COST_PER_RECIPIENT * finalRecipients;
@@ -192,9 +207,13 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
     /*
      * Handle challenge updates
      */
-    try {
-        await challengeCheck(user, dynamoClient);
-    } catch (e) {}
+    finalPromises.push(challengeCheck(user, dynamoClient));
+
+    const finalResolution = await Promise.allSettled(finalPromises);
+
+    if (finalResolution[0].status === "rejected") {
+        throw new Error("Ran into an error on the backend. Sorry, boo!");
+    }
 
     return true;
 }

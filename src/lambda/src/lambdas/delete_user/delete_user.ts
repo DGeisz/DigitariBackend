@@ -44,16 +44,22 @@ export async function handler(event: AppSyncResolverEvent<{}>) {
             .promise()
     ).Item as UserType;
 
+    const updatePromises: Promise<any>[] = [];
+
     /*
      * Now we're going to delete the user in RDS
      */
-    await rdsClient.executeSql(`DELETE FROM users WHERE id = "${uid}"`);
+    updatePromises.push(
+        rdsClient.executeSql(`DELETE FROM users WHERE id = "${uid}"`)
+    );
 
     /*
      * Delete all follows relationships associated with this user
      */
-    await rdsClient.executeSql(
-        `DELETE FROM follows WHERE tid = "${uid}" OR sid = "${uid}"`
+    updatePromises.push(
+        rdsClient.executeSql(
+            `DELETE FROM follows WHERE tid = "${uid}" OR sid = "${uid}"`
+        )
     );
 
     /*
@@ -103,13 +109,15 @@ export async function handler(event: AppSyncResolverEvent<{}>) {
              * request
              */
             if (writeRequests.length > 0) {
-                await dynamoClient
-                    .batchWrite({
-                        RequestItems: {
-                            DigitariPush: writeRequests,
-                        },
-                    })
-                    .promise();
+                updatePromises.push(
+                    dynamoClient
+                        .batchWrite({
+                            RequestItems: {
+                                DigitariPush: writeRequests,
+                            },
+                        })
+                        .promise()
+                );
             }
         }
     }
@@ -182,50 +190,60 @@ export async function handler(event: AppSyncResolverEvent<{}>) {
      * We have to do this in batches of MAX_S3_DELETE
      */
     for (let i = 0; i < objectKeys.length; i += MAX_S3_DELETE) {
-        await s3Client
-            .deleteObjects({
-                Bucket: BUCKET_NAME,
-                Delete: {
-                    Objects: objectKeys.slice(
-                        i * MAX_S3_DELETE,
-                        (i + 1) * MAX_S3_DELETE
-                    ),
-                },
-            })
-            .promise();
+        updatePromises.push(
+            s3Client
+                .deleteObjects({
+                    Bucket: BUCKET_NAME,
+                    Delete: {
+                        Objects: objectKeys.slice(
+                            i * MAX_S3_DELETE,
+                            (i + 1) * MAX_S3_DELETE
+                        ),
+                    },
+                })
+                .promise()
+        );
     }
 
     /*
      * Now delete the user in elastic search
      */
-    await esClient.delete({
-        index: "search",
-        type: "search_entity",
-        id: uid,
-    });
+    updatePromises.push(
+        esClient.delete({
+            index: "search",
+            type: "search_entity",
+            id: uid,
+        })
+    );
 
     /*
      * Ok, now we have to delete this user in cognito
      */
-    await cognito
-        .adminDeleteUser({
-            UserPoolId: process.env.POOL_ID,
-            Username: user.email,
-        })
-        .promise();
+    updatePromises.push(
+        cognito
+            .adminDeleteUser({
+                UserPoolId: process.env.POOL_ID,
+                Username: user.email,
+            })
+            .promise()
+    );
 
     /*
      * To wrap this up, let's delete the user in
      * dynamo
      */
-    await dynamoClient
-        .delete({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: uid,
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .delete({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: uid,
+                },
+            })
+            .promise()
+    );
+
+    await Promise.all(updatePromises);
 
     return true;
 }

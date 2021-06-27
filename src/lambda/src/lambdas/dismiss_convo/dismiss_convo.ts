@@ -44,11 +44,13 @@ export async function handler(
         throw new Error("Convo must be new in order to be dismissed!");
     }
 
+    const updatePromises: Promise<any>[] = [];
+
     /*
      * Now, update the convo's status
      */
-    await rdsClient.executeSql(
-        `UPDATE convos SET status = -2 WHERE id='${cvid}'`
+    updatePromises.push(
+        rdsClient.executeSql(`UPDATE convos SET status = -2 WHERE id='${cvid}'`)
     );
 
     const time = Date.now();
@@ -57,18 +59,20 @@ export async function handler(
     /*
      * Flag the source's new transaction update
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: convo.suid,
-            },
-            UpdateExpression: `set newTransactionUpdate = :b`,
-            ExpressionAttributeValues: {
-                ":b": true,
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: convo.suid,
+                },
+                UpdateExpression: `set newTransactionUpdate = :b`,
+                ExpressionAttributeValues: {
+                    ":b": true,
+                },
+            })
+            .promise()
+    );
 
     /*
      * Create transaction for this bad boi
@@ -86,28 +90,16 @@ export async function handler(
     /*
      * Send off the transaction
      */
-    await dynamoClient
-        .put({
-            TableName: DIGITARI_TRANSACTIONS,
-            Item: transaction,
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_TRANSACTIONS,
+                Item: transaction,
+            })
+            .promise()
+    );
 
-    /*
-     * Change the convo's status in the in memory object, and then
-     * return the object
-     */
-    // I'm removing push notifications for dismiss convo for now
-    // try {
-    //     await sendPushAndHandleReceipts(
-    //         convo.suid,
-    //         PushNotificationType.ConvoDismissed,
-    //         `${cvid}/${convo.pid}`,
-    //         "",
-    //         pushMessage,
-    //         dynamoClient
-    //     );
-    // } catch (e) {}
+    await Promise.all(updatePromises);
 
     convo.status = -2;
     convo.suid = "";

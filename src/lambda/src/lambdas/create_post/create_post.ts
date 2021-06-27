@@ -49,12 +49,6 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
     const uid = (event.identity as AppSyncIdentityCognito).sub;
 
     /*
-     * Start off with the tid being the users id.
-     * If the user's posting to a community, we'll change it later
-     */
-    let tid = uid;
-
-    /*
      * Do basic content length check
      */
     if (
@@ -86,12 +80,6 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
 
     if (target === PostTarget.Community) {
         if (!!cmid) {
-            /*
-             * Change tid to cmid because obviously that's
-             * who we'll be fetching from
-             */
-            tid = cmid;
-
             community = (
                 await dynamoClient
                     .get({
@@ -190,48 +178,58 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
         responseCount: 0,
     };
 
+    const updatePromises: Promise<any>[] = [];
+
     /*
      * Ok, so now we're going to start out by actually making the post
      */
-    await dynamoClient
-        .put({
-            TableName: DIGITARI_POSTS,
-            Item: {
-                id: pid,
-                uid,
-                recipients: finalRecipients,
-                distributed: false,
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_POSTS,
+                Item: {
+                    id: pid,
+                    uid,
+                    recipients: finalRecipients,
+                    distributed: false,
 
-                user: user.firstName,
-                tier: ranking2Tier(user.ranking),
-                time,
-                content,
+                    user: user.firstName,
+                    tier: ranking2Tier(user.ranking),
+                    time,
+                    content,
 
-                addOn,
-                addOnContent: finalAddOnContent,
-                target,
-                cmid,
-                communityName: community?.name,
-                responseCost,
-                convoReward,
+                    addOn,
+                    addOnContent: finalAddOnContent,
+                    target,
+                    cmid,
+                    communityName: community?.name,
+                    responseCost,
+                    convoReward,
 
-                coin: 0,
-                convoCount: 0,
-                responseCount: 0,
-            },
-        })
-        .promise();
+                    coin: 0,
+                    convoCount: 0,
+                    responseCount: 0,
+                },
+            })
+            .promise()
+    );
 
     /*
      * Add the entry to the posts table
      */
     if (!!cmid) {
-        await rdsClient.executeSql(`INSERT INTO posts (uid, cmid, id, tier, time)
-                                        VALUES ('${uid}', '${cmid}', '${pid}', '${userTier}', ${time});`);
+        updatePromises.push(
+            rdsClient.executeSql(`INSERT INTO posts (uid, cmid, id, tier, time)
+                                        VALUES ('${uid}', '${cmid}', '${pid}', '${userTier}', ${time});`)
+        );
     } else {
-        await rdsClient.executeSql(`INSERT INTO posts (uid, id, tier, time)
-                                        VALUES ('${uid}', '${pid}', '${userTier}', ${time});`);
+        updatePromises.push(
+            rdsClient.executeSql(`INSERT INTO posts (uid, id, tier, time)
+                                        VALUES ('${uid}', '${pid}', '${userTier}', ${time});`)
+        );
     }
+
+    await Promise.all(updatePromises);
 
     return {
         post,

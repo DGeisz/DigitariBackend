@@ -51,6 +51,9 @@ export async function handler(
         throw new Error("Users can only send messages in active convos");
     }
 
+    const updatePromises: Promise<any>[] = [];
+    const finalPromises: Promise<any>[] = [];
+
     /*
      * Now we figure out all the necessary fields for the message
      */
@@ -81,71 +84,83 @@ export async function handler(
         customStatement =
             "sviewed=false, target_msg_count = target_msg_count + 1";
     } else {
-        customStatement = "tviewed=false";
+        customStatement =
+            "tviewed=false, source_msg_count = source_msg_count + 1";
     }
 
     /*
      * Now update the convo with last time and last msg
      */
-    await rdsClient.executeSql(
-        `UPDATE convos SET last_time=${time}, last_msg=:msg, ${customStatement} WHERE id='${cvid}'`,
-        [
-            {
-                name: "msg",
-                value: {
-                    stringValue: message,
+    updatePromises.push(
+        rdsClient.executeSql(
+            `UPDATE convos SET last_time=${time}, last_msg=:msg, ${customStatement} WHERE id='${cvid}'`,
+            [
+                {
+                    name: "msg",
+                    value: {
+                        stringValue: message,
+                    },
                 },
-            },
-        ]
+            ]
+        )
     );
 
     /*
      * Create the actual messages in the digitari messages
      */
-    await dynamoClient
-        .put({
-            TableName: DIGITARI_MESSAGES,
-            Item: {
-                id: cvid,
-                anonymous,
-                content: message,
-                time,
-                uid: messageUid,
-                tid: messageTid,
-                user: messageUser,
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_MESSAGES,
+                Item: {
+                    id: cvid,
+                    anonymous,
+                    content: message,
+                    time,
+                    uid: messageUid,
+                    tid: messageTid,
+                    user: messageUser,
+                },
+            })
+            .promise()
+    );
 
     /*
      * Flag the user's new convo update
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: uid === convo.tid ? convo.suid : convo.tid,
-            },
-            UpdateExpression: `set newConvoUpdate = :b`,
-            ExpressionAttributeValues: {
-                ":b": true,
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: uid === convo.tid ? convo.suid : convo.tid,
+                },
+                UpdateExpression: `set newConvoUpdate = :b`,
+                ExpressionAttributeValues: {
+                    ":b": true,
+                },
+            })
+            .promise()
+    );
 
-    /*
-     * Send push notifications to the target
-     */
-    try {
-        await sendPushAndHandleReceipts(
+    finalPromises.push(Promise.all(updatePromises));
+
+    finalPromises.push(
+        sendPushAndHandleReceipts(
             convo.tid === uid ? convo.suid : convo.tid,
             PushNotificationType.Message,
             `${cvid}/${convo.pid}`,
             anonymous ? "New message" : messageUser,
             message,
             dynamoClient
-        );
-    } catch (e) {}
+        )
+    );
+
+    const finalResolution = await Promise.allSettled(finalPromises);
+
+    if (finalResolution[0].status === "rejected") {
+        throw new Error("Made on oopsie on the backend");
+    }
 
     return {
         id: cvid,

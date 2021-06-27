@@ -123,58 +123,68 @@ export async function receivedFromConvosHandler(
     }
 
     if (transactions.length > 0) {
+        const promises: Promise<any>[] = [];
+
         /*
          * Write all the transactions
          */
-        await dynamoClient
-            .batchWrite({
-                RequestItems: {
-                    DigitariTransactions: transactions.map((transaction) => ({
-                        PutRequest: {
-                            Item: transaction,
-                        },
-                    })),
-                },
-            })
-            .promise();
+        promises.push(
+            dynamoClient
+                .batchWrite({
+                    RequestItems: {
+                        DigitariTransactions: transactions.map(
+                            (transaction) => ({
+                                PutRequest: {
+                                    Item: transaction,
+                                },
+                            })
+                        ),
+                    },
+                })
+                .promise()
+        );
 
         /*
          * Send push
          */
-        try {
-            await sendPushAndHandleReceipts(
+        promises.push(
+            sendPushAndHandleReceipts(
                 user.id,
                 PushNotificationType.ChallengeComplete,
                 "",
                 "",
                 "You completed a challenge!",
                 dynamoClient
-            );
-        } catch (e) {}
+            )
+        );
 
         /*
          * Modify user
          */
-        await dynamoClient
-            .update({
-                TableName: DIGITARI_USERS,
-                Key: {
-                    id: user.id,
-                },
-                UpdateExpression: `set rfcChallengeIndex = :ni,
+        promises.push(
+            dynamoClient
+                .update({
+                    TableName: DIGITARI_USERS,
+                    Key: {
+                        id: user.id,
+                    },
+                    UpdateExpression: `set rfcChallengeIndex = :ni,
                                        newTransactionUpdate = :b,
                                        transTotal = transTotal + :coin,
                                        #cr = list_append(#cr, :cr)`,
-                ExpressionAttributeValues: {
-                    ":ni": newIndex,
-                    ":cr": challengeReceipts,
-                    ":b": true,
-                    ":coin": totalCoin,
-                },
-                ExpressionAttributeNames: {
-                    "#cr": "challengeReceipts",
-                },
-            })
-            .promise();
+                    ExpressionAttributeValues: {
+                        ":ni": newIndex,
+                        ":cr": challengeReceipts,
+                        ":b": true,
+                        ":coin": totalCoin,
+                    },
+                    ExpressionAttributeNames: {
+                        "#cr": "challengeReceipts",
+                    },
+                })
+                .promise()
+        );
+
+        await Promise.allSettled(promises);
     }
 }

@@ -44,6 +44,8 @@ export async function sendPushAndHandleReceipts(
 
     const successfulTickets: PushTicket[] = [];
 
+    const updatePromises: Promise<any>[] = [];
+
     /*
      * Now, for each token associated with this user,
      * we need to see if there are any push receipts
@@ -182,13 +184,15 @@ export async function sendPushAndHandleReceipts(
                     }
 
                     if (writeRequests.length > 0) {
-                        await dynamoClient
-                            .batchWrite({
-                                RequestItems: {
-                                    DigitariPushTickets: writeRequests,
-                                },
-                            })
-                            .promise();
+                        updatePromises.push(
+                            dynamoClient
+                                .batchWrite({
+                                    RequestItems: {
+                                        DigitariPushTickets: writeRequests,
+                                    },
+                                })
+                                .promise()
+                        );
                     }
                 }
             }
@@ -198,15 +202,17 @@ export async function sendPushAndHandleReceipts(
                  * If we need to delete the token, just
                  * get it over with
                  */
-                await dynamoClient
-                    .delete({
-                        TableName: DIGITARI_PUSH,
-                        Key: {
-                            uid: tid,
-                            token: token.token,
-                        },
-                    })
-                    .promise();
+                updatePromises.push(
+                    dynamoClient
+                        .delete({
+                            TableName: DIGITARI_PUSH,
+                            Key: {
+                                uid: tid,
+                                token: token.token,
+                            },
+                        })
+                        .promise()
+                );
             } else {
                 /*
                  * If we need to further rate limit the token, do it here
@@ -217,31 +223,8 @@ export async function sendPushAndHandleReceipts(
                             ? 30
                             : 2 * token.backOffInterval;
 
-                    await dynamoClient
-                        .update({
-                            TableName: DIGITARI_PUSH,
-                            Key: {
-                                uid: tid,
-                                token: token.token,
-                            },
-                            UpdateExpression:
-                                "set backOffInterval = :bi, backOffTime = :bt",
-                            ExpressionAttributeValues: {
-                                ":bi": interval,
-                                ":bt": finalBackOffTime,
-                            },
-                        })
-                        .promise();
-                } else if (allowMessage) {
-                    /*
-                     * If the back off interval was greater than zero,
-                     * then we there was some rate limiting in place.
-                     *
-                     * Because all the tickets cleared, we can now
-                     * get rid of the rate limiting
-                     */
-                    if (token.backOffInterval > 0) {
-                        await dynamoClient
+                    updatePromises.push(
+                        dynamoClient
                             .update({
                                 TableName: DIGITARI_PUSH,
                                 Key: {
@@ -251,11 +234,38 @@ export async function sendPushAndHandleReceipts(
                                 UpdateExpression:
                                     "set backOffInterval = :bi, backOffTime = :bt",
                                 ExpressionAttributeValues: {
-                                    ":bi": 0,
-                                    ":bt": 0,
+                                    ":bi": interval,
+                                    ":bt": finalBackOffTime,
                                 },
                             })
-                            .promise();
+                            .promise()
+                    );
+                } else if (allowMessage) {
+                    /*
+                     * If the back off interval was greater than zero,
+                     * then we there was some rate limiting in place.
+                     *
+                     * Because all the tickets cleared, we can now
+                     * get rid of the rate limiting
+                     */
+                    if (token.backOffInterval > 0) {
+                        updatePromises.push(
+                            dynamoClient
+                                .update({
+                                    TableName: DIGITARI_PUSH,
+                                    Key: {
+                                        uid: tid,
+                                        token: token.token,
+                                    },
+                                    UpdateExpression:
+                                        "set backOffInterval = :bi, backOffTime = :bt",
+                                    ExpressionAttributeValues: {
+                                        ":bi": 0,
+                                        ":bt": 0,
+                                    },
+                                })
+                                .promise()
+                        );
                     }
 
                     /*
@@ -296,15 +306,17 @@ export async function sendPushAndHandleReceipts(
                                     newTicket.details.error ===
                                     "DeviceNotRegistered"
                                 ) {
-                                    await dynamoClient
-                                        .delete({
-                                            TableName: DIGITARI_PUSH,
-                                            Key: {
-                                                uid: tid,
-                                                token: token.token,
-                                            },
-                                        })
-                                        .promise();
+                                    updatePromises.push(
+                                        dynamoClient
+                                            .delete({
+                                                TableName: DIGITARI_PUSH,
+                                                Key: {
+                                                    uid: tid,
+                                                    token: token.token,
+                                                },
+                                            })
+                                            .promise()
+                                    );
 
                                     break;
                                 } else if (
@@ -317,21 +329,23 @@ export async function sendPushAndHandleReceipts(
                                                 ? 30
                                                 : 2 * token.backOffInterval;
 
-                                        await dynamoClient
-                                            .update({
-                                                TableName: DIGITARI_PUSH,
-                                                Key: {
-                                                    uid: tid,
-                                                    token: token.token,
-                                                },
-                                                UpdateExpression:
-                                                    "set backOffInterval = :bi, backOffTime = :bt",
-                                                ExpressionAttributeValues: {
-                                                    ":bi": interval,
-                                                    ":bt": time,
-                                                },
-                                            })
-                                            .promise();
+                                        updatePromises.push(
+                                            dynamoClient
+                                                .update({
+                                                    TableName: DIGITARI_PUSH,
+                                                    Key: {
+                                                        uid: tid,
+                                                        token: token.token,
+                                                    },
+                                                    UpdateExpression:
+                                                        "set backOffInterval = :bi, backOffTime = :bt",
+                                                    ExpressionAttributeValues: {
+                                                        ":bi": interval,
+                                                        ":bt": time,
+                                                    },
+                                                })
+                                                .promise()
+                                        );
                                     }
 
                                     rateLimited = true;
@@ -377,13 +391,17 @@ export async function sendPushAndHandleReceipts(
         }
 
         if (writeRequests.length > 0) {
-            await dynamoClient
-                .batchWrite({
-                    RequestItems: {
-                        DigitariPushTickets: writeRequests,
-                    },
-                })
-                .promise();
+            updatePromises.push(
+                dynamoClient
+                    .batchWrite({
+                        RequestItems: {
+                            DigitariPushTickets: writeRequests,
+                        },
+                    })
+                    .promise()
+            );
         }
     }
+
+    await Promise.allSettled(updatePromises);
 }

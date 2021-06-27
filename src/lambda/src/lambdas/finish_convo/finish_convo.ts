@@ -3,13 +3,11 @@ import { DynamoDB } from "aws-sdk";
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { EventArgs } from "../dismiss_convo/lambda_types/event_args";
 import {
-    ConvoType,
     ConvoUpdate,
-    TARGET_MESSAGE_COUNT_THRESHOLD,
+    MESSAGE_COUNT_THRESHOLD,
 } from "../../global_types/ConvoTypes";
 import { getConvo } from "../dismiss_convo/rds_queries/queries";
 import {
-    DIGITARI_POSTS,
     DIGITARI_TRANSACTIONS,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
@@ -54,79 +52,114 @@ export async function handler(
     }
 
     /*
-     * Now then, if we're the source of the convo, make sure
-     * we're above the convo threshold
+     * Make sure we're above the convo threshold
      */
     if (uid === convo.suid) {
-        if (convo.targetMsgCount < TARGET_MESSAGE_COUNT_THRESHOLD) {
+        if (convo.targetMsgCount < MESSAGE_COUNT_THRESHOLD) {
             throw new Error(
                 "Source user can't finish the convo because target user hasn't sent enough messages!"
             );
         }
+    } else {
+        if (convo.sourceMsgCount < MESSAGE_COUNT_THRESHOLD) {
+            throw new Error(
+                "Target user can't finish the convo because source user hasn't sent enough messages!"
+            );
+        }
     }
+
+    const [preSource, preTarget] = await Promise.all([
+        await dynamoClient
+            .get({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: convo.suid,
+                },
+            })
+            .promise(),
+        await dynamoClient
+            .get({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: convo.tid,
+                },
+            })
+            .promise(),
+    ]);
+
+    const source = preSource.Item as UserType;
+    const target = preTarget.Item as UserType;
+
+    const updatePromises: Promise<any>[] = [];
+    const finalPromises: Promise<any>[] = [];
 
     /*
      * Update rds
      */
-    /*
-     * Update rds
-     */
-    await rdsClient.executeSql(
-        `UPDATE convos SET status = 2 WHERE id='${cvid}'`
+    updatePromises.push(
+        rdsClient.executeSql(`UPDATE convos SET status = 2 WHERE id='${cvid}'`)
     );
 
     /*
      * Increase both user's successful convo count and ranking,
      * and also give source user the convo reward
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: convo.suid,
-            },
-            UpdateExpression: `set transTotal = transTotal + :reward,
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: convo.suid,
+                },
+                UpdateExpression: `set transTotal = transTotal + :reward,
                                  successfulConvos = successfulConvos + :unit,
                                  ranking = ranking + :unit,
                                  newTransactionUpdate = :b`,
-            ExpressionAttributeValues: {
-                ":reward": convo.convoReward,
-                ":unit": 1,
-                ":b": true,
-            },
-        })
-        .promise();
+                ExpressionAttributeValues: {
+                    ":reward": convo.convoReward,
+                    ":unit": 1,
+                    ":b": true,
+                },
+            })
+            .promise()
+    );
 
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: convo.tid,
-            },
-            UpdateExpression: `set successfulConvos = successfulConvos + :unit,
-                                 ranking = ranking + :unit`,
-            ExpressionAttributeValues: {
-                ":unit": 1,
-            },
-        })
-        .promise();
+    source.transTotal += convo.convoReward;
+    source.successfulConvos += 1;
+    source.ranking += 1;
+    source.newTransactionUpdate = true;
 
-    /*
-     * Send push notifications to the target
-     */
-    const pushMessage =
-        convo.tid === uid
-            ? `${convo.tname} finished your convo!`
-            : convo.sanony
-            ? `Your convo with an anonymous user was finished!`
-            : `${convo.sname} finished your convo!`;
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: convo.tid,
+                },
+                UpdateExpression: `set transTotal = transTotal + :reward,
+                                 successfulConvos = successfulConvos + :unit,
+                                 ranking = ranking + :unit,
+                                 newTransactionUpdate = :b`,
+                ExpressionAttributeValues: {
+                    ":reward": convo.convoReward,
+                    ":unit": 1,
+                    ":b": true,
+                },
+            })
+            .promise()
+    );
+
+    target.transTotal += convo.convoReward;
+    target.successfulConvos += 1;
+    target.ranking += 1;
+    target.newTransactionUpdate = true;
 
     const time = Date.now();
 
     /*
      * Create transaction for this bad boi
      */
-    const transaction: TransactionType = {
+    const sourceTransaction: TransactionType = {
         tid: convo.suid,
         time,
         coin: convo.convoReward,
@@ -139,57 +172,75 @@ export async function handler(
     /*
      * Send off the transaction
      */
-    await dynamoClient
-        .put({
-            TableName: DIGITARI_TRANSACTIONS,
-            Item: transaction,
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_TRANSACTIONS,
+                Item: sourceTransaction,
+            })
+            .promise()
+    );
 
-    try {
-        await sendPushAndHandleReceipts(
+    /*
+     * Create transaction for this bad boi
+     */
+    const targetTransaction: TransactionType = {
+        tid: convo.tid,
+        time,
+        coin: convo.convoReward,
+        message: convo.sanony
+            ? "Reward for your successful convo"
+            : `Reward for your successful convo with ${convo.tname}`,
+        transactionType: TransactionTypesEnum.Convo,
+        data: `${cvid}:${convo.pid}`,
+        ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
+    };
+
+    /*
+     * Send off the transaction
+     */
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_TRANSACTIONS,
+                Item: targetTransaction,
+            })
+            .promise()
+    );
+
+    finalPromises.push(Promise.all(updatePromises));
+
+    finalPromises.push(challengeCheck(source, dynamoClient));
+    finalPromises.push(challengeCheck(target, dynamoClient));
+
+    /*
+     * Send push notifications to the target
+     */
+    const pushMessage =
+        convo.tid === uid
+            ? `${convo.tname} finished your convo!`
+            : convo.sanony
+            ? `Your convo successfully finished!`
+            : `${convo.sname} finished your convo!`;
+
+    finalPromises.push(
+        sendPushAndHandleReceipts(
             convo.tid === uid ? convo.suid : convo.tid,
             PushNotificationType.ConvoFinished,
             `${cvid}/${convo.pid}`,
             "",
             pushMessage,
             dynamoClient
+        )
+    );
+
+    const finalResolution = await Promise.allSettled(finalPromises);
+
+    if (finalResolution[0].status === "rejected") {
+        throw new Error(
+            "Server error, and it's probably none of your business"
         );
-    } catch (e) {}
-
-    /*
-     * Fetch source and target,
-     * and handle challenge checks
-     */
-    try {
-        const source: UserType = (
-            await dynamoClient
-                .get({
-                    TableName: DIGITARI_USERS,
-                    Key: {
-                        id: uid,
-                    },
-                })
-                .promise()
-        ).Item as UserType;
-
-        await challengeCheck(source, dynamoClient);
-    } catch (e) {}
-
-    try {
-        const target: UserType = (
-            await dynamoClient
-                .get({
-                    TableName: DIGITARI_USERS,
-                    Key: {
-                        id: uid,
-                    },
-                })
-                .promise()
-        ).Item as UserType;
-
-        await challengeCheck(target, dynamoClient);
-    } catch (e) {}
+    }
 
     /*
      * Finish things off by setting convo status locally, and scrubbing

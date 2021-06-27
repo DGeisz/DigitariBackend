@@ -40,32 +40,29 @@ export async function handler(
     }
 
     /*
-     * Grab the user
+     * Get the user and post
      */
-    const user: UserType = (
-        await dynamoClient
+    const [preUser, prePost] = await Promise.all([
+        dynamoClient
             .get({
                 TableName: DIGITARI_USERS,
                 Key: {
                     id: uid,
                 },
             })
-            .promise()
-    ).Item as UserType;
-
-    /*
-     * Grab the associated post
-     */
-    const post = (
-        await dynamoClient
+            .promise(),
+        dynamoClient
             .get({
                 TableName: DIGITARI_POSTS,
                 Key: {
                     id: convo.pid,
                 },
             })
-            .promise()
-    ).Item as PostType;
+            .promise(),
+    ]);
+
+    const user = preUser.Item as UserType;
+    const post = prePost.Item as PostType;
 
     /*
      * Check to see if the user has sufficient coin to complete
@@ -77,45 +74,52 @@ export async function handler(
         );
     }
 
+    const updatePromises: Promise<any>[] = [];
+
     /*
      * Update rds
      */
-    await rdsClient.executeSql(
-        `UPDATE convos SET status = 1 WHERE id='${cvid}'`
+    updatePromises.push(
+        rdsClient.executeSql(`UPDATE convos SET status = 1 WHERE id='${cvid}'`)
     );
 
     /*
-     * Decrease the user's coin
+     * Decrease the user's bolts by response cost
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_USERS,
-            Key: {
-                id: uid,
-            },
-            UpdateExpression: `set coin = coin - :price,
-                               coinSpent = coinSpent + :price`,
-            ExpressionAttributeValues: {
-                ":price": post.convoReward,
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: uid,
+                },
+                UpdateExpression: `set bolts = bolts - :price`,
+                ExpressionAttributeValues: {
+                    ":price": post.responseCost,
+                },
+            })
+            .promise()
+    );
 
     /*
      * Increase the post's convo count
      */
-    await dynamoClient
-        .update({
-            TableName: DIGITARI_POSTS,
-            Key: {
-                id: convo.pid,
-            },
-            UpdateExpression: `set convoCount = convoCount + :unit`,
-            ExpressionAttributeValues: {
-                ":unit": 1,
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .update({
+                TableName: DIGITARI_POSTS,
+                Key: {
+                    id: convo.pid,
+                },
+                UpdateExpression: `set convoCount = convoCount + :unit`,
+                ExpressionAttributeValues: {
+                    ":unit": 1,
+                },
+            })
+            .promise()
+    );
+
+    await Promise.all(updatePromises);
 
     /*
      * Update the in-memory convo object

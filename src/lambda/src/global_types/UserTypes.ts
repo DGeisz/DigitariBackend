@@ -1,6 +1,7 @@
 export const USER_TYPENAME = "User";
 
 export const FOLLOW_USER_PRICE = 200;
+export const DIGIBOLT_PRICE = 10;
 
 export interface UserType {
     id: string;
@@ -8,6 +9,7 @@ export interface UserType {
     lastName: string;
     email: string;
     remainingInvites: number;
+    transTotal: number;
 
     amFollowing: boolean;
 

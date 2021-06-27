@@ -96,6 +96,8 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
         }
     }
 
+    const updatePromises: Promise<any>[] = [];
+
     /*
      * Now filter and map this list to create a list of
      * identifiable objects
@@ -111,39 +113,47 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
      * We have to do this in batches of MAX_S3_DELETE
      */
     for (let i = 0; i < objectKeys.length; i += MAX_S3_DELETE) {
-        await s3Client
-            .deleteObjects({
-                Bucket: BUCKET_NAME,
-                Delete: {
-                    Objects: objectKeys.slice(
-                        i * MAX_S3_DELETE,
-                        (i + 1) * MAX_S3_DELETE
-                    ),
-                },
-            })
-            .promise();
+        updatePromises.push(
+            s3Client
+                .deleteObjects({
+                    Bucket: BUCKET_NAME,
+                    Delete: {
+                        Objects: objectKeys.slice(
+                            i * MAX_S3_DELETE,
+                            (i + 1) * MAX_S3_DELETE
+                        ),
+                    },
+                })
+                .promise()
+        );
     }
 
     /*
      * Now delete the post from RDS,
      * and set all convos associated with this post to `deleted`
      */
-    await rdsClient.executeSql(
-        `UPDATE convos SET status = -3 WHERE pid='${pid}'`
+    updatePromises.push(
+        rdsClient.executeSql(`UPDATE convos SET status = -3 WHERE pid='${pid}'`)
     );
-    await rdsClient.executeSql(`DELETE FROM posts WHERE id='${pid}'`);
+    updatePromises.push(
+        rdsClient.executeSql(`DELETE FROM posts WHERE id='${pid}'`)
+    );
 
     /*
      * Finally, delete the post in dynamo
      */
-    await dynamoClient
-        .delete({
-            TableName: DIGITARI_POSTS,
-            Key: {
-                id: pid,
-            },
-        })
-        .promise();
+    updatePromises.push(
+        dynamoClient
+            .delete({
+                TableName: DIGITARI_POSTS,
+                Key: {
+                    id: pid,
+                },
+            })
+            .promise()
+    );
+
+    await Promise.all(updatePromises);
 
     return true;
 }
