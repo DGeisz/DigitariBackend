@@ -8,7 +8,7 @@
 #set($statement = "SELECT id, pid, cmid, status,
                    initial_time as initialTime, initial_msg as initialMsg,
                    last_time as lastTime, last_msg as lastMsg,
-                   sid, stier, sranking, sname, sanony, sviewed,
+                   sid, stier, sranking, sname, sanony, sviewed, source_msg_count as sourceMsgCount,
                    tid, ttier, tranking, tname, tviewed, target_msg_count as targetMsgCount,
                    response_cost as responseCost, convo_reward as convoReward
                    FROM convos WHERE ((tid=:UID OR suid=:UID) AND status=1) OR (suid=:UID AND status=0)
