@@ -94,7 +94,7 @@ export async function handler(
     /*
      * ...And grab the target user
      */
-    const targetUser: UserType = (
+    const targetUser = (
         await dynamoClient
             .get({
                 TableName: DIGITARI_USERS,
@@ -103,14 +103,42 @@ export async function handler(
                 },
             })
             .promise()
-    ).Item as UserType;
-
-    if (!targetUser) {
-        throw new Error("Target user no longer exists");
-    }
+    ).Item as UserType | null;
 
     const updatePromises: Promise<any>[] = [];
     const finalPromises: Promise<any>[] = [];
+
+    let tid: string;
+    let tranking: number;
+    let ttier: number;
+    let tname: string;
+
+    if (!!targetUser) {
+        tid = targetUser.id;
+        tranking = targetUser.ranking;
+        tname = targetUser.firstName;
+        ttier = ranking2Tier(targetUser.ranking);
+
+        updatePromises.push(
+            dynamoClient
+                .update({
+                    TableName: DIGITARI_USERS,
+                    Key: {
+                        id: targetUser.id,
+                    },
+                    UpdateExpression: `set newConvoUpdate = :b`,
+                    ExpressionAttributeValues: {
+                        ":b": true,
+                    },
+                })
+                .promise()
+        );
+    } else {
+        tid = post.uid;
+        ttier = post.tier;
+        tranking = 0;
+        tname = post.user;
+    }
 
     /*
      * Create the table with all its fields in rds
@@ -130,10 +158,10 @@ export async function handler(
                 sname,
                 anonymous,
 
-                targetUser.id,
-                ranking2Tier(targetUser.ranking),
-                targetUser.ranking,
-                targetUser.firstName,
+                tid,
+                ttier,
+                tranking,
+                tname,
 
                 post.responseCost,
                 post.convoReward
@@ -162,26 +190,6 @@ export async function handler(
     user.bolts -= post.responseCost;
 
     /*
-     * Flag the target user's new convo update
-     */
-    updatePromises.push(
-        dynamoClient
-            .update({
-                TableName: DIGITARI_USERS,
-                Key: {
-                    id: targetUser.id,
-                },
-                UpdateExpression: `set newConvoUpdate = :b`,
-                ExpressionAttributeValues: {
-                    ":b": true,
-                },
-            })
-            .promise()
-    );
-
-    targetUser.newConvoUpdate = true;
-
-    /*
      * Create the initial message
      */
     updatePromises.push(
@@ -194,7 +202,7 @@ export async function handler(
                     content: message,
                     time,
                     uid: sid,
-                    tid: targetUser.id,
+                    tid,
                     user: sname,
                 },
             })
@@ -223,7 +231,7 @@ export async function handler(
 
     finalPromises.push(
         sendPushAndHandleReceipts(
-            targetUser.id,
+            tid,
             PushNotificationType.NewConvo,
             `${cvid}/${pid}`,
             "",
@@ -260,10 +268,10 @@ export async function handler(
         sviewed: true,
         sourceMsgCount: 1,
 
-        tid: targetUser.id,
-        ttier: ranking2Tier(targetUser.ranking),
-        tranking: targetUser.ranking,
-        tname: targetUser.firstName,
+        tid,
+        ttier,
+        tranking,
+        tname,
         tviewed: false,
 
         targetMsgCount: 0,
