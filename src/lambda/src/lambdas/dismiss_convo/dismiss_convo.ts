@@ -5,6 +5,7 @@ import { getConvo } from "./rds_queries/queries";
 import { EventArgs } from "./lambda_types/event_args";
 import { ConvoType } from "../../global_types/ConvoTypes";
 import {
+    TRANSACTION_TTL,
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
@@ -84,7 +85,7 @@ export async function handler(
         message: pushMessage,
         transactionType: TransactionTypesEnum.Convo,
         data: `${cvid}:${convo.pid}`,
-        ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
+        ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
     };
 
     /*

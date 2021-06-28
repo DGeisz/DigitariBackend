@@ -14,6 +14,7 @@ import {
 import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
 import {
+    TRANSACTION_TTL,
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
@@ -166,7 +167,7 @@ export async function handler(
         message: `Reward for your successful convo with ${convo.tname}`,
         transactionType: TransactionTypesEnum.Convo,
         data: `${cvid}:${convo.pid}`,
-        ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
+        ttl: Math.round(time / 1000) + TRANSACTION_TTL,
     };
 
     /*
@@ -190,10 +191,10 @@ export async function handler(
         coin: convo.convoReward,
         message: convo.sanony
             ? "Reward for your successful convo"
-            : `Reward for your successful convo with ${convo.tname}`,
+            : `Reward for your successful convo with ${convo.sname}`,
         transactionType: TransactionTypesEnum.Convo,
         data: `${cvid}:${convo.pid}`,
-        ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
+        ttl: Math.round(time / 1000) + TRANSACTION_TTL,
     };
 
     /*

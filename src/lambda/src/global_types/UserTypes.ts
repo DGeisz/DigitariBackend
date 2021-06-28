@@ -25,7 +25,7 @@ export interface UserType {
     nameColor: ProfileColors;
     bioFont: ProfileFonts;
     bioColor: ProfileColors;
-    nameSticker: NameStickers;
+    profileSticker: ProfileStickers;
 
     lastCollectionTime: number;
 
@@ -78,6 +78,6 @@ export enum ProfileColors {
     Default,
 }
 
-export enum NameStickers {
+export enum ProfileStickers {
     Default,
 }

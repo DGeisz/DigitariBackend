@@ -65,12 +65,12 @@ export async function handler(
     const post = prePost.Item as PostType;
 
     /*
-     * Check to see if the user has sufficient coin to complete
-     * the transaction
+     * Check to make sure target has sufficient bolts to activate
+     * the convo
      */
-    if (user.coin < post.convoReward) {
+    if (user.bolts < post.responseCost) {
         throw new Error(
-            "User doesn't have enough coin to activate the conversation"
+            "User doesn't have enough bolts to activate the conversation"
         );
     }
 

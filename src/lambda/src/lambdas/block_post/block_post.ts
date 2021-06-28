@@ -10,6 +10,7 @@ import {
 } from "../../global_types/DynamoTableNames";
 import { EventArgs } from "./lambda_types/event_args";
 import {
+    TRANSACTION_TTL,
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
@@ -135,7 +136,7 @@ export async function handler(
         message: `${user.firstName} blocked your post: "${post.content}"`,
         transactionType: TransactionTypesEnum.User,
         data: uid,
-        ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
+        ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
     };
 
     /*

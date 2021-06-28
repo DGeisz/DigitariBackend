@@ -9,6 +9,7 @@ import {
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import {
+    TRANSACTION_TTL,
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
@@ -53,7 +54,7 @@ export async function handler(
 
     /*
      * Now check that the user has enough digicoin to make
-     * this donation
+     * this transaction
      */
     if (user.coin < coinTotal) {
         throw new Error("User doesn't have enough coin to donate this amount");
@@ -159,11 +160,11 @@ export async function handler(
                         id: targetUser.id,
                     },
                     UpdateExpression: `set newTransactionUpdate = :b,
-                                   transTotal = transTotal + :amount,
-                                   receivedFromConvos = receivedFromConvos + :amount`,
+                                   transTotal = transTotal + :c,
+                                   receivedFromConvos = receivedFromConvos + :c`,
                     ExpressionAttributeValues: {
                         ":b": true,
-                        ":amount": coinTotal,
+                        ":c": coinTotal,
                     },
                 })
                 .promise()
@@ -184,7 +185,7 @@ export async function handler(
             )} digicoin on your post: "${post.content}"`,
             transactionType: TransactionTypesEnum.User,
             data: uid,
-            ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
+            ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         };
 
         /*
@@ -208,7 +209,9 @@ export async function handler(
                 PushNotificationType.CoinDonated,
                 uid,
                 "",
-                `${user.firstName} spent coin on your post`,
+                `${user.firstName} spent ${toRep(
+                    coinTotal
+                )} digicoin on your post`,
                 dynamoClient
             )
         );

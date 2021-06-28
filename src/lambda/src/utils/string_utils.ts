@@ -7,3 +7,7 @@ export function randomString(
         result += chars[Math.floor(Math.random() * chars.length)];
     return result;
 }
+
+export function filterEmoji(text: string): string {
+    return text.replace(/[^\p{L}\p{N}\p{P}\p{Z}]/gu, "");
+}

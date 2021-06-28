@@ -15,6 +15,8 @@ export interface TransactionType {
     ttl: number;
 }
 
+export const TRANSACTION_TTL = 14 * 24 * 60 * 60;
+
 export interface EarningsReceipt {
     coin: number;
     time: number;

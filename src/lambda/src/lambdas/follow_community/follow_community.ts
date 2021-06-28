@@ -18,6 +18,7 @@ import {
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import {
+    TRANSACTION_TTL,
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
@@ -215,7 +216,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
         message: pushMessage,
         transactionType: TransactionTypesEnum.User,
         data: source.id,
-        ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
+        ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
     };
 
     /*

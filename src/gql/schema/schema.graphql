@@ -35,7 +35,7 @@ type User @aws_iam
     nameColor: Int
     bioFont: Int
     bioColor: Int
-    nameSticker: Int
+    profileSticker: Int
 
     challengeReceipts: [String]
 
@@ -250,7 +250,6 @@ type Query @aws_cognito_user_pools @aws_iam {
     followers(tid: ID!, lastTime: String): [FollowEntity]
     following(sid: ID!, lastTime: String, entityType: Int): [FollowEntity]
     postResponseCheck(pid: ID): Boolean
-    transactionAccumulation: Int
     transactions(lastTime: String): [Transaction]
 
     validInviteCode(code: String): Boolean

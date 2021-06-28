@@ -2,9 +2,9 @@ import { DynamoDB } from "aws-sdk";
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import {
     ExtendedUserType,
-    NameStickers,
     ProfileColors,
     ProfileFonts,
+    ProfileStickers,
     UserType,
 } from "../../global_types/UserTypes";
 import { EventArgs } from "./lambda_types/event_args";
@@ -16,6 +16,7 @@ import {
 } from "../../global_types/DynamoTableNames";
 import { InviteType } from "../../global_types/InviteTypes";
 import {
+    TRANSACTION_TTL,
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
@@ -24,6 +25,8 @@ import { PushNotificationType } from "../../global_types/PushTypes";
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import { Client } from "elasticsearch";
 import { toCommaRep } from "../../utils/value_rep_utils";
+import { filterEmoji } from "../../utils/string_utils";
+import { insertFollowRow } from "../follow_user/rds_queries/queries";
 
 const INVITE_REWARD = 500;
 
@@ -44,7 +47,10 @@ export async function handler(
     const time = Date.now();
     const uid = (event.identity as AppSyncIdentityCognito).sub;
 
-    const { code, firstName, lastName, email } = event.arguments;
+    let { code, firstName, lastName, email } = event.arguments;
+
+    firstName = filterEmoji(firstName);
+    lastName = filterEmoji(lastName);
 
     /*
      * Alright before we go crazy, let's see if this user already
@@ -89,6 +95,20 @@ export async function handler(
         throw new Error("The invite code you provided isn't valid");
     }
 
+    const invitingUser: UserType = (
+        await dynamoClient
+            .get({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: invite.uid,
+                },
+            })
+            .promise()
+    ).Item as ExtendedUserType;
+
+    const inviterExists =
+        !!invitingUser && !!invitingUser.firstName && !!invitingUser.lastName;
+
     /*
      * Ok, so at this point, let's go ahead and forge this bad boi
      */
@@ -117,7 +137,7 @@ export async function handler(
         nameColor: ProfileColors.Default,
         bioFont: ProfileFonts.Default,
         bioColor: ProfileColors.Default,
-        nameSticker: NameStickers.Default,
+        profileSticker: ProfileStickers.Default,
 
         lastCollectionTime: 0,
 
@@ -125,10 +145,10 @@ export async function handler(
         feedPendingCollection: false,
         lastPostsTime: 0,
         postsPendingCollection: false,
-        transTotal: 0,
+        transTotal: 1000,
 
         newConvoUpdate: false,
-        newTransactionUpdate: false,
+        newTransactionUpdate: true,
 
         challengeReceipts: [],
 
@@ -149,7 +169,7 @@ export async function handler(
         followers: 0,
         followersChallengeIndex: 0,
 
-        following: 0,
+        following: inviterExists ? 1 : 0,
         followingChallengeIndex: 0,
 
         communityFollowersChallengeIndex: 0,
@@ -168,6 +188,31 @@ export async function handler(
             .put({
                 TableName: DIGITARI_USERS,
                 Item: newUser,
+            })
+            .promise()
+    );
+
+    /*
+     * Add the "You joined digitari!" Transaction
+     */
+    const joinTransaction: TransactionType = {
+        tid: uid,
+        time,
+        coin: 1000,
+        message: "You joined Digitari!",
+        transactionType: TransactionTypesEnum.User,
+        data: uid,
+        ttl: Math.round(time / 1000) + TRANSACTION_TTL,
+    };
+
+    /*
+     * Send off the transaction
+     */
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_TRANSACTIONS,
+                Item: joinTransaction,
             })
             .promise()
     );
@@ -196,47 +241,86 @@ export async function handler(
         })
     );
 
-    /*
-     * Ok, now let's reward the person who gave the invite
-     */
-    updatePromises.push(
-        dynamoClient
-            .update({
-                TableName: DIGITARI_USERS,
-                Key: {
-                    id: invite.uid,
-                },
-                UpdateExpression: `set newTransactionUpdate = :b,
-                                   transTotal = transTotal + :reward`,
-                ExpressionAttributeValues: {
-                    ":b": true,
-                    ":reward": INVITE_REWARD,
+    if (inviterExists) {
+        /*
+         * Let's automatically follow the inviting user,
+         * and increase that user's followers everywhere
+         */
+        updatePromises.push(
+            rdsClient.executeQuery<boolean>(
+                insertFollowRow(
+                    invitingUser.id,
+                    uid,
+                    `${invitingUser.firstName} ${invitingUser.lastName}`,
+                    `${firstName} ${lastName}`,
+                    time,
+                    0
+                )
+            )
+        );
+
+        updatePromises.push(
+            esClient.updateByQuery({
+                index: "search",
+                type: "search_entity",
+                body: {
+                    query: {
+                        match: {
+                            id: invitingUser.id,
+                        },
+                    },
+                    script: {
+                        source: "ctx._source.followers += 1",
+                        lang: "painless",
+                    },
                 },
             })
-            .promise()
-    );
+        );
 
-    const transaction: TransactionType = {
-        tid: invite.uid,
-        time,
-        coin: INVITE_REWARD,
-        message: `${firstName} joined Digitari!`,
-        transactionType: TransactionTypesEnum.User,
-        data: uid,
-        ttl: Math.round(time / 1000) + 24 * 60 * 60, // 24 hours past `time` in epoch seconds
-    };
+        /*
+         * Ok, now let's reward the person who gave the invite
+         */
+        updatePromises.push(
+            dynamoClient
+                .update({
+                    TableName: DIGITARI_USERS,
+                    Key: {
+                        id: invite.uid,
+                    },
+                    UpdateExpression: `set newTransactionUpdate = :b,
+                                       followers = follower + :unit,
+                                       transTotal = transTotal + :reward`,
+                    ExpressionAttributeValues: {
+                        ":b": true,
+                        ":reward": INVITE_REWARD,
+                        ":unit": 1,
+                    },
+                })
+                .promise()
+        );
 
-    /*
-     * Send off the transaction
-     */
-    updatePromises.push(
-        dynamoClient
-            .put({
-                TableName: DIGITARI_TRANSACTIONS,
-                Item: transaction,
-            })
-            .promise()
-    );
+        const inviteTransaction: TransactionType = {
+            tid: invite.uid,
+            time,
+            coin: INVITE_REWARD,
+            message: `${firstName} joined Digitari!`,
+            transactionType: TransactionTypesEnum.User,
+            data: uid,
+            ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
+        };
+
+        /*
+         * Send off the transaction
+         */
+        updatePromises.push(
+            dynamoClient
+                .put({
+                    TableName: DIGITARI_TRANSACTIONS,
+                    Item: inviteTransaction,
+                })
+                .promise()
+        );
+    }
 
     /*
      * Let's check if the invite is a super invite

@@ -105,6 +105,10 @@ export async function handler(
             .promise()
     ).Item as UserType;
 
+    if (!targetUser) {
+        throw new Error("Target user no longer exists");
+    }
+
     const updatePromises: Promise<any>[] = [];
     const finalPromises: Promise<any>[] = [];
 
