@@ -230,9 +230,10 @@ export async function handler(
     ]);
 
     if (finalResolution[0].status === "rejected") {
-        throw new Error(
-            "Server error. We're going to live forever or die trying"
-        );
+        throw new Error(finalResolution[0].reason);
+        // throw new Error(
+        //     "Server error. We're going to live forever or die trying"
+        // );
     }
 
     return {

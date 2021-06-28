@@ -235,7 +235,8 @@ export async function handler(
     const finalResolution = await Promise.allSettled(finalPromises);
 
     if (finalResolution[0].status === "rejected") {
-        throw new Error("There was a server error, baby!");
+        throw new Error(finalResolution[0].reason);
+        // throw new Error("There was a server error, baby!");
     }
 
     return {

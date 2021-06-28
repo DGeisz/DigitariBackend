@@ -182,9 +182,10 @@ export async function handler(
     const finalResolution = await Promise.allSettled(finalPromises);
 
     if (finalResolution[0].status === "rejected") {
-        throw new Error(
-            "Server error, and there's nothing you can do about it"
-        );
+        throw new Error(finalResolution[0].reason);
+        // throw new Error(
+        //     "Server error, and there's nothing you can do about it"
+        // );
     }
 
     /*

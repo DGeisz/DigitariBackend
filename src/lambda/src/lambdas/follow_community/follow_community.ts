@@ -254,9 +254,10 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     const finalResolution = await Promise.allSettled(finalPromises);
 
     if (finalResolution[0].status === "rejected") {
-        throw new Error(
-            "Well, that didn't work, and I guess it's our fault. What are you going to do about it?"
-        );
+        throw new Error(finalResolution[0].reason);
+        // throw new Error(
+        //     "Well, that didn't work, and I guess it's our fault. What are you going to do about it?"
+        // );
     }
 
     return {

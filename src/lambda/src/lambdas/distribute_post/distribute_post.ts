@@ -212,7 +212,8 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
     const finalResolution = await Promise.allSettled(finalPromises);
 
     if (finalResolution[0].status === "rejected") {
-        throw new Error("Ran into an error on the backend. Sorry, boo!");
+        throw new Error(finalResolution[0].reason);
+        // throw new Error("Ran into an error on the backend. Sorry, boo!");
     }
 
     return true;

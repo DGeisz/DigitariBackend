@@ -238,9 +238,10 @@ export async function handler(
     const finalResolution = await Promise.allSettled(finalPromises);
 
     if (finalResolution[0].status === "rejected") {
-        throw new Error(
-            "Server error, and it's probably none of your business"
-        );
+        throw new Error(finalResolution[0].reason);
+        // throw new Error(
+        //     "Server error, and it's probably none of your business"
+        // );
     }
 
     /*

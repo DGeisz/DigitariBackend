@@ -219,7 +219,8 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     const finalResolution = await Promise.allSettled(finalPromises);
 
     if (finalResolution[0].status === "rejected") {
-        throw new Error("Whelp, something broke. ¯\\_(ツ)_/¯");
+        throw new Error(finalResolution[0].reason);
+        // throw new Error("Whelp, something broke. ¯\\_(ツ)_/¯");
     }
 
     return {

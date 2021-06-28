@@ -159,7 +159,8 @@ export async function handler(
     const finalResolution = await Promise.allSettled(finalPromises);
 
     if (finalResolution[0].status === "rejected") {
-        throw new Error("Made on oopsie on the backend");
+        throw new Error(finalResolution[0].reason);
+        // throw new Error("Made on oopsie on the backend");
     }
 
     return {
