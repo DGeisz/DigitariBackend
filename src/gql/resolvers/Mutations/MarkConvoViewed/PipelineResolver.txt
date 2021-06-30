@@ -2,8 +2,6 @@ before
 
 StashConvo
 
-StashUser
-
 MarkConvoViewed
 
 after

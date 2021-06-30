@@ -1,7 +1,6 @@
 ## Request
 #if($ctx.stash.convo.tid != $ctx.identity.sub
-    && $ctx.stash.convo.sid != $ctx.identity.sub
-    && $ctx.stash.convo.sid != $ctx.stash.user.hid)
+    && $ctx.stash.convo.suid != $ctx.identity.sub)
     $util.error("User isn't participating in convo!")
 #end
 
