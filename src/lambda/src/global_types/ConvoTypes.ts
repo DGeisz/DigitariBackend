@@ -1,6 +1,7 @@
 export const CONVO_TYPENAME = "Convo";
 
 export const MESSAGE_COUNT_THRESHOLD = 2;
+export const CONVO_ACTIVATION_COST = 5;
 
 export interface ConvoType {
     id: string;

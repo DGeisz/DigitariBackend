@@ -36,17 +36,17 @@ export function tier2responseCost(tier: number): number {
         case 0:
             return 10;
         case 1:
-            return 20;
+            return 15;
         case 2:
-            return 40;
+            return 20;
         case 3:
-            return 60;
+            return 25;
         case 4:
-            return 100;
+            return 30;
         case 5:
-            return 150;
+            return 40;
         case 6:
-            return 200;
+            return 50;
         default:
             return 0;
     }

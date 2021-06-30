@@ -1,6 +1,9 @@
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { EventArgs } from "../dismiss_convo/lambda_types/event_args";
-import { ConvoType } from "../../global_types/ConvoTypes";
+import {
+    CONVO_ACTIVATION_COST,
+    ConvoType,
+} from "../../global_types/ConvoTypes";
 import { DynamoDB } from "aws-sdk";
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import { getConvo } from "../dismiss_convo/rds_queries/queries";
@@ -8,7 +11,6 @@ import {
     DIGITARI_POSTS,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
-import { PostType } from "../../global_types/PostTypes";
 import { UserType } from "../../global_types/UserTypes";
 
 const rdsClient = new RdsClient();
@@ -40,35 +42,24 @@ export async function handler(
     }
 
     /*
-     * Get the user and post
+     * Get the user
      */
-    const [preUser, prePost] = await Promise.all([
-        dynamoClient
+    const user = (
+        await dynamoClient
             .get({
                 TableName: DIGITARI_USERS,
                 Key: {
                     id: uid,
                 },
             })
-            .promise(),
-        dynamoClient
-            .get({
-                TableName: DIGITARI_POSTS,
-                Key: {
-                    id: convo.pid,
-                },
-            })
-            .promise(),
-    ]);
-
-    const user = preUser.Item as UserType;
-    const post = prePost.Item as PostType;
+            .promise()
+    ).Item as UserType;
 
     /*
      * Check to make sure target has sufficient bolts to activate
      * the convo
      */
-    if (user.bolts < post.responseCost) {
+    if (user.bolts < CONVO_ACTIVATION_COST) {
         throw new Error(
             "User doesn't have enough bolts to activate the conversation"
         );
@@ -84,7 +75,7 @@ export async function handler(
     );
 
     /*
-     * Decrease the user's bolts by response cost
+     * Decrease the user's bolts by the activation cost
      */
     updatePromises.push(
         dynamoClient
@@ -95,7 +86,7 @@ export async function handler(
                 },
                 UpdateExpression: `set bolts = bolts - :price`,
                 ExpressionAttributeValues: {
-                    ":price": post.responseCost,
+                    ":price": CONVO_ACTIVATION_COST,
                 },
             })
             .promise()

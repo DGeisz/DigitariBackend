@@ -58,10 +58,6 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
         throw new Error("Either content or addOnContent is too long");
     }
 
-    if (recipients < 1) {
-        throw new Error("Must post to at least one recipient");
-    }
-
     /*
      * Fetch user
      */
@@ -75,6 +71,22 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
             })
             .promise()
     ).Item as UserType;
+
+    /*
+     * Check recipients.  Only allow posting
+     * to zero recipients if you're posting to your
+     * followers and you have no followers
+     */
+    if (
+        !(
+            target === PostTarget.MyFollowers &&
+            user.followers === 0 &&
+            recipients === 0
+        ) &&
+        recipients < 1
+    ) {
+        throw new Error("Must post to at least one recipient");
+    }
 
     let community: CommunityType;
 
