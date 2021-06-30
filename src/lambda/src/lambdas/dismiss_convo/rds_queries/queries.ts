@@ -23,7 +23,7 @@ function convoParser(row: FieldList): ExtendedConvoType {
         sname: row[11].stringValue,
         sanony: row[12].booleanValue,
         sviewed: row[13].booleanValue,
-        sourceMsgCount: row[23].longValue,
+        sourceMsgCount: row[22].longValue,
 
         tid: row[14].stringValue,
         ttier: row[15].longValue,
@@ -33,7 +33,6 @@ function convoParser(row: FieldList): ExtendedConvoType {
         targetMsgCount: row[19].longValue,
 
         responseCost: row[21].longValue,
-        convoReward: row[22].longValue,
     };
 }
 
@@ -45,7 +44,7 @@ export function getConvo(cvid: string): QueryPackage<ExtendedConvoType> {
                    last_time as lastTime, last_msg as lastMsg,
                    sid, stier, sranking, sname, sanony, sviewed,
                    tid, ttier, tranking, tname, tviewed, target_msg_count as targetMsgCount, suid,
-                   response_cost as responseCost, convo_reward as convoReward, source_msg_count as sourceMsgCount
+                   response_cost as responseCost, source_msg_count as sourceMsgCount
                    FROM convos WHERE id='${cvid}'`,
     };
 }

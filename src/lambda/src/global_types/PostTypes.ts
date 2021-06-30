@@ -30,7 +30,6 @@ export interface PostType {
     cmid?: string;
     communityName?: string;
 
-    convoReward: number;
     responseCost: number;
 
     coin: number;
@@ -43,17 +42,6 @@ export interface PostType {
 export interface ExtendedPostType extends PostType {
     recipients: number;
     distributed: boolean;
-}
-
-export interface StrippedPostType {
-    id: string;
-    uid: string;
-    user: string;
-    ranking: number;
-    time: number;
-    content: string;
-    link?: string;
-    convoReward: number;
 }
 
 export interface DonationRecord {

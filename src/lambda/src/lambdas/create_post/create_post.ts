@@ -18,7 +18,7 @@ import {
 import { CommunityType } from "../../global_types/CommunityTypes";
 import { v4 } from "uuid";
 import { randomString } from "../../utils/string_utils";
-import { tier2convoReward, tier2responseCost } from "../../utils/tier_utils";
+import { tier2responseCost } from "../../utils/tier_utils";
 import { ranking2Tier } from "../../global_types/TierTypes";
 
 const BUCKET_NAME = "digitari-imgs";
@@ -153,7 +153,6 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
     const userTier = ranking2Tier(user.ranking);
 
     const responseCost = tier2responseCost(userTier);
-    const convoReward = tier2convoReward(userTier);
 
     const post: PostType = {
         id: pid,
@@ -171,7 +170,6 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
         cmid,
         communityName: community?.name,
         responseCost,
-        convoReward,
 
         coin: 0,
         convoCount: 0,
@@ -204,7 +202,6 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
                     cmid,
                     communityName: community?.name,
                     responseCost,
-                    convoReward,
 
                     coin: 0,
                     convoCount: 0,

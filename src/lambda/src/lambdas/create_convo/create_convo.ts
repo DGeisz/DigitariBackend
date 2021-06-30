@@ -163,8 +163,7 @@ export async function handler(
                 tranking,
                 tname,
 
-                post.responseCost,
-                post.convoReward
+                post.responseCost
             )
         )
     );
@@ -276,6 +275,5 @@ export async function handler(
 
         targetMsgCount: 0,
         responseCost: post.responseCost,
-        convoReward: post.convoReward,
     };
 }

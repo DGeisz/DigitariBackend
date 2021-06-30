@@ -92,9 +92,6 @@ type Convo {
     tviewed: Boolean
     targetMsgCount: Int
 
-    # Convo reward is digicoin
-    convoReward: Int
-
     # Response cost is in bolts
     responseCost: Int
 }
@@ -132,7 +129,6 @@ type Post {
     communityName: String
 
     # Coin fields
-    convoReward: Int
     responseCost: Int
     coin: Int
 

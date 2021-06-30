@@ -112,12 +112,10 @@ export async function handler(
                 Key: {
                     id: convo.suid,
                 },
-                UpdateExpression: `set transTotal = transTotal + :reward,
-                                 successfulConvos = successfulConvos + :unit,
-                                 ranking = ranking + :unit,
-                                 newTransactionUpdate = :b`,
+                UpdateExpression: `set successfulConvos = successfulConvos + :unit,
+                                       ranking = ranking + :unit,
+                                       newTransactionUpdate = :b`,
                 ExpressionAttributeValues: {
-                    ":reward": convo.convoReward,
                     ":unit": 1,
                     ":b": true,
                 },
@@ -125,7 +123,6 @@ export async function handler(
             .promise()
     );
 
-    source.transTotal += convo.convoReward;
     source.successfulConvos += 1;
     source.ranking += 1;
     source.newTransactionUpdate = true;
@@ -137,12 +134,10 @@ export async function handler(
                 Key: {
                     id: convo.tid,
                 },
-                UpdateExpression: `set transTotal = transTotal + :reward,
-                                 successfulConvos = successfulConvos + :unit,
-                                 ranking = ranking + :unit,
-                                 newTransactionUpdate = :b`,
+                UpdateExpression: `set successfulConvos = successfulConvos + :unit,
+                                       ranking = ranking + :unit,
+                                       newTransactionUpdate = :b`,
                 ExpressionAttributeValues: {
-                    ":reward": convo.convoReward,
                     ":unit": 1,
                     ":b": true,
                 },
@@ -150,12 +145,16 @@ export async function handler(
             .promise()
     );
 
-    target.transTotal += convo.convoReward;
     target.successfulConvos += 1;
     target.ranking += 1;
     target.newTransactionUpdate = true;
 
     const time = Date.now();
+
+    const sourceMessage =
+        uid === convo.suid
+            ? `You successfully finished your convo with ${convo.tname}`
+            : `${convo.tname} successfully finished your convo`;
 
     /*
      * Create transaction for this bad boi
@@ -163,8 +162,8 @@ export async function handler(
     const sourceTransaction: TransactionType = {
         tid: convo.suid,
         time,
-        coin: convo.convoReward,
-        message: `Reward for your successful convo with ${convo.tname}`,
+        coin: 0,
+        message: sourceMessage,
         transactionType: TransactionTypesEnum.Convo,
         data: `${cvid}:${convo.pid}`,
         ttl: Math.round(time / 1000) + TRANSACTION_TTL,
@@ -182,16 +181,30 @@ export async function handler(
             .promise()
     );
 
+    let targetMessage: string;
+
+    if (uid === convo.tid) {
+        if (convo.sanony) {
+            targetMessage = `You successfully finished a convo`;
+        } else {
+            targetMessage = `You successfully finished your convo with ${convo.sname}`;
+        }
+    } else {
+        if (convo.sanony) {
+            targetMessage = `Your convo was successfully finished`;
+        } else {
+            targetMessage = `${convo.sname} successfully finished your convo`;
+        }
+    }
+
     /*
      * Create transaction for this bad boi
      */
     const targetTransaction: TransactionType = {
         tid: convo.tid,
         time,
-        coin: convo.convoReward,
-        message: convo.sanony
-            ? "Reward for your successful convo"
-            : `Reward for your successful convo with ${convo.sname}`,
+        coin: 0,
+        message: targetMessage,
         transactionType: TransactionTypesEnum.Convo,
         data: `${cvid}:${convo.pid}`,
         ttl: Math.round(time / 1000) + TRANSACTION_TTL,

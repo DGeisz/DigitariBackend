@@ -30,7 +30,6 @@ export interface ConvoType {
     tviewed: boolean;
     targetMsgCount: number;
 
-    convoReward: number;
     responseCost: number;
 }
 
