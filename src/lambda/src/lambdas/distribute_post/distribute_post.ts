@@ -18,7 +18,7 @@ import {
     getInactiveFollowers,
 } from "./rds_queries/queries";
 
-const MAX_BATCH_WRITE_ITEMS = 20;
+const MAX_BATCH_WRITE_ITEMS = 25;
 const COST_PER_RECIPIENT = 10;
 
 const dynamoClient = new DynamoDB.DocumentClient({

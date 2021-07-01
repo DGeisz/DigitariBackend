@@ -11,7 +11,7 @@ import { ObjectList } from "aws-sdk/clients/s3";
 import { Client } from "elasticsearch";
 
 const BUCKET_NAME = "digitari-imgs";
-const MAX_BATCH_WRITE_ITEMS = 20;
+const MAX_BATCH_WRITE_ITEMS = 25;
 const MAX_S3_DELETE = 1000;
 
 const s3Client = new S3();

@@ -10,7 +10,7 @@ import {
     DIGITARI_PUSH_TICKETS,
 } from "../global_types/DynamoTableNames";
 
-const MAX_BATCH_WRITE_ITEMS = 20;
+const MAX_BATCH_WRITE_ITEMS = 25;
 
 const expo = new Expo();
 
