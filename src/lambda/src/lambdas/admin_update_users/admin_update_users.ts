@@ -25,11 +25,17 @@ export async function handler() {
     //         .promise()
     // ).Items as UserType[];
 
+    const first = Date.now();
+
     const updatePromises: Promise<any>[] = [];
 
     const posts = (
         await dynamoClient.scan({ TableName: DIGITARI_POSTS }).promise()
     ).Items as PostType[];
+
+    const second = Date.now();
+
+    console.log("First elapsed:", (second - first) / 1000);
 
     for (let post of posts) {
         updatePromises.push(
@@ -48,6 +54,10 @@ export async function handler() {
                 .promise()
         );
     }
+
+    const third = Date.now();
+
+    console.log("Second elapsed:", (third - second) / 1000);
 
     // for (let user of users) {
     //     updatePromises.push(
@@ -86,4 +96,8 @@ export async function handler() {
     // }
 
     await Promise.all(updatePromises);
+
+    const fourth = Date.now();
+
+    console.log("Third elapsed:", (fourth - third) / 1000);
 }

@@ -43,7 +43,6 @@ export async function sendPushAndHandleReceipts(
     ).Items as UserToken[];
 
     const successfulTickets: PushTicket[] = [];
-
     const updatePromises: Promise<any>[] = [];
 
     /*
