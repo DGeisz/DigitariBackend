@@ -186,6 +186,9 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
         coin: 0,
         convoCount: 0,
         responseCount: 0,
+
+        nameColor: user.nameColor,
+        nameFont: user.nameFont,
     };
 
     const updatePromises: Promise<any>[] = [];

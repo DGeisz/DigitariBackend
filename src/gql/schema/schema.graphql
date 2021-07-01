@@ -126,6 +126,10 @@ type Post {
     time: String
     content: String
 
+    # Font
+    nameColor: Int
+    nameFont: Int
+
     # Add on
     addOn: Int
     addOnContent: String

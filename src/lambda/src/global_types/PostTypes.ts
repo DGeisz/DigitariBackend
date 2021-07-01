@@ -1,3 +1,5 @@
+import { NameFonts, ProfileColors } from "./UserTypes";
+
 export const POST_CONTENT_MAX_LEN = 250;
 export const POST_ADD_ON_CONTENT_MAX_LEN = 10000;
 
@@ -37,6 +39,9 @@ export interface PostType {
 
     convoCount: number;
     responseCount: number;
+
+    nameColor: ProfileColors;
+    nameFont: NameFonts;
 }
 
 export interface ExtendedPostType extends PostType {
