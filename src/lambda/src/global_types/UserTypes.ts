@@ -21,11 +21,16 @@ export interface UserType {
     coin: number;
     bolts: number;
 
-    nameFont: ProfileFonts;
+    nameFont: NameFonts;
+    nameFontsPurchased: NameFonts[];
     nameColor: ProfileColors;
-    bioFont: ProfileFonts;
+    nameColorsPurchased: ProfileColors[];
+    bioFont: BioFonts;
+    bioFontsPurchased: BioFonts[];
     bioColor: ProfileColors;
+    bioColorsPurchased: ProfileColors[];
     profileSticker: ProfileStickers;
+    profileStickersPurchased: ProfileStickers[];
 
     lastCollectionTime: number;
 
@@ -70,7 +75,11 @@ export interface ExtendedUserType extends UserType {
     transTotal: number;
 }
 
-export enum ProfileFonts {
+export enum NameFonts {
+    Default,
+}
+
+export enum BioFonts {
     Default,
 }
 

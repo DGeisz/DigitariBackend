@@ -1,9 +1,10 @@
 import { DynamoDB } from "aws-sdk";
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import {
+    BioFonts,
     ExtendedUserType,
+    NameFonts,
     ProfileColors,
-    ProfileFonts,
     ProfileStickers,
     UserType,
 } from "../../global_types/UserTypes";
@@ -133,11 +134,16 @@ export async function handler(
         coin: 100,
         bolts: 0,
 
-        nameFont: ProfileFonts.Default,
+        nameFont: NameFonts.Default,
+        nameFontsPurchased: [NameFonts.Default],
         nameColor: ProfileColors.Default,
-        bioFont: ProfileFonts.Default,
+        nameColorsPurchased: [ProfileColors.Default],
+        bioFont: BioFonts.Default,
+        bioFontsPurchased: [BioFonts.Default],
         bioColor: ProfileColors.Default,
+        bioColorsPurchased: [ProfileColors.Default],
         profileSticker: ProfileStickers.Default,
+        profileStickersPurchased: [ProfileStickers.Default],
 
         lastCollectionTime: 0,
 

@@ -1,6 +1,12 @@
 import { DynamoDB } from "aws-sdk";
 import { DIGITARI_USERS } from "../../global_types/DynamoTableNames";
-import { UserType } from "../../global_types/UserTypes";
+import {
+    BioFonts,
+    NameFonts,
+    ProfileColors,
+    ProfileStickers,
+    UserType,
+} from "../../global_types/UserTypes";
 
 const dynamoClient = new DynamoDB.DocumentClient({
     apiVersion: "2012-08-10",
@@ -25,9 +31,28 @@ export async function handler() {
                     Key: {
                         id: user.id,
                     },
-                    UpdateExpression: `set bolts = :z`,
+                    UpdateExpression: `set nameFont = :nf,
+                                           nameFontsPurchased = :nfp,
+                                           nameColor = :nc,
+                                           nameColorsPurchased = :ncp,
+                                           bioFont = :bf,
+                                           bioFontsPurchased = :bfp,
+                                           bioColor = :bc,
+                                           bioColorsPurchased = :bcp,
+                                           profileSticker = :ps,
+                                           profileStickersPurchased = :psp
+                                           `,
                     ExpressionAttributeValues: {
-                        ":z": 0,
+                        ":nf": NameFonts.Default,
+                        ":nfp": [NameFonts.Default],
+                        ":nc": ProfileColors.Default,
+                        ":ncp": [ProfileColors.Default],
+                        ":bf": BioFonts.Default,
+                        ":bfp": [BioFonts.Default],
+                        ":bc": ProfileColors.Default,
+                        ":bcp": [ProfileColors.Default],
+                        ":ps": ProfileStickers.Default,
+                        ":psp": [ProfileStickers.Default],
                     },
                 })
                 .promise()
