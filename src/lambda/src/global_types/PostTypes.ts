@@ -35,7 +35,6 @@ export interface PostType {
     responseCost: number;
 
     coin: number;
-    coinDonated?: boolean;
 
     convoCount: number;
     responseCount: number;

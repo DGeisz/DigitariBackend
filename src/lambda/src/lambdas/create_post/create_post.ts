@@ -174,7 +174,6 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
         tier: userTier,
         time: time.toString(),
         content,
-        coinDonated: false,
 
         addOn,
         addOnContent: finalAddOnContent,
@@ -203,6 +202,7 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
                 Item: {
                     id: pid,
                     uid,
+
                     recipients: finalRecipients,
                     distributed: false,
 
@@ -221,6 +221,9 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
                     coin: 0,
                     convoCount: 0,
                     responseCount: 0,
+
+                    nameColor: user.nameColor,
+                    nameFont: user.nameFont,
                 },
             })
             .promise()
