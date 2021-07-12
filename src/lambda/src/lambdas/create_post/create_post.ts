@@ -188,7 +188,7 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
 
         nameColor: user.nameColor,
         nameFont: user.nameFont,
-        sticker: ProfileStickers.Default,
+        sticker: user.profileSticker,
     };
 
     const updatePromises: Promise<any>[] = [];
@@ -225,7 +225,7 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
 
                     nameColor: user.nameColor,
                     nameFont: user.nameFont,
-                    sticker: ProfileStickers.Default,
+                    sticker: user.profileSticker,
                 },
             })
             .promise()
