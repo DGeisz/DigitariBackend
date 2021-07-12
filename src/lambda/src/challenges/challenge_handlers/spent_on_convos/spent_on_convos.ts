@@ -13,15 +13,15 @@ import { slightlyRandomTime } from "../utils/time_utils";
 
 const SOC = "soc";
 
-const bronzeCount = 10;
-const silverCount = 100;
-const goldCount = 1000;
-const supremeCount = 10000;
+const bronzeCount = 20;
+const silverCount = 200;
+const goldCount = 2000;
+const supremeCount = 20000;
 
 const bronzeCoin = 250;
 const silverCoin = 500;
 const goldCoin = 5000;
-const supremeCoin = 10000;
+const supremeCoin = 20000;
 
 export async function spentOnConvosHandler(
     user: UserType,
