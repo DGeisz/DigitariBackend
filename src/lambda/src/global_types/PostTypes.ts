@@ -1,4 +1,4 @@
-import { NameFonts, ProfileColors } from "./UserTypes";
+import { NameFonts, ProfileColors, ProfileStickers } from "./UserTypes";
 
 export const POST_CONTENT_MAX_LEN = 250;
 export const POST_ADD_ON_CONTENT_MAX_LEN = 10000;
@@ -41,6 +41,7 @@ export interface PostType {
 
     nameColor: ProfileColors;
     nameFont: NameFonts;
+    sticker: ProfileStickers;
 }
 
 export interface ExtendedPostType extends PostType {

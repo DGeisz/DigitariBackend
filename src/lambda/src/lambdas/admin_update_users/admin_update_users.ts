@@ -45,10 +45,9 @@ export async function handler() {
                     Key: {
                         id: post.id,
                     },
-                    UpdateExpression: `set nameFont = :nf, nameColor = :nc`,
+                    UpdateExpression: `set sticker = :s`,
                     ExpressionAttributeValues: {
-                        ":nf": NameFonts.Default,
-                        ":nc": ProfileColors.Default,
+                        ":s": ProfileStickers.Default,
                     },
                 })
                 .promise()

@@ -130,6 +130,9 @@ type Post {
     nameColor: Int
     nameFont: Int
 
+    # Sticker
+    sticker: Int
+
     # Add on
     addOn: Int
     addOnContent: String

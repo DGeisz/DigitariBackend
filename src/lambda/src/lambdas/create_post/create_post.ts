@@ -9,7 +9,7 @@ import {
     PostTarget,
     PostType,
 } from "../../global_types/PostTypes";
-import { UserType } from "../../global_types/UserTypes";
+import { ProfileStickers, UserType } from "../../global_types/UserTypes";
 import {
     DIGITARI_COMMUNITIES,
     DIGITARI_POSTS,
@@ -188,6 +188,7 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
 
         nameColor: user.nameColor,
         nameFont: user.nameFont,
+        sticker: ProfileStickers.Default,
     };
 
     const updatePromises: Promise<any>[] = [];
@@ -224,6 +225,7 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
 
                     nameColor: user.nameColor,
                     nameFont: user.nameFont,
+                    sticker: ProfileStickers.Default,
                 },
             })
             .promise()
