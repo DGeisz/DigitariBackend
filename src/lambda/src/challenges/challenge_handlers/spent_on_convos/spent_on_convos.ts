@@ -49,7 +49,7 @@ export async function spentOnConvosHandler(
             coin: bronzeCoin,
             message: `You completed the challenge: "Spend ${toCommaRep(
                 bronzeCount
-            )} digicoin on likes or responses"`,
+            )} digicoin on digibolts"`,
             transactionType: TransactionTypesEnum.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
@@ -70,7 +70,7 @@ export async function spentOnConvosHandler(
             coin: silverCoin,
             message: `You completed the challenge: "Spend ${toCommaRep(
                 silverCount
-            )} digicoin on likes or responses"`,
+            )} digicoin on digibolts"`,
             transactionType: TransactionTypesEnum.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
@@ -91,7 +91,7 @@ export async function spentOnConvosHandler(
             coin: goldCoin,
             message: `You completed the challenge: "Spend ${toCommaRep(
                 goldCount
-            )} digicoin on likes or responses"`,
+            )} digicoin on digibolts"`,
             transactionType: TransactionTypesEnum.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
@@ -112,7 +112,7 @@ export async function spentOnConvosHandler(
             coin: supremeCoin,
             message: `You completed the challenge: "Spend ${toCommaRep(
                 supremeCount
-            )} digicoin on likes or responses"`,
+            )} digicoin on digibolts"`,
             transactionType: TransactionTypesEnum.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds

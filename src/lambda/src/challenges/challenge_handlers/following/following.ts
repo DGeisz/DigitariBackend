@@ -40,9 +40,14 @@ export async function followingHandler(
     let totalCoin = 0;
 
     /*
+     * Adjust for the auto follow when joining the platform
+     */
+    const adjustedFollowing = user.following - 1;
+
+    /*
      * Handle bronze
      */
-    if (user.following >= bronzeCount && user.followingChallengeIndex < 1) {
+    if (adjustedFollowing >= bronzeCount && user.followingChallengeIndex < 1) {
         transactions.push({
             tid: user.id,
             time: slightlyRandomTime(),
@@ -62,7 +67,7 @@ export async function followingHandler(
     /*
      * Handle silver
      */
-    if (user.following >= silverCount && user.followingChallengeIndex < 2) {
+    if (adjustedFollowing >= silverCount && user.followingChallengeIndex < 2) {
         transactions.push({
             tid: user.id,
             time: slightlyRandomTime(),
@@ -83,7 +88,7 @@ export async function followingHandler(
     /*
      * Handle gold
      */
-    if (user.following >= goldCount && user.followingChallengeIndex < 3) {
+    if (adjustedFollowing >= goldCount && user.followingChallengeIndex < 3) {
         transactions.push({
             tid: user.id,
             time: slightlyRandomTime(),
@@ -104,7 +109,7 @@ export async function followingHandler(
     /*
      * Handle supreme
      */
-    if (user.following >= supremeCount && user.followingChallengeIndex < 4) {
+    if (adjustedFollowing >= supremeCount && user.followingChallengeIndex < 4) {
         transactions.push({
             tid: user.id,
             time: slightlyRandomTime(),

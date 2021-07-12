@@ -294,7 +294,7 @@ export async function handler(
                         id: invite.uid,
                     },
                     UpdateExpression: `set newTransactionUpdate = :b,
-                                       followers = follower + :unit,
+                                       followers = followers + :unit,
                                        transTotal = transTotal + :reward`,
                     ExpressionAttributeValues: {
                         ":b": true,
