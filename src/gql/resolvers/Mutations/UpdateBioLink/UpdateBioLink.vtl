@@ -1,6 +1,6 @@
 ## Request
 
-#set($price = 50)
+#set($price = 200)
 
 {
     "version" : "2017-02-28",
@@ -9,9 +9,9 @@
         "id" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
     },
     "update" : {
-        "expression" : "set bio = :bio, bolts = bolts - :price",
+        "expression" : "set link = :lk, bolts = bolts - :price",
         "expressionValues" : {
-            ":bio" : $util.dynamodb.toDynamoDBJson($ctx.args.bio),
+            ":lk" : $util.dynamodb.toDynamoDBJson($ctx.args.link),
             ":price" : $util.dynamodb.toDynamoDBJson($price),
         },
     },

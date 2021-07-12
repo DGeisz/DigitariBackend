@@ -1,0 +1,73 @@
+#set($font = $ctx.args.font)
+#set($updateArray = [$font])
+
+#if($font == 1)
+    #set($price = 30)
+#elseif($font == 2)
+    #set($price = 50)
+#elseif($font == 3)
+    #set($price = 75)
+#elseif($font == 4)
+    #set($price = 125)
+#elseif($font == 5)
+    #set($price = 200)
+#elseif($font == 6)
+    #set($price = 300)
+#elseif($font == 7)
+    #set($price = 500)
+#elseif($font == 8)
+    #set($price = 750)
+#elseif($font == 9)
+    #set($price = 1200)
+#elseif($font == 10)
+    #set($price = 2000)
+#elseif($font == 11)
+    #set($price = 3000)
+#elseif($font == 12)
+    #set($price = 5000)
+#elseif($font == 13)
+    #set($price = 7500)
+#elseif($font == 14)
+    #set($price = 12500)
+#elseif($font == 15)
+    #set($price = 20000)
+#elseif($font == 16)
+    #set($price = 30000)
+#elseif($font == 17)
+    #set($price = 50000)
+#end
+
+{
+    "version" : "2017-02-28",
+    "operation" : "UpdateItem",
+    "key": {
+        "id" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+    },
+    "update" : {
+        "expression" : "set #st = list_append(#st, :ua), bolts = bolts - :price",
+        "expressionValues" : {
+            ":ua" : $util.dynamodb.toDynamoDBJson($updateArray),
+            ":price" : $util.dynamodb.toDynamoDBJson($price),
+        },
+        "expressionNames" : {
+            "#st" : "nameFontsPurchased"
+        },
+    },
+    "condition" : {
+        "expression": "NOT contains(#st, :st) AND bolts >= :price",
+        "expressionValues" : {
+            ":st" : $util.dynamodb.toDynamoDBJson($font),
+            ":price" : $util.dynamodb.toDynamoDBJson($price),
+        },
+        "expressionNames" : {
+            "#st" : "nameFontsPurchased"
+        },
+    },
+}
+
+## Response
+#if($ctx.error)
+    $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+$util.toJson($ctx.args.font)

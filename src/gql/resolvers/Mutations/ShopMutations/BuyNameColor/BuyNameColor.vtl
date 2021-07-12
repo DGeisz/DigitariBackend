@@ -1,0 +1,67 @@
+#set($color = $ctx.args.color)
+#set($updateArray = [$color])
+
+#if($color == 1)
+    #set($price = 20)
+#elseif($color == 2)
+    #set($price = 30)
+#elseif($color == 3)
+    #set($price = 50)
+#elseif($color == 4)
+    #set($price = 80)
+#elseif($color == 5)
+    #set($price = 125)
+#elseif($color == 6)
+    #set($price = 200)
+#elseif($color == 7)
+    #set($price = 300)
+#elseif($color == 8)
+    #set($price = 500)
+#elseif($color == 9)
+    #set($price = 900)
+#elseif($color == 10)
+    #set($price = 1500)
+#elseif($color == 11)
+    #set($price = 2500)
+#elseif($color == 12)
+    #set($price = 4000)
+#elseif($color == 13)
+    #set($price = 6000)
+#elseif($color == 14)
+    #set($price = 10000)
+#end
+
+{
+    "version" : "2017-02-28",
+    "operation" : "UpdateItem",
+    "key": {
+        "id" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+    },
+    "update" : {
+        "expression" : "set #st = list_append(#st, :ua), bolts = bolts - :price",
+        "expressionValues" : {
+            ":ua" : $util.dynamodb.toDynamoDBJson($updateArray),
+            ":price" : $util.dynamodb.toDynamoDBJson($price),
+        },
+        "expressionNames" : {
+            "#st" : "nameColorsPurchased"
+        },
+    },
+    "condition" : {
+        "expression": "NOT contains(#st, :st) AND bolts >= :price",
+        "expressionValues" : {
+            ":st" : $util.dynamodb.toDynamoDBJson($color),
+            ":price" : $util.dynamodb.toDynamoDBJson($price),
+        },
+        "expressionNames" : {
+            "#st" : "nameColorsPurchased"
+        },
+    },
+}
+
+## Response
+#if($ctx.error)
+    $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+$util.toJson($ctx.args.color)

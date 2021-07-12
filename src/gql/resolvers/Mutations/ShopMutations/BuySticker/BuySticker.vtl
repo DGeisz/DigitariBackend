@@ -1,0 +1,91 @@
+#set($sticker = $ctx.args.sticker)
+#set($updateArray = [$sticker])
+
+#if($sticker == 1)
+    #set($price = 20)
+#elseif($sticker == 2)
+    #set($price = 30)
+#elseif ($sticker == 3)
+    #set($price = 40)
+#elseif ($sticker == 4)
+    #set($price = 60)
+#elseif ($sticker == 5)
+    #set($price = 80)
+#elseif ($sticker == 6)
+    #set($price = 100)
+#elseif ($sticker == 7)
+    #set($price = 150)
+#elseif ($sticker == 8)
+    #set($price = 200)
+#elseif ($sticker == 9)
+    #set($price = 300)
+#elseif ($sticker == 10)
+    #set($price = 400)
+#elseif ($sticker == 11)
+    #set($price = 600)
+#elseif ($sticker == 12)
+    #set($price = 850)
+#elseif ($sticker == 13)
+    #set($price = 1200)
+#elseif ($sticker == 14)
+    #set($price = 1600)
+#elseif ($sticker == 15)
+    #set($price = 2300)
+#elseif ($sticker == 16)
+    #set($price = 3300)
+#elseif ($sticker == 17)
+    #set($price = 4600)
+#elseif ($sticker == 18)
+    #set($price = 6500)
+#elseif ($sticker == 19)
+    #set($price = 9000)
+#elseif ($sticker == 20)
+    #set($price = 13000)
+#elseif ($sticker == 21)
+    #set($price = 18000)
+#elseif ($sticker == 22)
+    #set($price = 25000)
+#elseif ($sticker == 23)
+    #set($price = 35000)
+#elseif ($sticker == 24)
+    #set($price = 50000)
+#elseif ($sticker == 25)
+    #set($price = 70000)
+#elseif ($sticker == 26)
+    #set($price = 100000)
+#end
+
+{
+    "version" : "2017-02-28",
+    "operation" : "UpdateItem",
+    "key": {
+        "id" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+    },
+    "update" : {
+        "expression" : "set #st = list_append(#st, :ua), bolts = bolts - :price",
+        "expressionValues" : {
+            ":ua" : $util.dynamodb.toDynamoDBJson($updateArray),
+            ":price" : $util.dynamodb.toDynamoDBJson($price),
+        },
+        "expressionNames" : {
+            "#st" : "profileStickersPurchased"
+        },
+    },
+    "condition" : {
+        "expression": "NOT contains(#st, :st) AND bolts >= :price",
+        "expressionValues" : {
+            ":st" : $util.dynamodb.toDynamoDBJson($sticker),
+            ":price" : $util.dynamodb.toDynamoDBJson($price),
+        },
+        "expressionNames" : {
+            "#st" : "profileStickersPurchased"
+        },
+    },
+}
+
+## Response
+#if($ctx.error)
+    $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+$util.toJson($ctx.args.sticker)

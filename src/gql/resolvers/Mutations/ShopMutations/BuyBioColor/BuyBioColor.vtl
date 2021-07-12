@@ -1,0 +1,51 @@
+#set($color = $ctx.args.color)
+#set($updateArray = [$color])
+
+#if($color == 1)
+    #set($price = 30)
+#elseif($color == 2)
+    #set($price = 80)
+#elseif($color == 3)
+    #set($price = 200)
+#elseif($color == 4)
+    #set($price = 500)
+#elseif($color == 5)
+    #set($price = 1500)
+#elseif($color == 6)
+    #set($price = 4000)
+#end
+
+{
+    "version" : "2017-02-28",
+    "operation" : "UpdateItem",
+    "key": {
+        "id" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+    },
+    "update" : {
+        "expression" : "set #st = list_append(#st, :ua), bolts = bolts - :price",
+        "expressionValues" : {
+            ":ua" : $util.dynamodb.toDynamoDBJson($updateArray),
+            ":price" : $util.dynamodb.toDynamoDBJson($price),
+        },
+        "expressionNames" : {
+            "#st" : "bioColorsPurchased"
+        },
+    },
+    "condition" : {
+        "expression": "NOT contains(#st, :st) AND bolts >= :price",
+        "expressionValues" : {
+            ":st" : $util.dynamodb.toDynamoDBJson($color),
+            ":price" : $util.dynamodb.toDynamoDBJson($price),
+        },
+        "expressionNames" : {
+            "#st" : "bioColorsPurchased"
+        },
+    },
+}
+
+## Response
+#if($ctx.error)
+    $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+$util.toJson($ctx.args.color)
