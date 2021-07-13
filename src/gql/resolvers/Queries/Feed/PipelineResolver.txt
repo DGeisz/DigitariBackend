@@ -6,6 +6,8 @@ GetFeedPostIds
 
 GetPostsFromIds -- Global
 
+GetBoltsBought -- Global
+
 UpdateFeedUser
 
 CreateFeedTransaction

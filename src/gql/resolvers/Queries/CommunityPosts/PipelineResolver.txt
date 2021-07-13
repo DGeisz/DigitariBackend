@@ -6,6 +6,8 @@ GetCommunityPostIds
 
 GetPostsFromIds -- Global
 
+GetBoltsBought -- Global
+
 UpdatePostsUser -- Global
 
 CreateCommPostsTransaction

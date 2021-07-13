@@ -1,0 +1,38 @@
+## Request
+#set($boltIds = [])
+#foreach($postId in ${ctx.stash.postIds})
+    #set($postMap = {})
+    $util.qr($postMap.put("pid", $util.dynamodb.toString($postId)))
+    $util.qr($postMap.put("uid", $util.dynamodb.toString($ctx.identity.sub)))
+    $util.qr($boltIds.add($postMap))
+#end
+
+$util.qr($ctx.stash.put("posts", $ctx.prev.result))
+
+#if($boltIds.isEmpty())
+    #return($ctx.prev.result)
+#end
+
+{
+    "operation": "BatchGetItem",
+    "tables" : {
+        "DigitariBoltRecords" : {
+            "keys" : $util.toJson($boltIds),
+        }
+    }
+}
+
+## Response
+
+#foreach($boltRecord in ${ctx.result.data.DigitariBoltRecords})
+    #foreach($post in ${ctx.prev.result})
+        #if($boltRecord.pid.equals($post.id))
+            $util.qr($post.put("boltsBought", $boltRecord.count))
+            #break
+        #end
+    #end
+#end
+
+$util.qr($ctx.stash.put("posts", $ctx.prev.result))
+
+$util.toJson($ctx.prev.result)

@@ -96,7 +96,7 @@ export async function handler(
     const boltRecord: BoltRecord | null = (
         await dynamoClient
             .get({
-                TableName: DIGITARI_POSTS,
+                TableName: DIGITARI_BOLT_RECORDS,
                 Key: {
                     uid,
                     pid,
