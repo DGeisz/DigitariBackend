@@ -1,0 +1,15 @@
+before
+
+GetPostsUser -- Global
+
+GetAllPostsIds
+
+GetPostsFromIds -- Global
+
+GetBoltsBought -- Global
+
+UpdatePostsUser -- Global
+
+CreateAllPostsTransaction
+
+after

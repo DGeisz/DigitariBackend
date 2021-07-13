@@ -1,0 +1,7 @@
+# Before
+$util.qr($ctx.stash.put("time", $util.time.nowEpochMilliSeconds()))
+
+{}
+
+# After
+$util.toJson($ctx.stash.get("posts"))

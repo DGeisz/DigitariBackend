@@ -260,6 +260,7 @@ type Query @aws_cognito_user_pools @aws_iam {
     following(sid: ID!, lastTime: String, entityType: Int): [FollowEntity]
     postResponseCheck(pid: ID): Boolean
     transactions(lastTime: String): [Transaction]
+    allPosts(lastTime: String, skipReward: Boolean): [Post]
 
     validInviteCode(code: String): Boolean
 }
