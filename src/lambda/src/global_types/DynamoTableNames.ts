@@ -1,12 +1,11 @@
 export const DIGITARI_USERS = "DigitariUsers";
 export const DIGITARI_COMMUNITIES = "DigitariCommunities";
-export const DIGITARI_PRICES = "DigitariPrices";
 export const DIGITARI_POSTS = "DigitariPosts";
+export const DIGITARI_BOLT_RECORDS = "DigitariBoltRecords";
 export const DIGITARI_MESSAGES = "DigitariMessages";
 export const DIGITARI_PUSH = "DigitariPush";
 export const DIGITARI_PUSH_TICKETS = "DigitariPushTickets";
 export const DIGITARI_TRANSACTIONS = "DigitariTransactions";
-export const DIGITARI_DONATION_RECORDS = "DigitariDonationRecords";
 export const DIGITARI_FEED_RECORDS = "DigitariFeedRecords";
 export const DIGITARI_INVITES = "DigitariInvites";
 export const DIGITARI_RECEIPTS = "DigitariReceipts";

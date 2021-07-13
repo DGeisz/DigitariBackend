@@ -4,6 +4,7 @@ import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { EventArgs } from "./lambda_types/event_args";
 import { DIGIBOLT_PRICE, ExtendedUserType } from "../../global_types/UserTypes";
 import {
+    DIGITARI_BOLT_RECORDS,
     DIGITARI_POSTS,
     DIGITARI_TRANSACTIONS,
     DIGITARI_USERS,
@@ -17,6 +18,8 @@ import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
 import { challengeCheck } from "../../challenges/challenge_check";
 import { toRep } from "../../utils/value_rep_utils";
+import { BoltRecord } from "../../global_types/BoltRecord";
+import { userPost2BoltCount } from "./utils/bolt_utils";
 
 const dynamoClient = new DynamoDB.DocumentClient({
     apiVersion: "2012-08-10",
@@ -74,11 +77,54 @@ export async function handler(
             .promise()
     ).Item as PostType;
 
+    if (!post) {
+        throw new Error("Post with that id doesn't exist!");
+    }
+
     /*
      * Make sure you aren't donating to your own post
      */
     if (post.uid === uid) {
         throw new Error("You can't donate to your own post");
+    }
+
+    /*
+     * Finally fetch any existing bolt records,
+     * and the maximum number bolts we can get
+     * from this post
+     */
+    const boltRecord: BoltRecord | null = (
+        await dynamoClient
+            .get({
+                TableName: DIGITARI_POSTS,
+                Key: {
+                    uid,
+                    pid,
+                },
+            })
+            .promise()
+    ).Item as BoltRecord | null;
+
+    const maxBolts = userPost2BoltCount(uid, pid);
+
+    /*
+     * This is the amount that'll be recorded when we're through
+     */
+    let finalBoltCount = amount;
+
+    if (!!boltRecord) {
+        finalBoltCount = amount + boltRecord.count;
+
+        /*
+         * Ensure we're not trying to buy too many bolts.  Because
+         * we already checked amount > 0, this also takes care of
+         * the case where we already bought max number of bolts
+         */
+        if (finalBoltCount > maxBolts) {
+            throw new Error(
+                `You can't get any more than ${maxBolts} bolts from this post!`
+            );
+        }
     }
 
     /*
@@ -143,6 +189,23 @@ export async function handler(
     user.bolts += amount;
     user.coinSpent += coinTotal;
     user.spentOnConvos += coinTotal;
+
+    /*
+     * Create a bolt record to record the final
+     * number of bolts bought from the post
+     */
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_BOLT_RECORDS,
+                Item: {
+                    uid,
+                    pid,
+                    count: finalBoltCount,
+                },
+            })
+            .promise()
+    );
 
     /*
      * If the target user exists, then create a transaction, and update

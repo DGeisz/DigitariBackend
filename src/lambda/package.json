@@ -30,6 +30,7 @@
         "http-aws-es": "^6.0.0",
         "in-app-purchase": "^1.11.4",
         "mysql2": "^2.2.5",
+        "ts-xxhash": "^1.0.6",
         "uuid": "^8.3.2"
     }
 }

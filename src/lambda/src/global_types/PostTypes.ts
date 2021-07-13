@@ -2,8 +2,9 @@ import { NameFonts, ProfileColors, ProfileStickers } from "./UserTypes";
 
 export const POST_CONTENT_MAX_LEN = 250;
 export const POST_ADD_ON_CONTENT_MAX_LEN = 10000;
-
 export const POST_BLOCK_COST = 200;
+
+export const BOLT_HASH_SEED = "Digibolts";
 
 export enum PostAddOn {
     None,
@@ -25,6 +26,7 @@ export interface PostType {
     tier: number;
     time: string;
     content: string;
+    boltsBought?: number;
 
     addOn: PostAddOn;
     addOnContent: string;

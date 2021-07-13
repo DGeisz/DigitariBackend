@@ -12,6 +12,11 @@
   resolved "https://registry.yarnpkg.com/@types/aws-lambda/-/aws-lambda-8.10.72.tgz#af2a6eeaf39be9674e3856f1870d9d15cf75e2e0"
   integrity sha512-jOrTwAhSiUtBIN/QsWNKlI4+4aDtpZ0sr2BRvKW6XQZdspgHUSHPcuzxbzCRiHUiDQ+0026u5TSE38VyIhNnfA==
 
+"@types/cuint@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@types/cuint/-/cuint-0.2.1.tgz#eb61d1c69b3d2e26701cc534687bb746f2dbf13e"
+  integrity sha512-yIO66K76vGSV1Y2Ovq5LklkYiHOtbJIukCfO9GRYg7hDccwoapWkDKaygxBvDgB+1uNHsgaTyK41xtbJGLCCGA==
+
 "@types/elasticsearch@*", "@types/elasticsearch@^5.0.37":
   version "5.0.37"
   resolved "https://registry.yarnpkg.com/@types/elasticsearch/-/elasticsearch-5.0.37.tgz#b8d856811414d8de9728067d580560d0b0071762"
@@ -482,6 +487,11 @@ cross-spawn@^7.0.3:
     path-key "^3.1.0"
     shebang-command "^2.0.0"
     which "^2.0.1"
+
+cuint@^0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/cuint/-/cuint-0.2.2.tgz#408086d409550c2631155619e9fa7bcadc3b991b"
+  integrity sha1-QICG1AlVDCYxFVYZ6fp7ytw7mRs=
 
 dashdash@^1.12.0:
   version "1.14.1"
@@ -1523,6 +1533,14 @@ ts-loader@^8.0.17:
     loader-utils "^2.0.0"
     micromatch "^4.0.0"
     semver "^7.3.4"
+
+ts-xxhash@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/ts-xxhash/-/ts-xxhash-1.0.6.tgz#45f727c868d6fe96f3968c3bd795ca6d3b09db13"
+  integrity sha512-mCNjrUhfluG7qkPpbGo/4nBHPcd4U73jzvsGvKGBAbVYh77A9pswvxjNncF5tqawo/7tIkE+UgYOgohWgLaPdQ==
+  dependencies:
+    "@types/cuint" "^0.2.1"
+    cuint "^0.2.2"
 
 tslib@^1.9.0:
   version "1.14.1"
