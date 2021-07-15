@@ -45,9 +45,10 @@ export async function handler() {
                     Key: {
                         id: post.id,
                     },
-                    UpdateExpression: `set sticker = :s`,
+                    UpdateExpression: `set walletBonusEnd = :wb, maxWallet = :mw`,
                     ExpressionAttributeValues: {
-                        ":s": ProfileStickers.Default,
+                        ":wb": 0,
+                        ":mw": 100,
                     },
                 })
                 .promise()

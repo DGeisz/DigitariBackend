@@ -28,6 +28,7 @@ import { Client } from "elasticsearch";
 import { toCommaRep } from "../../utils/value_rep_utils";
 import { filterEmoji } from "../../utils/string_utils";
 import { insertFollowRow } from "../follow_user/rds_queries/queries";
+import { millisInDay } from "../../utils/time_utils";
 
 const INVITE_REWARD = 500;
 
@@ -133,6 +134,9 @@ export async function handler(
         beenBlocked: 0,
         coin: 100,
         bolts: 0,
+
+        maxWallet: 100,
+        walletBonusEnd: time + 2 * millisInDay,
 
         nameFont: NameFonts.Default,
         nameFontsPurchased: [NameFonts.Default],

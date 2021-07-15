@@ -25,6 +25,9 @@ export interface UserType {
     coin: number;
     bolts: number;
 
+    maxWallet: number;
+    walletBonusEnd: number;
+
     nameFont: NameFonts;
     nameFontsPurchased: NameFonts[];
     nameColor: ProfileColors;
