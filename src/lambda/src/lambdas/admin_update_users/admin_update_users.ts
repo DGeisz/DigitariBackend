@@ -17,33 +17,25 @@ const dynamoClient = new DynamoDB.DocumentClient({
 });
 
 export async function handler() {
-    // const users = (
-    //     await dynamoClient
-    //         .scan({
-    //             TableName: DIGITARI_USERS,
-    //         })
-    //         .promise()
-    // ).Items as UserType[];
+    const users = (
+        await dynamoClient
+            .scan({
+                TableName: DIGITARI_USERS,
+            })
+            .promise()
+    ).Items as UserType[];
 
     const first = Date.now();
 
     const updatePromises: Promise<any>[] = [];
 
-    const posts = (
-        await dynamoClient.scan({ TableName: DIGITARI_POSTS }).promise()
-    ).Items as PostType[];
-
-    const second = Date.now();
-
-    console.log("First elapsed:", (second - first) / 1000);
-
-    for (let post of posts) {
+    for (let user of users) {
         updatePromises.push(
             dynamoClient
                 .update({
-                    TableName: DIGITARI_POSTS,
+                    TableName: DIGITARI_USERS,
                     Key: {
-                        id: post.id,
+                        id: user.id,
                     },
                     UpdateExpression: `set walletBonusEnd = :wb, maxWallet = :mw`,
                     ExpressionAttributeValues: {
@@ -54,6 +46,32 @@ export async function handler() {
                 .promise()
         );
     }
+
+    // const posts = (
+    //     await dynamoClient.scan({ TableName: DIGITARI_POSTS }).promise()
+    // ).Items as PostType[];
+
+    const second = Date.now();
+
+    console.log("First elapsed:", (second - first) / 1000);
+
+    // for (let post of posts) {
+    //     updatePromises.push(
+    //         dynamoClient
+    //             .update({
+    //                 TableName: DIGITARI_POSTS,
+    //                 Key: {
+    //                     id: post.id,
+    //                 },
+    //                 UpdateExpression: `set walletBonusEnd = :wb, maxWallet = :mw`,
+    //                 ExpressionAttributeValues: {
+    //                     ":wb": 0,
+    //                     ":mw": 100,
+    //                 },
+    //             })
+    //             .promise()
+    //     );
+    // }
 
     const third = Date.now();
 

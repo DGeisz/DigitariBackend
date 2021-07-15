@@ -1,3 +1,15 @@
+#if($ctx.stash.time < $ctx.stash.user.walletBonusEnd)
+    #set($amount = $ctx.stash.user.transTotal)
+#else
+    #if($ctx.stash.user.transTotal > $ctx.stash.user.maxWallet)
+        #set($amount = $ctx.stash.user.maxWallet)
+    #else
+        #set($amount = $ctx.stash.user.transTotal)
+    #end
+#end
+
+$util.qr($ctx.stash.put("amount", $amount))
+
 {
     "version" : "2017-02-28",
     "operation" : "UpdateItem",
@@ -5,9 +17,10 @@
         "id" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
     },
     "update" : {
-        "expression" : "set coin = coin + transTotal, transTotal = :z, lastCollectionTime = :t",
+        "expression" : "set coin = coin + :a, transTotal = :z, lastCollectionTime = :t",
         "expressionValues" : {
             ":t" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),
+            ":a" : $util.dynamodb.toDynamoDBJson($amount),
             ":z" : $util.dynamodb.toDynamoDBJson(0),
         },
     },
