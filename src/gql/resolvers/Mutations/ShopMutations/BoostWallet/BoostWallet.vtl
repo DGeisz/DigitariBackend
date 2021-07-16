@@ -1,0 +1,33 @@
+#Request
+
+#set($termination = $util.time.nowEpochMilliSeconds() + (24 * 3600 * 1000))
+#set($price = 1000)
+
+{
+    "version" : "2017-02-28",
+    "operation" : "UpdateItem",
+    "key": {
+        "id" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+    },
+    "update" : {
+        "expression" : "set walletBonusEnd = :tm, bolts = bolts - :price",
+        "expressionValues" : {
+            ":tm" : $util.dynamodb.toDynamoDBJson($termination),
+            ":price" : $util.dynamodb.toDynamoDBJson($price),
+        },
+    },
+    "condition" : {
+        "expression": ":n > walletBonusEnd AND bolts >= :price",
+        "expressionValues" : {
+            ":n" : $util.dynamodb.toDynamoDBJson($util.time.nowEpochMilliSeconds()),
+            ":price" : $util.dynamodb.toDynamoDBJson($price),
+        },
+    },
+}
+
+# Response
+#if($ctx.error)
+    $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+$util.toJson(true)

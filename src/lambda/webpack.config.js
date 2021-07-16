@@ -32,6 +32,7 @@ module.exports = {
         process_iap: "./src/lambdas/process_iap/process_iap.ts",
         delete_community: "./src/lambdas/delete_community/delete_community.ts",
         distribute_post: "./src/lambdas/distribute_post/distribute_post.ts",
+        upgrade_wallet: "./src/lambdas/upgrade_wallet/upgrade_wallet.ts",
     },
     externals: ["aws-sdk"],
     mode: "production",
