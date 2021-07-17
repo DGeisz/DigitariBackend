@@ -12,7 +12,7 @@ type User @aws_iam
     timeCreated: String
     imgUrl: String
     remainingInvites: Int
-    transTotal: Int
+    transTotal: String
 
     lastCollectionTime: String
 
@@ -27,11 +27,11 @@ type User @aws_iam
     ranking: Int
     blocked: Int
     beenBlocked: Int
-    coin: Int
-    bolts: Int
+    coin: String
+    bolts: String
 
     # For wallet
-    maxWallet: Int
+    maxWallet: String
     walletBonusEnd: String
 
     # Profile customizations
@@ -48,13 +48,13 @@ type User @aws_iam
 
     challengeReceipts: [String]
 
-    coinSpent: Int
+    coinSpent: String
 
     # Fields for challenges
-    receivedFromConvos: Int
+    receivedFromConvos: String
     rfcChallengeIndex: Int
 
-    spentOnConvos: Int
+    spentOnConvos: String
     socChallengeIndex: Int
 
     successfulConvos: Int
