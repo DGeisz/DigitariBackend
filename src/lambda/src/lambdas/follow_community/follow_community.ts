@@ -190,7 +190,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     Key: {
                         id: target.uid,
                     },
-                    ConditionExpression: "maxCommunityFollowers < :followers",
                     UpdateExpression: "set maxCommunityFollowers = :followers",
                     ExpressionAttributeValues: {
                         ":followers": target.followers,
