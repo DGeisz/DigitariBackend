@@ -85,6 +85,20 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             .promise()
     ).Item as CommunityType;
 
+    /*
+     * Get creator
+     */
+    const creator: UserType = (
+        await dynamoClient
+            .get({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: target.uid,
+                },
+            })
+            .promise()
+    ).Item as UserType;
+
     const updatePromises: Promise<any>[] = [];
     const finalPromises: Promise<any>[] = [];
 
@@ -168,21 +182,23 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
      * Update the community creator's max community followers
      * if this community has more followers than their current max
      */
-    updatePromises.push(
-        dynamoClient
-            .update({
-                TableName: DIGITARI_USERS,
-                Key: {
-                    id: target.uid,
-                },
-                ConditionExpression: "maxCommunityFollowers < :followers",
-                UpdateExpression: "set maxCommunityFollowers = :followers",
-                ExpressionAttributeValues: {
-                    ":followers": target.followers,
-                },
-            })
-            .promise()
-    );
+    if (!!creator && creator.maxCommunityFollowers < target.followers) {
+        updatePromises.push(
+            dynamoClient
+                .update({
+                    TableName: DIGITARI_USERS,
+                    Key: {
+                        id: target.uid,
+                    },
+                    ConditionExpression: "maxCommunityFollowers < :followers",
+                    UpdateExpression: "set maxCommunityFollowers = :followers",
+                    ExpressionAttributeValues: {
+                        ":followers": target.followers,
+                    },
+                })
+                .promise()
+        );
+    }
 
     const pushMessage = `${source.firstName} followed your community: "${target.name}"`;
 
