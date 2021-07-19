@@ -348,9 +348,12 @@ export async function handler(
                     Key: {
                         code,
                     },
-                    UpdateExpression: `set count = count - :unit`,
+                    UpdateExpression: `set #c = #c - :unit`,
                     ExpressionAttributeValues: {
                         ":unit": 1,
+                    },
+                    ExpressionAttributeNames: {
+                        "#c": "count",
                     },
                 })
                 .promise()
