@@ -58,3 +58,12 @@ export interface DonationRecord {
     amount: number;
     name: string;
 }
+
+/*
+ * For use in auto-populate feed after following users
+ * and communities
+ */
+export interface PostRecord {
+    pid: string;
+    time: number;
+}

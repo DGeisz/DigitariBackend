@@ -2,7 +2,11 @@ import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { DynamoDB } from "aws-sdk";
 import { FOLLOW_USER_PRICE, UserType } from "../../global_types/UserTypes";
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
-import { followChecker, insertFollowRow } from "./rds_queries/queries";
+import {
+    followChecker,
+    getUserPostRecords,
+    insertFollowRow,
+} from "./rds_queries/queries";
 import { Client } from "elasticsearch";
 import { FollowEventArgs } from "../../global_types/follow_event_args";
 import {
@@ -17,6 +21,9 @@ import {
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
 import { challengeCheck } from "../../challenges/challenge_check";
+import { FeedRecordType } from "../../global_types/FeedRecordTypes";
+
+const MAX_BATCH_WRITE_ITEMS = 25;
 
 const rdsClient = new RdsClient();
 
@@ -59,6 +66,10 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             .promise()
     ).Item as UserType;
 
+    if (!source) {
+        throw new Error("Source doesn't exist");
+    }
+
     if (source.coin < FOLLOW_USER_PRICE) {
         throw new Error("Source doesn't have sufficient coin to follow target");
     }
@@ -76,6 +87,10 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             })
             .promise()
     ).Item as UserType;
+
+    if (!target) {
+        throw new Error("Target doesn't exist");
+    }
 
     const updatePromises: Promise<any>[] = [];
     const finalPromises: Promise<any>[] = [];
@@ -118,6 +133,10 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
         )
     );
 
+    /*
+     * Update target, add transaction coin and
+     * signal new transaction update
+     */
     updatePromises.push(
         dynamoClient
             .update({
@@ -194,6 +213,46 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     );
 
     finalPromises.push(Promise.all(updatePromises));
+
+    /*
+     * Now we're going to try to auto-populate the user's feed
+     * with the last up to 50 posts from the target
+     */
+    const postRecords = await rdsClient.executeQuery(getUserPostRecords(tid));
+
+    for (let i = 0; i < postRecords.length; i += MAX_BATCH_WRITE_ITEMS) {
+        const writeRequests = [];
+
+        for (let k = 0; k < MAX_BATCH_WRITE_ITEMS; ++k) {
+            if (k + i >= postRecords.length) {
+                break;
+            } else {
+                const { time, pid } = postRecords[i + k];
+
+                const feedRecord: FeedRecordType = {
+                    uid: sid,
+                    time,
+                    pid,
+                };
+
+                writeRequests.push({
+                    PutRequest: {
+                        Item: feedRecord,
+                    },
+                });
+            }
+        }
+
+        finalPromises.push(
+            dynamoClient
+                .batchWrite({
+                    RequestItems: {
+                        DigitariFeedRecords: writeRequests,
+                    },
+                })
+                .promise()
+        );
+    }
 
     finalPromises.push(
         sendPushAndHandleReceipts(
