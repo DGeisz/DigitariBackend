@@ -22,8 +22,7 @@ import {
 } from "../../global_types/TransactionTypes";
 import { challengeCheck } from "../../challenges/challenge_check";
 import { FeedRecordType } from "../../global_types/FeedRecordTypes";
-
-const MAX_BATCH_WRITE_ITEMS = 25;
+import { MAX_BATCH_WRITE_ITEMS } from "../../global_constants/aws_constants";
 
 const rdsClient = new RdsClient();
 
@@ -216,7 +215,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
 
     /*
      * Now we're going to try to auto-populate the user's feed
-     * with the last up to 50 posts from the target
+     * with the last up to 200 posts from the target
      */
     const postRecords = await rdsClient.executeQuery(getUserPostRecords(tid));
 

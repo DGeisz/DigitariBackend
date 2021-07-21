@@ -25,6 +25,9 @@ import {
 import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
 import { communityFollowersHandler } from "../../challenges/challenge_handlers/community_followers/community_follower";
+import { getCommPostRecords } from "./rds_queries/queries";
+import { FeedRecordType } from "../../global_types/FeedRecordTypes";
+import { MAX_BATCH_WRITE_ITEMS } from "../../global_constants/aws_constants";
 
 const rdsClient = new RdsClient();
 
@@ -247,6 +250,46 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     );
 
     finalPromises.push(Promise.all(updatePromises));
+
+    /*
+     * Now auto-populate user's feed with last up to 200 posts
+     * from the target
+     */
+    const postRecords = await rdsClient.executeQuery(getCommPostRecords(tid));
+
+    for (let i = 0; i < postRecords.length; i += MAX_BATCH_WRITE_ITEMS) {
+        const writeRequests = [];
+
+        for (let k = 0; k < MAX_BATCH_WRITE_ITEMS; ++k) {
+            if (k + i >= postRecords.length) {
+                break;
+            } else {
+                const { time, pid } = postRecords[i + k];
+
+                const feedRecord: FeedRecordType = {
+                    uid: sid,
+                    time,
+                    pid,
+                };
+
+                writeRequests.push({
+                    PutRequest: {
+                        Item: feedRecord,
+                    },
+                });
+            }
+        }
+
+        finalPromises.push(
+            dynamoClient
+                .batchWrite({
+                    RequestItems: {
+                        DigitariFeedRecords: writeRequests,
+                    },
+                })
+                .promise()
+        );
+    }
 
     finalPromises.push(
         sendPushAndHandleReceipts(

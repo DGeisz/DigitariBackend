@@ -54,7 +54,7 @@ function followPostParser(row: FieldList): PostRecord {
 
 export function getUserPostRecords(tid: string): QueryPackage<PostRecord> {
     return {
-        sql: `SELECT id, time FROM posts WHERE uid='${tid}' ORDER BY time DESC LIMIT 50`,
+        sql: `SELECT id, time FROM posts WHERE uid='${tid}' ORDER BY time DESC LIMIT 200`,
         resultParser: followPostParser,
     };
 }

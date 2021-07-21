@@ -9,9 +9,9 @@ import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import { UserToken } from "../../global_types/PushTypes";
 import { ObjectList } from "aws-sdk/clients/s3";
 import { Client } from "elasticsearch";
+import { MAX_BATCH_WRITE_ITEMS } from "../../global_constants/aws_constants";
 
 const BUCKET_NAME = "digitari-imgs";
-const MAX_BATCH_WRITE_ITEMS = 25;
 const MAX_S3_DELETE = 1000;
 
 const s3Client = new S3();

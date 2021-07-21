@@ -9,8 +9,7 @@ import {
     DIGITARI_PUSH,
     DIGITARI_PUSH_TICKETS,
 } from "../global_types/DynamoTableNames";
-
-const MAX_BATCH_WRITE_ITEMS = 25;
+import { MAX_BATCH_WRITE_ITEMS } from "../global_constants/aws_constants";
 
 const expo = new Expo();
 

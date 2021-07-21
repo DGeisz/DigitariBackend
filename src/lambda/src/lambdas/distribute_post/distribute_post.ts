@@ -17,8 +17,8 @@ import {
     getActiveFollowers,
     getInactiveFollowers,
 } from "./rds_queries/queries";
+import { MAX_BATCH_WRITE_ITEMS } from "../../global_constants/aws_constants";
 
-const MAX_BATCH_WRITE_ITEMS = 25;
 const COST_PER_RECIPIENT = 10;
 
 const dynamoClient = new DynamoDB.DocumentClient({
