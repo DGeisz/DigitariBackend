@@ -53,21 +53,6 @@ export async function handler(
 
             receiptId = data.receipt.in_app[0].transaction_id;
         } else {
-            /*
-             * Enter the receipt as pending, so I can debug it if something
-             * goes wrong
-             */
-            await dynamoClient
-                .put({
-                    TableName: DIGITARI_RECEIPTS,
-                    Item: {
-                        receipt,
-                        uid,
-                        pending: true,
-                    },
-                })
-                .promise();
-
             await IAP.validate({
                 packageName: "com.playdigitari.digitari",
                 productId,
