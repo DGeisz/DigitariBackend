@@ -96,8 +96,6 @@ export async function handler(
     Also, we make sure the receipt isn't pending, as such
     a receipt hasn't been verified yet
     */
-    console.log(storedReceipt);
-
     if (!!storedReceipt && !storedReceipt.pending) {
         return false;
     }
