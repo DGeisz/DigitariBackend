@@ -53,6 +53,21 @@ export async function handler(
 
             receiptId = data.receipt.in_app[0].transaction_id;
         } else {
+            /*
+             * Enter the receipt as pending, so I can debug it if something
+             * goes wrong
+             */
+            await dynamoClient
+                .put({
+                    TableName: DIGITARI_RECEIPTS,
+                    Item: {
+                        receipt,
+                        uid,
+                        pending: true,
+                    },
+                })
+                .promise();
+
             await IAP.validate({
                 packageName: "com.playdigitari.digitari",
                 productId,
@@ -63,6 +78,8 @@ export async function handler(
             receiptId = receipt;
         }
     } catch (e) {
+        console.log("Validation error: ", e);
+
         /* 
         If it throws an error, then the receipt isn't valid 
         so we can immediately return false, indicating the iap
@@ -90,8 +107,11 @@ export async function handler(
     If the receipt exists, then we've already processed
     the receipt, which means something sketchy is the foot,
     so we return false and don't process this bad boi
+
+    Also, we make sure the receipt isn't pending, as such
+    a receipt hasn't been verified yet
     */
-    if (!!storedReceipt) {
+    if (!!storedReceipt && !storedReceipt.pending) {
         return false;
     }
 
@@ -127,6 +147,7 @@ export async function handler(
                 Item: {
                     receipt: receiptId,
                     uid,
+                    pending: false,
                 },
             })
             .promise()
