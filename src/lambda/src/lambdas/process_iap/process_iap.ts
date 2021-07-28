@@ -21,7 +21,7 @@ IAP.config({
     /* Config for google */
     googleServiceAccount: {
         clientEmail: process.env.GOOGLE_CLIENT_EMAIL,
-        privateKey: process.env.GOOGLE_PRIVATE_KEY,
+        privateKey: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/gm, "\n"),
     },
 });
 
