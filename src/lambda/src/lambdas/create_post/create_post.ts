@@ -172,7 +172,7 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
 
         user: user.firstName,
         tier: userTier,
-        time: time.toString(),
+        time,
         content,
 
         addOn,

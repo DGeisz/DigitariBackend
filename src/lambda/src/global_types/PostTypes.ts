@@ -24,7 +24,7 @@ export interface PostType {
 
     user: string;
     tier: number;
-    time: string;
+    time: number;
     content: string;
     boltsBought?: number;
 

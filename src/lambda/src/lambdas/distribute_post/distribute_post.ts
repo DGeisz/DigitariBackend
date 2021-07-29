@@ -34,7 +34,6 @@ interface EventArgs {
 export async function handler(event: AppSyncResolverEvent<EventArgs>) {
     const { pid } = event.arguments;
     const uid = (event.identity as AppSyncIdentityCognito).sub;
-    const time = Date.now();
 
     /*
      * Get the user and post
@@ -60,6 +59,8 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
 
     const user = preUser.Item as UserType;
     const post = prePost.Item as ExtendedPostType;
+
+    const time = post.time;
 
     if (post.uid !== uid) {
         throw new Error("Only user can distribute their own post");
