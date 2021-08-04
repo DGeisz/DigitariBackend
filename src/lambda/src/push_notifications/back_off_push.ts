@@ -227,7 +227,7 @@ export async function backoffPush(
                             notificationType,
                             content,
                             title,
-                            `${body} (and ${toCommaRep(
+                            `${body} (+${toCommaRep(
                                 user.pushBackoffCount
                             )} more)`,
                             dynamoClient
@@ -283,7 +283,7 @@ export async function backoffPush(
                 let newBody: string;
 
                 if (user.pushBackoffCount > 0) {
-                    newBody = `${body} (and ${toCommaRep(
+                    newBody = `${body} (+${toCommaRep(
                         user.pushBackoffCount
                     )} more)`;
                 } else {
