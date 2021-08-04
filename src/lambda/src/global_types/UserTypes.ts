@@ -80,6 +80,9 @@ export interface ExtendedUserType extends UserType {
     lastPostsTime: number;
     postsPendingCollection: boolean;
     transTotal: number;
+    pushBackoffThreshold?: number;
+    pushBackoffTime?: number;
+    pushBackoffCount?: number;
 }
 
 export enum NameFonts {

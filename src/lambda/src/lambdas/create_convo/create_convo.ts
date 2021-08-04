@@ -14,8 +14,8 @@ import { PostType } from "../../global_types/PostTypes";
 import { v4 } from "uuid";
 import { ranking2Tier } from "../../global_types/TierTypes";
 import { ConvoType } from "../../global_types/ConvoTypes";
-import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
+import { backoffPush } from "../../push_notifications/back_off_push";
 
 const rdsClient = new RdsClient();
 
@@ -229,7 +229,7 @@ export async function handler(
     finalPromises.push(Promise.all(updatePromises));
 
     finalPromises.push(
-        sendPushAndHandleReceipts(
+        backoffPush(
             tid,
             PushNotificationType.NewConvo,
             `${cvid}/${pid}`,

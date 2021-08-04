@@ -14,12 +14,12 @@ import {
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
-import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
 import { challengeCheck } from "../../challenges/challenge_check";
 import { toRep } from "../../utils/value_rep_utils";
 import { BoltRecord } from "../../global_types/BoltRecord";
 import { userPost2BoltCount } from "./utils/bolt_utils";
+import { backoffPush } from "../../push_notifications/back_off_push";
 
 const dynamoClient = new DynamoDB.DocumentClient({
     apiVersion: "2012-08-10",
@@ -267,7 +267,7 @@ export async function handler(
          * Send push notifications to the target
          */
         finalPromises.push(
-            sendPushAndHandleReceipts(
+            backoffPush(
                 targetUser.id,
                 PushNotificationType.CoinDonated,
                 uid,

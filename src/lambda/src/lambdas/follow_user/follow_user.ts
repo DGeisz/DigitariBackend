@@ -13,7 +13,6 @@ import {
     DIGITARI_TRANSACTIONS,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
-import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
 import {
     TRANSACTION_TTL,
@@ -23,6 +22,7 @@ import {
 import { challengeCheck } from "../../challenges/challenge_check";
 import { FeedRecordType } from "../../global_types/FeedRecordTypes";
 import { MAX_BATCH_WRITE_ITEMS } from "../../global_constants/aws_constants";
+import { backoffPush } from "../../push_notifications/back_off_push";
 
 const rdsClient = new RdsClient();
 
@@ -254,7 +254,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     }
 
     finalPromises.push(
-        sendPushAndHandleReceipts(
+        backoffPush(
             tid,
             PushNotificationType.UserFollowed,
             sid,

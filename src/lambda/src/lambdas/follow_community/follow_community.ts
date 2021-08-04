@@ -22,12 +22,12 @@ import {
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
-import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
 import { communityFollowersHandler } from "../../challenges/challenge_handlers/community_followers/community_follower";
 import { getCommPostRecords } from "./rds_queries/queries";
 import { FeedRecordType } from "../../global_types/FeedRecordTypes";
 import { MAX_BATCH_WRITE_ITEMS } from "../../global_constants/aws_constants";
+import { backoffPush } from "../../push_notifications/back_off_push";
 
 const rdsClient = new RdsClient();
 
@@ -292,7 +292,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     }
 
     finalPromises.push(
-        sendPushAndHandleReceipts(
+        backoffPush(
             target.uid,
             PushNotificationType.UserFollowedCommunity,
             sid,
