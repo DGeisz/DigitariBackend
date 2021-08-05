@@ -243,9 +243,9 @@ export async function handler(
             tid: targetUser.id,
             time,
             coin: coinTotal,
-            message: `${user.firstName} spent ${toRep(
-                coinTotal
-            )} digicoin on your post: "${post.content}"`,
+            message: `${user.firstName} bought ${toRep(amount)} ${
+                amount === 1 ? "digibolt" : "digibolts"
+            } from your post: "${post.content}"`,
             transactionType: TransactionTypesEnum.User,
             data: uid,
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
@@ -272,9 +272,9 @@ export async function handler(
                 PushNotificationType.CoinDonated,
                 uid,
                 "",
-                `${user.firstName} spent ${toRep(
+                `${user.firstName} gave ${toRep(
                     coinTotal
-                )} digicoin on your post`,
+                )} digicoin to your post`,
                 dynamoClient
             )
         );
