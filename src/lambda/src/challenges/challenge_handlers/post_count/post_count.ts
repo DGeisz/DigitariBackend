@@ -1,6 +1,7 @@
 import { UserType } from "../../../global_types/UserTypes";
 import {
     TRANSACTION_TTL,
+    TransactionIcon,
     TransactionType,
     TransactionTypesEnum,
 } from "../../../global_types/TransactionTypes";
@@ -47,6 +48,7 @@ export async function postCountHandler(
             coin: bronzeCoin,
             message: `You completed the challenge: "Create a post"`,
             transactionType: TransactionTypesEnum.Challenge,
+            transactionIcon: TransactionIcon.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -68,6 +70,7 @@ export async function postCountHandler(
                 silverCount
             )} posts"`,
             transactionType: TransactionTypesEnum.Challenge,
+            transactionIcon: TransactionIcon.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -89,6 +92,7 @@ export async function postCountHandler(
                 goldCount
             )} posts"`,
             transactionType: TransactionTypesEnum.Challenge,
+            transactionIcon: TransactionIcon.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -110,6 +114,7 @@ export async function postCountHandler(
                 supremeCount
             )} posts"`,
             transactionType: TransactionTypesEnum.Challenge,
+            transactionIcon: TransactionIcon.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });

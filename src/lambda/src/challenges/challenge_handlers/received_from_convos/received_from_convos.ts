@@ -1,6 +1,7 @@
 import { UserType } from "../../../global_types/UserTypes";
 import {
     TRANSACTION_TTL,
+    TransactionIcon,
     TransactionType,
     TransactionTypesEnum,
 } from "../../../global_types/TransactionTypes";
@@ -51,6 +52,7 @@ export async function receivedFromConvosHandler(
                 bronzeCount
             )} digicoin from your posts"`,
             transactionType: TransactionTypesEnum.Challenge,
+            transactionIcon: TransactionIcon.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -72,6 +74,7 @@ export async function receivedFromConvosHandler(
                 silverCount
             )} digicoin from your posts"`,
             transactionType: TransactionTypesEnum.Challenge,
+            transactionIcon: TransactionIcon.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -93,6 +96,7 @@ export async function receivedFromConvosHandler(
                 goldCount
             )} digicoin from your posts"`,
             transactionType: TransactionTypesEnum.Challenge,
+            transactionIcon: TransactionIcon.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -114,6 +118,7 @@ export async function receivedFromConvosHandler(
                 supremeCount
             )} digicoin from your posts"`,
             transactionType: TransactionTypesEnum.Challenge,
+            transactionIcon: TransactionIcon.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });

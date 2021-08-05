@@ -2,6 +2,7 @@ import { UserType } from "../../../global_types/UserTypes";
 import { DynamoDB } from "aws-sdk";
 import {
     TRANSACTION_TTL,
+    TransactionIcon,
     TransactionType,
     TransactionTypesEnum,
 } from "../../../global_types/TransactionTypes";
@@ -55,6 +56,7 @@ export async function followingHandler(
             message:
                 'You completed the challenge: "Follow one user or community"',
             transactionType: TransactionTypesEnum.Challenge,
+            transactionIcon: TransactionIcon.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -76,6 +78,7 @@ export async function followingHandler(
                 silverCount
             )} users or communities"`,
             transactionType: TransactionTypesEnum.Challenge,
+            transactionIcon: TransactionIcon.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -97,6 +100,7 @@ export async function followingHandler(
                 goldCount
             )} users or communities"`,
             transactionType: TransactionTypesEnum.Challenge,
+            transactionIcon: TransactionIcon.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -118,6 +122,7 @@ export async function followingHandler(
                 supremeCount
             )} users or communities"`,
             transactionType: TransactionTypesEnum.Challenge,
+            transactionIcon: TransactionIcon.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });

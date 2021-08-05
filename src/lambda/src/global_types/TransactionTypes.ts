@@ -10,6 +10,7 @@ export enum TransactionIcon {
     Convo,
     User,
     Feed,
+    Challenge,
 }
 
 export interface TransactionType {

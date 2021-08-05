@@ -2,6 +2,7 @@ import { UserType } from "../../../global_types/UserTypes";
 import { DynamoDB } from "aws-sdk";
 import {
     TRANSACTION_TTL,
+    TransactionIcon,
     TransactionType,
     TransactionTypesEnum,
 } from "../../../global_types/TransactionTypes";
@@ -64,6 +65,7 @@ export async function communityFollowersHandler(
                 bronzeCount
             )} followers"`,
             transactionType: TransactionTypesEnum.Challenge,
+            transactionIcon: TransactionIcon.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -87,6 +89,7 @@ export async function communityFollowersHandler(
                 silverCount
             )} followers"`,
             transactionType: TransactionTypesEnum.Challenge,
+            transactionIcon: TransactionIcon.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -110,6 +113,7 @@ export async function communityFollowersHandler(
                 goldCount
             )} followers"`,
             transactionType: TransactionTypesEnum.Challenge,
+            transactionIcon: TransactionIcon.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -133,6 +137,7 @@ export async function communityFollowersHandler(
                 supremeCount
             )} followers"`,
             transactionType: TransactionTypesEnum.Challenge,
+            transactionIcon: TransactionIcon.Challenge,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
