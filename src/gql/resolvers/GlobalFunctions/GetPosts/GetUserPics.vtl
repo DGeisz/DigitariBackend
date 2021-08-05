@@ -12,6 +12,10 @@
     #end
 #end
 
+#if($uidObjects.isEmpty())
+    #return($ctx.prev.result)
+#end
+
 {
     "operation": "BatchGetItem",
     "tables" : {

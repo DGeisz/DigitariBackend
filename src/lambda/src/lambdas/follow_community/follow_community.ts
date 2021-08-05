@@ -173,7 +173,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                 },
                 UpdateExpression: `set following = following + :unit,
                                        coin = coin - :price,
-                                       coinSpent = coin + :price`,
+                                       coinSpent = coinSpent + :price`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
                     ":price": FOLLOW_COMMUNITY_PRICE,
