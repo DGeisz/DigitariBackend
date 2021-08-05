@@ -8,6 +8,8 @@ GetPostsFromIds -- Global
 
 GetBoltsBought -- Global
 
+GetUserPics -- Global
+
 UpdatePostsUser -- Global
 
 CreateCommPostsTransaction

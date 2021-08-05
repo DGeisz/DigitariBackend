@@ -1,0 +1,33 @@
+## Request
+#set($uidObjects = [])
+#set($uids = [])
+
+#foreach($post in ${ctx.stash.posts})
+    #if(!$uids.contains($post.uid))
+        #set($userMap = {})
+        $util.qr($userMap.put("id", $util.dynamodb.toString($post.uid)))
+
+        $util.qr($uidObjects.add($userMap))
+        $util.qr($uids.add($post.uid))
+    #end
+#end
+
+{
+    "operation": "BatchGetItem",
+    "tables" : {
+        "DigitariUsers" : {
+            "keys" : $util.toJson($uidObjects),
+        }
+    }
+}
+
+## Response
+#foreach($user in ${ctx.result.data.DigitariUsers})
+    #foreach($post in ${ctx.stash.posts})
+        #if($post.uid.equals($user.id))
+            $util.qr($post.put("userPic", $user.imgUrl))
+        #end
+    #end
+#end
+
+$util.toJson($ctx.stash.posts)
