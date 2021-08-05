@@ -11,6 +11,7 @@ import {
 import { EventArgs } from "./lambda_types/event_args";
 import {
     TRANSACTION_TTL,
+    TransactionIcon,
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
@@ -135,6 +136,7 @@ export async function handler(
         coin: 0,
         message: `${user.firstName} blocked your post: "${post.content}"`,
         transactionType: TransactionTypesEnum.User,
+        transactionIcon: TransactionIcon.User,
         data: uid,
         ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
     };

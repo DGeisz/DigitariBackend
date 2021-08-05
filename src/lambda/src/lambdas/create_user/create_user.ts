@@ -18,6 +18,7 @@ import {
 import { InviteType } from "../../global_types/InviteTypes";
 import {
     TRANSACTION_TTL,
+    TransactionIcon,
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
@@ -211,6 +212,7 @@ export async function handler(
         coin: 1000,
         message: "You joined Digitari!",
         transactionType: TransactionTypesEnum.User,
+        transactionIcon: TransactionIcon.User,
         data: uid,
         ttl: Math.round(time / 1000) + TRANSACTION_TTL,
     };
@@ -315,6 +317,7 @@ export async function handler(
             coin: INVITE_REWARD,
             message: `${firstName} joined Digitari!`,
             transactionType: TransactionTypesEnum.User,
+            transactionIcon: TransactionIcon.User,
             data: uid,
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         };

@@ -173,6 +173,7 @@ type Transaction {
     coin: Int
     message: String
     transactionType: Int
+    transactionIcon: Int
     data: String
 }
 

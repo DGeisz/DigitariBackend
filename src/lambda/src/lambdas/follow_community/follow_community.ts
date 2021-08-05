@@ -19,6 +19,7 @@ import {
 } from "../../global_types/DynamoTableNames";
 import {
     TRANSACTION_TTL,
+    TransactionIcon,
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
@@ -233,6 +234,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
         coin: FOLLOW_COMMUNITY_PRICE,
         message: pushMessage,
         transactionType: TransactionTypesEnum.User,
+        transactionIcon: TransactionIcon.User,
         data: source.id,
         ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
     };

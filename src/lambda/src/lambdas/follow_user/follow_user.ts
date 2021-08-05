@@ -16,6 +16,7 @@ import {
 import { PushNotificationType } from "../../global_types/PushTypes";
 import {
     TRANSACTION_TTL,
+    TransactionIcon,
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
@@ -195,6 +196,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
         coin: FOLLOW_USER_PRICE,
         message: pushMessage,
         transactionType: TransactionTypesEnum.User,
+        transactionIcon: TransactionIcon.User,
         data: source.id,
         ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
     };

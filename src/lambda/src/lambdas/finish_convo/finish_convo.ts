@@ -15,6 +15,7 @@ import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
 import {
     TRANSACTION_TTL,
+    TransactionIcon,
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
@@ -165,6 +166,7 @@ export async function handler(
         coin: 0,
         message: sourceMessage,
         transactionType: TransactionTypesEnum.Convo,
+        transactionIcon: TransactionIcon.Convo,
         data: `${cvid}:${convo.pid}`,
         ttl: Math.round(time / 1000) + TRANSACTION_TTL,
     };
@@ -206,6 +208,7 @@ export async function handler(
         coin: 0,
         message: targetMessage,
         transactionType: TransactionTypesEnum.Convo,
+        transactionIcon: TransactionIcon.Convo,
         data: `${cvid}:${convo.pid}`,
         ttl: Math.round(time / 1000) + TRANSACTION_TTL,
     };

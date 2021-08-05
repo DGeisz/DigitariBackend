@@ -7,7 +7,6 @@ import {
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import { EventArgs } from "./lambda_types/event_args";
-import { DigitariPrice } from "../../global_types/DigitariPricesTypes";
 import { UserType } from "../../global_types/UserTypes";
 import { v4 } from "uuid";
 import { insertFollowRow } from "../follow_user/rds_queries/queries";

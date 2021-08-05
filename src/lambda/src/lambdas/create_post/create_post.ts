@@ -9,7 +9,7 @@ import {
     PostTarget,
     PostType,
 } from "../../global_types/PostTypes";
-import { ProfileStickers, UserType } from "../../global_types/UserTypes";
+import { UserType } from "../../global_types/UserTypes";
 import {
     DIGITARI_COMMUNITIES,
     DIGITARI_POSTS,

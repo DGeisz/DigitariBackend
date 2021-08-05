@@ -5,12 +5,20 @@ export enum TransactionTypesEnum {
     Post,
 }
 
+export enum TransactionIcon {
+    Bolt,
+    Convo,
+    User,
+    Feed,
+}
+
 export interface TransactionType {
     tid: string;
     time: number;
     coin: number;
     message: string;
     transactionType: TransactionTypesEnum;
+    transactionIcon: TransactionIcon;
     data: string;
     ttl: number;
 }

@@ -11,6 +11,7 @@ import {
 } from "../../global_types/DynamoTableNames";
 import {
     TRANSACTION_TTL,
+    TransactionIcon,
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
@@ -247,6 +248,7 @@ export async function handler(
                 amount === 1 ? "digibolt" : "digibolts"
             } from your post: "${post.content}"`,
             transactionType: TransactionTypesEnum.User,
+            transactionIcon: TransactionIcon.Bolt,
             data: uid,
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         };

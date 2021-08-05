@@ -5,11 +5,7 @@ import {
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import { DynamoDB } from "aws-sdk";
-import {
-    ExtendedPostType,
-    PostTarget,
-    PostType,
-} from "../../global_types/PostTypes";
+import { ExtendedPostType, PostTarget } from "../../global_types/PostTypes";
 import { millisInDay } from "../../utils/time_utils";
 import { challengeCheck } from "../../challenges/challenge_check";
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
