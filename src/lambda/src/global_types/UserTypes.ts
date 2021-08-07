@@ -44,31 +44,52 @@ export interface UserType {
     newConvoUpdate: boolean;
     newTransactionUpdate: boolean;
 
+    // Level fields
+    level: number;
+    levelUsersFollowed: number;
+    levelsCommsFollowed: number;
+    levelCoinCollected: number;
+    levelPostsCreated: number;
+    levelPostBoltsBought: number;
+    levelInvitedAndJoined: number;
+    levelNewResponses: number;
+    levelSuccessfulConvos: number;
+    levelCommsCreated: number;
+    levelCoinSpentOnPosts: number;
+    levelCoinEarnedFromPosts: number;
+
     challengeReceipts: string[];
 
     coinSpent: number;
 
-    // Challenge fields
-    receivedFromConvos: number;
-    rfcChallengeIndex: number;
+    maxFollowers: number;
+    followers: number;
 
-    spentOnConvos: number;
-    socChallengeIndex: number;
+    maxFollowing: number;
+    following: number;
 
-    successfulConvos: number;
-    scChallengeIndex: number;
+    maxPostRecipients: number;
 
     postCount: number;
-    pcChallengeIndex: number;
+    spentOnConvos: number;
+    receivedFromConvos: number;
+    successfulConvos: number;
 
-    followers: number;
-    followersChallengeIndex: number;
+    // Challenge fields - DEPRECATED
+    rfcChallengeIndex?: number;
 
-    following: number;
-    followingChallengeIndex: number;
+    socChallengeIndex?: number;
 
-    communityFollowersChallengeIndex: number;
-    maxCommunityFollowers: number;
+    scChallengeIndex?: number;
+
+    pcChallengeIndex?: number;
+
+    followersChallengeIndex?: number;
+
+    followingChallengeIndex?: number;
+
+    communityFollowersChallengeIndex?: number;
+    maxCommunityFollowers?: number;
 }
 
 export interface ExtendedUserType extends UserType {

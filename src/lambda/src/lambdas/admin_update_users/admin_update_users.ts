@@ -19,111 +19,59 @@ const dynamoClient = new DynamoDB.DocumentClient({
     apiVersion: "2012-08-10",
 });
 
-export async function handler(event: { uid: string }) {
-    const { uid } = event;
-
-    const user = (
+export async function handler() {
+    const users = (
         await dynamoClient
-            .get({
+            .scan({
                 TableName: DIGITARI_USERS,
-                Key: {
-                    id: uid,
-                },
             })
             .promise()
-    ).Item as UserType;
+    ).Items as UserType[];
 
-    console.log("Here's the user: ", user);
+    const updatePromises: Promise<any>[] = [];
 
-    const postIds = (
-        await dynamoClient
-            .query({
-                TableName: DIGITARI_FEED_RECORDS,
-                KeyConditionExpression: "uid = :uid",
-                ExpressionAttributeValues: {
-                    ":uid": uid,
-                },
-                ScanIndexForward: false,
-                Limit: 10,
-            })
-            .promise()
-    ).Items as FeedRecordType[];
+    console.log("Starting update");
 
-    console.log("Here are post ids: ", postIds);
-
-    const batchRequest = [];
-    const boltRequest = [];
-
-    for (let postId of postIds) {
-        batchRequest.push({ id: postId.pid });
-
-        boltRequest.push({
-            pid: postId.pid,
-            uid,
-        });
+    for (let user of users) {
+        updatePromises.push(
+            dynamoClient
+                .update({
+                    TableName: DIGITARI_USERS,
+                    Key: {
+                        id: user.id,
+                    },
+                    UpdateExpression: `set #l = :z,
+                                            levelUsersFollowed = :z,
+                                            levelsCommsFollowed = :z,
+                                            levelCoinCollected = :z,
+                                            levelPostsCreated = :z,
+                                            levelPostBoltsBought = :z,
+                                            levelInvitedAndJoined = :z,
+                                            levelNewResponses = :z,
+                                            levelSuccessfulConvos = :z,
+                                            levelCommsCreated = :z,
+                                            levelCoinSpentOnPosts = :z,
+                                            levelCoinEarnedFromPosts = :z,
+                                            maxFollowers = :n,
+                                            maxFollowing = :t,
+                                            maxPostRecipients = :n`,
+                    ExpressionAttributeValues: {
+                        ":z": 0,
+                        ":n": 1,
+                        ":t": 2,
+                    },
+                    ExpressionAttributeNames: {
+                        "#l": "level",
+                    },
+                })
+                .promise()
+        );
     }
 
-    const batchResult = (
-        await dynamoClient
-            .batchGet({
-                RequestItems: {
-                    DigitariPosts: {
-                        Keys: batchRequest,
-                    },
-                    DigitariBoltRecords: {
-                        Keys: boltRequest,
-                    },
-                },
-            })
-            .promise()
-    ).Responses;
+    console.log("Ending update");
 
-    const posts: PostType[] = batchResult.DigitariPosts as PostType[];
-    const boltRecords = batchResult.DigitariBoltRecords as BoltRecord[];
+    await Promise.all(updatePromises);
 
-    console.log("Here are the posts: ", posts, boltRecords);
-
-    for (let record of boltRecords) {
-        for (let post of posts) {
-            if (record.pid === post.id) {
-                post.boltsBought = record.count;
-                break;
-            }
-        }
-    }
-
-    console.log("Posts post records: ", posts);
-
-    // const users = (
-    //     await dynamoClient
-    //         .scan({
-    //             TableName: DIGITARI_USERS,
-    //         })
-    //         .promise()
-    // ).Items as UserType[];
-    //
-    // const first = Date.now();
-    //
-    // const updatePromises: Promise<any>[] = [];
-    //
-    // for (let user of users) {
-    //     updatePromises.push(
-    //         dynamoClient
-    //             .update({
-    //                 TableName: DIGITARI_USERS,
-    //                 Key: {
-    //                     id: user.id,
-    //                 },
-    //                 UpdateExpression: `set walletBonusEnd = :wb, maxWallet = :mw`,
-    //                 ExpressionAttributeValues: {
-    //                     ":wb": 0,
-    //                     ":mw": 100,
-    //                 },
-    //             })
-    //             .promise()
-    //     );
-    // }
-    //
     // const posts = (
     //     await dynamoClient.scan({ TableName: DIGITARI_POSTS }).promise()
     // ).Items as PostType[];
@@ -195,4 +143,78 @@ export async function handler(event: { uid: string }) {
     // const fourth = Date.now();
     //
     // console.log("Third elapsed:", (fourth - third) / 1000);
+
+    // const { uid } = event;
+    //
+    // const user = (
+    //     await dynamoClient
+    //         .get({
+    //             TableName: DIGITARI_USERS,
+    //             Key: {
+    //                 id: uid,
+    //             },
+    //         })
+    //         .promise()
+    // ).Item as UserType;
+    //
+    // console.log("Here's the user: ", user);
+    //
+    // const postIds = (
+    //     await dynamoClient
+    //         .query({
+    //             TableName: DIGITARI_FEED_RECORDS,
+    //             KeyConditionExpression: "uid = :uid",
+    //             ExpressionAttributeValues: {
+    //                 ":uid": uid,
+    //             },
+    //             ScanIndexForward: false,
+    //             Limit: 10,
+    //         })
+    //         .promise()
+    // ).Items as FeedRecordType[];
+    //
+    // console.log("Here are post ids: ", postIds);
+    //
+    // const batchRequest = [];
+    // const boltRequest = [];
+    //
+    // for (let postId of postIds) {
+    //     batchRequest.push({ id: postId.pid });
+    //
+    //     boltRequest.push({
+    //         pid: postId.pid,
+    //         uid,
+    //     });
+    // }
+    //
+    // const batchResult = (
+    //     await dynamoClient
+    //         .batchGet({
+    //             RequestItems: {
+    //                 DigitariPosts: {
+    //                     Keys: batchRequest,
+    //                 },
+    //                 DigitariBoltRecords: {
+    //                     Keys: boltRequest,
+    //                 },
+    //             },
+    //         })
+    //         .promise()
+    // ).Responses;
+    //
+    // const posts: PostType[] = batchResult.DigitariPosts as PostType[];
+    // const boltRecords = batchResult.DigitariBoltRecords as BoltRecord[];
+    //
+    // console.log("Here are the posts: ", posts, boltRecords);
+    //
+    // for (let record of boltRecords) {
+    //     for (let post of posts) {
+    //         if (record.pid === post.id) {
+    //             post.boltsBought = record.count;
+    //             break;
+    //         }
+    //     }
+    // }
+    //
+    // console.log("Posts post records: ", posts);
 }

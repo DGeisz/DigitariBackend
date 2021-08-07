@@ -166,25 +166,33 @@ export async function handler(
         coinSpent: 0,
 
         receivedFromConvos: 0,
-        rfcChallengeIndex: 0,
-
         spentOnConvos: 0,
-        socChallengeIndex: 0,
 
         successfulConvos: 0,
-        scChallengeIndex: 0,
 
         postCount: 0,
-        pcChallengeIndex: 0,
 
+        maxFollowers: 1,
         followers: 0,
-        followersChallengeIndex: 0,
 
+        maxFollowing: 2,
         following: inviterExists ? 1 : 0,
-        followingChallengeIndex: 0,
 
-        communityFollowersChallengeIndex: 0,
-        maxCommunityFollowers: 0,
+        maxPostRecipients: 0,
+
+        // Level fields
+        level: 0,
+        levelUsersFollowed: 0,
+        levelsCommsFollowed: 0,
+        levelCoinCollected: 0,
+        levelPostsCreated: 0,
+        levelPostBoltsBought: 0,
+        levelInvitedAndJoined: 0,
+        levelNewResponses: 0,
+        levelSuccessfulConvos: 0,
+        levelCommsCreated: 0,
+        levelCoinSpentOnPosts: 0,
+        levelCoinEarnedFromPosts: 0,
     };
 
     const updatePromises: Promise<any>[] = [];
