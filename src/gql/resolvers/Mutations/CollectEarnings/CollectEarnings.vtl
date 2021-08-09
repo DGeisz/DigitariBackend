@@ -17,7 +17,7 @@ $util.qr($ctx.stash.put("amount", $amount))
         "id" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
     },
     "update" : {
-        "expression" : "set coin = coin + :a, transTotal = :z, lastCollectionTime = :t",
+        "expression" : "set coin = coin + :a, transTotal = :z, lastCollectionTime = :t, levelCoinCollected = levelCoinCollected + :a",
         "expressionValues" : {
             ":t" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),
             ":a" : $util.dynamodb.toDynamoDBJson($amount),

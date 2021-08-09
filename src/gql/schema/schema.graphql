@@ -65,6 +65,10 @@ type User @aws_iam
     levelCoinSpentOnPosts: String # String for proper serialization purposes
     levelCoinEarnedFromPosts: String # String for serialization purposes
 
+    maxFollowing: Int
+    maxFollowers: Int
+    maxPostRecipients: Int
+
     # Fields for challenges
     receivedFromConvos: String
     rfcChallengeIndex: Int

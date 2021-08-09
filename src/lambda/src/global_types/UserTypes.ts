@@ -1,6 +1,7 @@
 export const USER_TYPENAME = "User";
 
 export const FOLLOW_USER_PRICE = 200;
+export const FOLLOW_USER_REWARD = 20;
 export const DIGIBOLT_PRICE = 10;
 
 export const CHANGE_BIO_PRICE = 50;

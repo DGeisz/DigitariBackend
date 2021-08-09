@@ -42,3 +42,27 @@ export interface ConvoUpdate {
     tid: string;
     convo: ConvoType;
 }
+
+/**
+ * Gets the amount that the blocker's ranking decreases
+ * when blocking
+ */
+export function blockSourceDelta(ranking: number): number {
+    if (ranking <= 20) {
+        return 2;
+    } else {
+        return Math.floor(ranking * 0.1);
+    }
+}
+
+/**
+ * Gets the amount that the target's ranking decreases
+ * when getting blocked
+ */
+export function blockTargetDelta(ranking: number): number {
+    if (ranking <= 20) {
+        return 4;
+    } else {
+        return Math.floor(ranking * 0.25);
+    }
+}

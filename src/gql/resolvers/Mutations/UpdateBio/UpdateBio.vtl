@@ -16,9 +16,13 @@
         },
     },
     "condition" : {
-        "expression": "bolts >= :price",
+        "expression": "bolts >= :price and #l >= :l",
         "expressionValues" : {
             ":price" : $util.dynamodb.toDynamoDBJson($price),
+            ":l" : $util.dynamodb.toDynamoDBJson(3),
+        },
+        "expressionNames" : {
+            "#l" : "level"
         },
     },
 }

@@ -1,6 +1,6 @@
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { DynamoDB } from "aws-sdk";
-import { FOLLOW_USER_PRICE, UserType } from "../../global_types/UserTypes";
+import { FOLLOW_USER_PRICE, FOLLOW_USER_REWARD, UserType } from "../../global_types/UserTypes";
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import {
     followChecker,
@@ -20,7 +20,6 @@ import {
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
-import { challengeCheck } from "../../challenges/challenge_check";
 import { FeedRecordType } from "../../global_types/FeedRecordTypes";
 import { MAX_BATCH_WRITE_ITEMS } from "../../global_constants/aws_constants";
 import { backoffPush } from "../../push_notifications/back_off_push";
@@ -74,6 +73,12 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
         throw new Error("Source doesn't have sufficient coin to follow target");
     }
 
+    if (source.following >= source.maxFollowing) {
+        throw new Error(
+            "Source needs to level up in order to follow more people!"
+        );
+    }
+
     /*
      * Get the target user
      */
@@ -90,6 +95,25 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
 
     if (!target) {
         throw new Error("Target doesn't exist");
+    }
+
+    if (target.followers >= target.maxFollowers) {
+        /*
+         * Do the peer pressure notification
+         */
+        await backoffPush(
+            tid,
+            PushNotificationType.UserFollowed,
+            sid,
+            "",
+            `${source.firstName} tried to follow you, but you need to level up!`,
+            dynamoClient
+        );
+
+        /*
+         * Return null, indicating the follow didn't work
+         */
+        return null;
     }
 
     const updatePromises: Promise<any>[] = [];
@@ -171,11 +195,14 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     id: sid,
                 },
                 UpdateExpression: `set following = following + :unit,
+                                       levelUsersFollowed = levelUsersFollowed + :unit,
+                                       bolts = bolts + :reward,
                                        coin = coin - :price,
                                        coinSpent = coinSpent + :price`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
                     ":price": FOLLOW_USER_PRICE,
+                    ":reward" : FOLLOW_USER_REWARD
                 },
             })
             .promise()
@@ -265,13 +292,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             dynamoClient
         )
     );
-
-    /*
-     * Handle challenges
-     */
-    finalPromises.push(challengeCheck(source, dynamoClient));
-
-    finalPromises.push(challengeCheck(target, dynamoClient));
 
     /*
      * Resolve everything

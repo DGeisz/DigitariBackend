@@ -16,7 +16,6 @@ import {
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
 import { PushNotificationType } from "../../global_types/PushTypes";
-import { challengeCheck } from "../../challenges/challenge_check";
 import { toRep } from "../../utils/value_rep_utils";
 import { BoltRecord } from "../../global_types/BoltRecord";
 import { userPost2BoltCount } from "./utils/bolt_utils";
@@ -176,6 +175,7 @@ export async function handler(
                 },
                 UpdateExpression: `set coin = coin - :c,
                                    bolts = bolts + :bolts,
+                                   levelPostBoltsBought = levelPostBoltsBought + :bolts,
                                    coinSpent = coinSpent + :c,
                                    spentOnConvos = spentOnConvos + :c`,
                 ExpressionAttributeValues: {
@@ -224,8 +224,9 @@ export async function handler(
                         id: targetUser.id,
                     },
                     UpdateExpression: `set newTransactionUpdate = :b,
-                                   transTotal = transTotal + :c,
-                                   receivedFromConvos = receivedFromConvos + :c`,
+                                           transTotal = transTotal + :c,
+                                           levelCoinEarnedFromPosts = levelCoinEarnedFromPosts + :c,
+                                           receivedFromConvos = receivedFromConvos + :c`,
                     ExpressionAttributeValues: {
                         ":b": true,
                         ":c": coinTotal,
@@ -280,14 +281,7 @@ export async function handler(
                 dynamoClient
             )
         );
-
-        finalPromises.push(challengeCheck(targetUser, dynamoClient));
     }
-
-    /*
-     * Handle challenge updates
-     */
-    finalPromises.push(challengeCheck(user, dynamoClient));
 
     const finalResolution = await Promise.allSettled([
         Promise.all(updatePromises),

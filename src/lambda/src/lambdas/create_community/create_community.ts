@@ -56,6 +56,12 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
         );
     }
 
+    if (user.following >= user.maxFollowing) {
+        throw new Error(
+            "User can't create community because they are already following the maximum number of people"
+        );
+    }
+
     /*
      * Make community id
      */
@@ -134,6 +140,8 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
                     id: uid,
                 },
                 UpdateExpression: `set following = following + :unit,
+                                       levelsCommsFollowed = levelsCommsFollowed + :unit,
+                                       levelCommsCreated = levelCommsCreated + :unit,
                                        coin = coin - :price,
                                        coinSpent = coinSpent + :price`,
                 ExpressionAttributeValues: {

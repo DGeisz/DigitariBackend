@@ -45,6 +45,10 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
         throw new Error("User doesn't have enough bolts!");
     }
 
+    if (user.level < 3) {
+        throw new Error("User must be at least level 3 to set a profile pic!");
+    }
+
     const imgSplit = imgName.split(".");
     const imgType = imgSplit[imgSplit.length - 1];
 

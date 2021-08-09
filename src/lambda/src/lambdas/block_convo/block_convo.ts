@@ -2,7 +2,11 @@ import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import { DynamoDB } from "aws-sdk";
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { EventArgs } from "../dismiss_convo/lambda_types/event_args";
-import { ConvoUpdate } from "../../global_types/ConvoTypes";
+import {
+    blockSourceDelta,
+    blockTargetDelta,
+    ConvoUpdate,
+} from "../../global_types/ConvoTypes";
 import { getConvo } from "../dismiss_convo/rds_queries/queries";
 import {
     DIGITARI_POSTS,
@@ -17,6 +21,7 @@ import {
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
+import { UserType } from "../../global_types/UserTypes";
 
 const rdsClient = new RdsClient();
 
@@ -54,6 +59,32 @@ export async function handler(
         throw new Error("Only the convo target can block a new convo");
     }
 
+    const source: UserType = (
+        await dynamoClient
+            .get({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: uid,
+                },
+            })
+            .promise()
+    ).Item as UserType;
+
+    const target: UserType = (
+        await dynamoClient
+            .get({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: uid === convo.tid ? convo.suid : convo.tid,
+                },
+            })
+            .promise()
+    ).Item as UserType;
+
+    if (!source) {
+        throw new Error("Blocker doesn't exist!");
+    }
+
     const updatePromises: Promise<any>[] = [];
 
     /*
@@ -64,7 +95,7 @@ export async function handler(
     );
 
     /*
-     * Update users big three values and overall ranking
+     * Update source big three values and overall ranking
      */
     updatePromises.push(
         dynamoClient
@@ -74,34 +105,38 @@ export async function handler(
                     id: uid,
                 },
                 UpdateExpression: `set blocked = blocked + :unit,
-                                    ranking = ranking - :unit`,
+                                    ranking = ranking - :sd`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
+                    ":sd": blockSourceDelta(source.ranking),
                 },
             })
             .promise()
     );
 
-    /*
-     * Update other user, flag new transaction update
-     */
-    updatePromises.push(
-        dynamoClient
-            .update({
-                TableName: DIGITARI_USERS,
-                Key: {
-                    id: uid === convo.tid ? convo.suid : convo.tid,
-                },
-                UpdateExpression: `set beenBlocked = beenBlocked + :unit,
-                                    ranking = ranking - :unit,
+    if (!!target) {
+        /*
+         * Update target user, flag new transaction update
+         */
+        updatePromises.push(
+            dynamoClient
+                .update({
+                    TableName: DIGITARI_USERS,
+                    Key: {
+                        id: uid === convo.tid ? convo.suid : convo.tid,
+                    },
+                    UpdateExpression: `set beenBlocked = beenBlocked + :unit,
+                                    ranking = ranking - :td,
                                     newTransactionUpdate = :b`,
-                ExpressionAttributeValues: {
-                    ":unit": 1,
-                    ":b": true,
-                },
-            })
-            .promise()
-    );
+                    ExpressionAttributeValues: {
+                        ":unit": 1,
+                        ":td": blockTargetDelta(target.ranking),
+                        ":b": true,
+                    },
+                })
+                .promise()
+        );
+    }
 
     /*
      * If the convo is active (status = 1), and the

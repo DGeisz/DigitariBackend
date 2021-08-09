@@ -20,7 +20,6 @@ import {
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
 import { UserType } from "../../global_types/UserTypes";
-import { challengeCheck } from "../../challenges/challenge_check";
 
 const rdsClient = new RdsClient();
 
@@ -115,6 +114,7 @@ export async function handler(
                 },
                 UpdateExpression: `set successfulConvos = successfulConvos + :unit,
                                        ranking = ranking + :unit,
+                                       levelSuccessfulConvos = levelSuccessfulConvos + :unit,
                                        newTransactionUpdate = :b`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
@@ -137,6 +137,7 @@ export async function handler(
                 },
                 UpdateExpression: `set successfulConvos = successfulConvos + :unit,
                                        ranking = ranking + :unit,
+                                       levelSuccessfulConvos = levelSuccessfulConvos + :unit,
                                        newTransactionUpdate = :b`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
@@ -226,9 +227,6 @@ export async function handler(
     );
 
     finalPromises.push(Promise.all(updatePromises));
-
-    finalPromises.push(challengeCheck(source, dynamoClient));
-    finalPromises.push(challengeCheck(target, dynamoClient));
 
     /*
      * Send push notifications to the target

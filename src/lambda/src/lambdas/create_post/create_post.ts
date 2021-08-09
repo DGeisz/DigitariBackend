@@ -72,6 +72,10 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
             .promise()
     ).Item as UserType;
 
+    if (recipients > user.maxPostRecipients) {
+        throw new Error("Can't post to more than your max post recipients!");
+    }
+
     /*
      * Check recipients.  Only allow posting
      * to zero recipients if you're posting to your

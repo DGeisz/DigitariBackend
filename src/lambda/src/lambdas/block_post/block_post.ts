@@ -17,6 +17,10 @@ import {
 } from "../../global_types/TransactionTypes";
 import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
+import {
+    blockSourceDelta,
+    blockTargetDelta,
+} from "../../global_types/ConvoTypes";
 
 const dynamoClient = new DynamoDB.DocumentClient({
     apiVersion: "2012-08-10",
@@ -49,6 +53,10 @@ export async function handler(
         throw new Error("User doesn't have enough coin to block this post!");
     }
 
+    if (user.ranking < 20) {
+        throw new Error("User ranking isn't high enough! Needs to be 20");
+    }
+
     /*
      * Now fetch the post in question
      */
@@ -66,6 +74,17 @@ export async function handler(
     if (!post) {
         throw new Error("Post doesn't exist");
     }
+
+    const target: ExtendedUserType = (
+        await dynamoClient
+            .get({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: post.uid,
+                },
+            })
+            .promise()
+    ).Item as ExtendedUserType;
 
     const updatePromises: Promise<any>[] = [];
     const finalPromises: Promise<any>[] = [];
@@ -97,9 +116,10 @@ export async function handler(
                 },
                 UpdateExpression: `set coin = coin - :amount,
                                    blocked = blocked + :unit,
-                                   ranking = ranking - :unit`,
+                                   ranking = ranking - :sd`,
                 ExpressionAttributeValues: {
                     ":amount": POST_BLOCK_COST,
+                    ":sd": blockSourceDelta(user.ranking),
                     ":unit": 1,
                 },
             })
@@ -117,9 +137,10 @@ export async function handler(
                     id: post.uid,
                 },
                 UpdateExpression: `set beenBlocked = beenBlocked + :unit,
-                                   ranking = ranking - :unit`,
+                                   ranking = ranking - :td`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
+                    ":td": blockTargetDelta(target.ranking),
                 },
             })
             .promise()

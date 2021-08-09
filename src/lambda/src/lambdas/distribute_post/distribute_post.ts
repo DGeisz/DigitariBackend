@@ -7,7 +7,6 @@ import {
 import { DynamoDB } from "aws-sdk";
 import { ExtendedPostType, PostTarget } from "../../global_types/PostTypes";
 import { millisInDay } from "../../utils/time_utils";
-import { challengeCheck } from "../../challenges/challenge_check";
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import {
     getActiveFollowers,
@@ -188,10 +187,14 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
                     id: uid,
                 },
                 UpdateExpression: `set coin = coin - :price,
+                                   bolts = bolts + :nb,
                                    coinSpent = coinSpent + :price,
+                                   levelCoinSpentOnPosts = levelCoinSpentOnPosts + :price,
+                                   levelPostsCreated = levelPostsCreated + :unit,
                                    postCount = postCount + :unit`,
                 ExpressionAttributeValues: {
                     ":price": COST_PER_RECIPIENT * finalRecipients,
+                    ":nb": finalRecipients,
                     ":unit": 1,
                 },
             })
@@ -203,11 +206,6 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
     user.coin -= COST_PER_RECIPIENT * finalRecipients;
     user.coinSpent += COST_PER_RECIPIENT * finalRecipients;
     user.postCount += 1;
-
-    /*
-     * Handle challenge updates
-     */
-    finalPromises.push(challengeCheck(user, dynamoClient));
 
     const finalResolution = await Promise.allSettled(finalPromises);
 

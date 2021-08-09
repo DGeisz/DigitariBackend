@@ -178,9 +178,11 @@ export async function handler(
                 Key: {
                     id: uid,
                 },
-                UpdateExpression: `set bolts = bolts - :price`,
+                UpdateExpression: `set bolts = bolts - :price,
+                                       levelNewResponses = levelNewResponses + :unit`,
                 ExpressionAttributeValues: {
                     ":price": post.responseCost,
+                    ":unit": 1,
                 },
             })
             .promise()

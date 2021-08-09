@@ -10,7 +10,7 @@ import {
 import { UserType } from "../../global_types/UserTypes";
 import {
     CommunityType,
-    FOLLOW_COMMUNITY_PRICE,
+    FOLLOW_COMMUNITY_PRICE, FOLLOW_COMMUNITY_REWARD
 } from "../../global_types/CommunityTypes";
 import {
     DIGITARI_COMMUNITIES,
@@ -24,7 +24,6 @@ import {
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
 import { PushNotificationType } from "../../global_types/PushTypes";
-import { communityFollowersHandler } from "../../challenges/challenge_handlers/community_followers/community_follower";
 import { getCommPostRecords } from "./rds_queries/queries";
 import { FeedRecordType } from "../../global_types/FeedRecordTypes";
 import { MAX_BATCH_WRITE_ITEMS } from "../../global_constants/aws_constants";
@@ -75,6 +74,12 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
         throw new Error("Source doesn't have sufficient coin to follow target");
     }
 
+    if (source.following >= source.maxFollowing) {
+        throw new Error(
+            "Source needs to level up before they can follow more communities!"
+        );
+    }
+
     /*
      * Get the target community
      */
@@ -88,20 +93,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             })
             .promise()
     ).Item as CommunityType;
-
-    /*
-     * Get creator
-     */
-    const creator: UserType = (
-        await dynamoClient
-            .get({
-                TableName: DIGITARI_USERS,
-                Key: {
-                    id: target.uid,
-                },
-            })
-            .promise()
-    ).Item as UserType;
 
     const updatePromises: Promise<any>[] = [];
     const finalPromises: Promise<any>[] = [];
@@ -172,36 +163,18 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     id: sid,
                 },
                 UpdateExpression: `set following = following + :unit,
+                                       levelsCommsFollowed = levelsCommsFollowed + :unit,
+                                       bolts = bolts + :reward,
                                        coin = coin - :price,
                                        coinSpent = coinSpent + :price`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
                     ":price": FOLLOW_COMMUNITY_PRICE,
+                    ":reward" : FOLLOW_COMMUNITY_REWARD
                 },
             })
             .promise()
     );
-
-    /*
-     * Update the community creator's max community followers
-     * if this community has more followers than their current max
-     */
-    if (!!creator && creator.maxCommunityFollowers < target.followers) {
-        updatePromises.push(
-            dynamoClient
-                .update({
-                    TableName: DIGITARI_USERS,
-                    Key: {
-                        id: target.uid,
-                    },
-                    UpdateExpression: "set maxCommunityFollowers = :followers",
-                    ExpressionAttributeValues: {
-                        ":followers": target.followers,
-                    },
-                })
-                .promise()
-        );
-    }
 
     const pushMessage = `${source.firstName} followed your community: "${target.name}"`;
 
@@ -302,13 +275,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
             pushMessage,
             dynamoClient
         )
-    );
-
-    /*
-     * Handle challenge updates
-     */
-    finalPromises.push(
-        communityFollowersHandler(target.uid, target.followers, dynamoClient)
     );
 
     const finalResolution = await Promise.allSettled(finalPromises);

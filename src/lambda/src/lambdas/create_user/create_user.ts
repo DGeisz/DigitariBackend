@@ -28,10 +28,17 @@ import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import { Client } from "elasticsearch";
 import { toCommaRep } from "../../utils/value_rep_utils";
 import { filterEmoji } from "../../utils/string_utils";
-import { insertFollowRow } from "../follow_user/rds_queries/queries";
-import { millisInDay } from "../../utils/time_utils";
+import {
+    getUserPostRecords,
+    insertFollowRow,
+} from "../follow_user/rds_queries/queries";
+import { backoffPush } from "../../push_notifications/back_off_push";
+import { MAX_BATCH_WRITE_ITEMS } from "../../global_constants/aws_constants";
+import { FeedRecordType } from "../../global_types/FeedRecordTypes";
 
-const INVITE_REWARD = 500;
+const INVITE_REWARD = 400;
+
+const JOIN_REWARD = 300;
 
 const rdsClient = new RdsClient();
 
@@ -52,8 +59,8 @@ export async function handler(
 
     let { code, firstName, lastName, email } = event.arguments;
 
-    firstName = filterEmoji(firstName);
-    lastName = filterEmoji(lastName);
+    firstName = filterEmoji(firstName).trim();
+    lastName = filterEmoji(lastName).trim();
 
     /*
      * Alright before we go crazy, let's see if this user already
@@ -81,7 +88,7 @@ export async function handler(
     /*
      * Ok, so at this point we've verified that the user
      * doesn't exist, now let's be sure that the invite
-     *  code the user is using exists
+     * code the user is using exists
      */
     const invite: InviteType | null = (
         await dynamoClient
@@ -121,7 +128,7 @@ export async function handler(
         firstName,
         lastName,
         email,
-        remainingInvites: 30,
+        remainingInvites: 0,
 
         timeCreated: time,
         lastCheckIn: time,
@@ -136,8 +143,8 @@ export async function handler(
         coin: 100,
         bolts: 0,
 
-        maxWallet: 100,
-        walletBonusEnd: time + 2 * millisInDay,
+        maxWallet: 800,
+        walletBonusEnd: 0,
 
         nameFont: NameFonts.Default,
         nameFontsPurchased: [NameFonts.Default],
@@ -156,7 +163,7 @@ export async function handler(
         feedPendingCollection: false,
         lastPostsTime: 0,
         postsPendingCollection: false,
-        transTotal: 1000,
+        transTotal: JOIN_REWARD,
 
         newConvoUpdate: false,
         newTransactionUpdate: true,
@@ -176,7 +183,10 @@ export async function handler(
         followers: 0,
 
         maxFollowing: 2,
-        following: inviterExists ? 1 : 0,
+        following:
+            inviterExists && invitingUser.followers < invitingUser.maxFollowers
+                ? 1
+                : 0,
 
         maxPostRecipients: 0,
 
@@ -196,6 +206,7 @@ export async function handler(
     };
 
     const updatePromises: Promise<any>[] = [];
+    const extraPromises: Promise<any>[] = [];
     const finalPromises: Promise<any>[] = [];
 
     /*
@@ -217,7 +228,7 @@ export async function handler(
     const joinTransaction: TransactionType = {
         tid: uid,
         time,
-        coin: 1000,
+        coin: JOIN_REWARD,
         message: "You joined Digitari!",
         transactionType: TransactionTypesEnum.User,
         transactionIcon: TransactionIcon.User,
@@ -262,40 +273,100 @@ export async function handler(
     );
 
     if (inviterExists) {
-        /*
-         * Let's automatically follow the inviting user,
-         * and increase that user's followers everywhere
-         */
-        updatePromises.push(
-            rdsClient.executeQuery<boolean>(
-                insertFollowRow(
-                    invitingUser.id,
-                    uid,
-                    `${invitingUser.firstName} ${invitingUser.lastName}`,
-                    `${firstName} ${lastName}`,
-                    time,
-                    0
-                )
-            )
-        );
+        const canFollow = invitingUser.followers < invitingUser.maxFollowers;
 
-        updatePromises.push(
-            esClient.updateByQuery({
-                index: "search",
-                type: "search_entity",
-                body: {
-                    query: {
-                        match: {
-                            id: invitingUser.id,
+        if (canFollow) {
+            /*
+             * Let's automatically follow the inviting user,
+             * and increase that user's followers everywhere
+             */
+            updatePromises.push(
+                rdsClient.executeQuery<boolean>(
+                    insertFollowRow(
+                        invitingUser.id,
+                        uid,
+                        `${invitingUser.firstName} ${invitingUser.lastName}`,
+                        `${firstName} ${lastName}`,
+                        time,
+                        0
+                    )
+                )
+            );
+
+            updatePromises.push(
+                esClient.updateByQuery({
+                    index: "search",
+                    type: "search_entity",
+                    body: {
+                        query: {
+                            match: {
+                                id: invitingUser.id,
+                            },
+                        },
+                        script: {
+                            source: "ctx._source.followers += 1",
+                            lang: "painless",
                         },
                     },
-                    script: {
-                        source: "ctx._source.followers += 1",
-                        lang: "painless",
-                    },
-                },
-            })
-        );
+                })
+            );
+
+            /*
+             * Auto-populate new user's feed
+             */
+            const postRecords = await rdsClient.executeQuery(
+                getUserPostRecords(invitingUser.id)
+            );
+
+            for (
+                let i = 0;
+                i < postRecords.length;
+                i += MAX_BATCH_WRITE_ITEMS
+            ) {
+                const writeRequests = [];
+
+                for (let k = 0; k < MAX_BATCH_WRITE_ITEMS; ++k) {
+                    if (k + i >= postRecords.length) {
+                        break;
+                    } else {
+                        const { time, pid } = postRecords[i + k];
+
+                        const feedRecord: FeedRecordType = {
+                            uid,
+                            time,
+                            pid,
+                        };
+
+                        writeRequests.push({
+                            PutRequest: {
+                                Item: feedRecord,
+                            },
+                        });
+                    }
+                }
+
+                extraPromises.push(
+                    dynamoClient
+                        .batchWrite({
+                            RequestItems: {
+                                DigitariFeedRecords: writeRequests,
+                            },
+                        })
+                        .promise()
+                );
+            }
+        } else {
+            extraPromises.push(
+                backoffPush(
+                    invite.uid,
+                    PushNotificationType.UserFollowed,
+                    uid,
+                    "",
+                    `${firstName} tried to follow you, but you need to level up!`,
+                    dynamoClient
+                )
+            );
+        }
 
         /*
          * Ok, now let's reward the person who gave the invite
@@ -308,12 +379,14 @@ export async function handler(
                         id: invite.uid,
                     },
                     UpdateExpression: `set newTransactionUpdate = :b,
-                                       followers = followers + :unit,
+                                       followers = followers + :f,
+                                       levelInvitedAndJoined = levelInvitedAndJoined + :unit,
                                        transTotal = transTotal + :reward`,
                     ExpressionAttributeValues: {
                         ":b": true,
                         ":reward": INVITE_REWARD,
                         ":unit": 1,
+                        ":f": canFollow ? 1 : 0,
                     },
                 })
                 .promise()
@@ -386,6 +459,7 @@ export async function handler(
     }
 
     finalPromises.push(Promise.all(updatePromises));
+    finalPromises.push(Promise.all(extraPromises));
 
     finalPromises.push(
         sendPushAndHandleReceipts(
