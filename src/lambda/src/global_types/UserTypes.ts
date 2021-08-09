@@ -59,7 +59,7 @@ export interface UserType {
     levelCoinSpentOnPosts: number;
     levelCoinEarnedFromPosts: number;
 
-    challengeReceipts: string[];
+    challengeReceipts?: string[];
 
     coinSpent: number;
 

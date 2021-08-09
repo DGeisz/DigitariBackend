@@ -168,8 +168,6 @@ export async function handler(
         newConvoUpdate: false,
         newTransactionUpdate: true,
 
-        challengeReceipts: [],
-
         coinSpent: 0,
 
         receivedFromConvos: 0,
