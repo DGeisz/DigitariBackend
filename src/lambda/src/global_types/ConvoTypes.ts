@@ -48,11 +48,7 @@ export interface ConvoUpdate {
  * when blocking
  */
 export function blockSourceDelta(ranking: number): number {
-    if (ranking <= 20) {
-        return 2;
-    } else {
-        return Math.floor(ranking * 0.1);
-    }
+    return Math.max(Math.floor(ranking * 0.1), 2);
 }
 
 /**
@@ -60,9 +56,5 @@ export function blockSourceDelta(ranking: number): number {
  * when getting blocked
  */
 export function blockTargetDelta(ranking: number): number {
-    if (ranking <= 20) {
-        return 4;
-    } else {
-        return Math.floor(ranking * 0.25);
-    }
+    return Math.max(Math.floor(ranking * 0.25), 4);
 }

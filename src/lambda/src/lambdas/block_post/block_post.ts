@@ -21,6 +21,8 @@ import {
     blockSourceDelta,
     blockTargetDelta,
 } from "../../global_types/ConvoTypes";
+import { backoffPush } from "../../push_notifications/back_off_push";
+import { ranking2Tier } from "../../global_types/TierTypes";
 
 const dynamoClient = new DynamoDB.DocumentClient({
     apiVersion: "2012-08-10",
@@ -85,6 +87,12 @@ export async function handler(
             })
             .promise()
     ).Item as ExtendedUserType;
+
+    if (!!user && ranking2Tier(user.ranking) < post.tier) {
+        throw new Error(
+            "You can't block someone's post who has a higher tier!"
+        );
+    }
 
     const updatePromises: Promise<any>[] = [];
     const finalPromises: Promise<any>[] = [];
@@ -180,7 +188,7 @@ export async function handler(
      * Send push notifications to the target
      */
     finalPromises.push(
-        sendPushAndHandleReceipts(
+        backoffPush(
             post.uid,
             PushNotificationType.PostBlocked,
             uid,

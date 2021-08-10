@@ -8,6 +8,8 @@ import {
     DIGITARI_COMMUNITIES,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
+import { UserType } from "../../global_types/UserTypes";
+import { FOLLOW_COMMUNITY_REWARD } from "../../global_types/CommunityTypes";
 
 const rdsClient = new RdsClient();
 
@@ -23,6 +25,23 @@ const esClient = new Client({
 export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     const tid = event.arguments.tid;
     const sid = (event.identity as AppSyncIdentityCognito).sub;
+
+    const source: UserType = (
+        await dynamoClient
+            .get({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: sid,
+                },
+            })
+            .promise()
+    ).Item as UserType;
+
+    if (source.bolts < FOLLOW_COMMUNITY_REWARD) {
+        throw new Error(
+            `You need ${FOLLOW_COMMUNITY_REWARD} bolts to unfollow a community!`
+        );
+    }
 
     /*
      * Get activity information from the follows row
@@ -75,9 +94,11 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                 Key: {
                     id: sid,
                 },
-                UpdateExpression: `set following = following - :unit`,
+                UpdateExpression: `set following = following - :unit,
+                                       bolts = bolts - :r`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
+                    ":r": FOLLOW_COMMUNITY_REWARD,
                 },
             })
             .promise()

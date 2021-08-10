@@ -5,6 +5,7 @@ import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { FollowEventArgs } from "../../global_types/follow_event_args";
 import { getFollowEntity } from "./rds_queries/queries";
 import { DIGITARI_USERS } from "../../global_types/DynamoTableNames";
+import { FOLLOW_USER_REWARD, UserType } from "../../global_types/UserTypes";
 
 const rdsClient = new RdsClient();
 
@@ -20,6 +21,23 @@ const esClient = new Client({
 export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     const tid = event.arguments.tid;
     const sid = (event.identity as AppSyncIdentityCognito).sub;
+
+    const source: UserType = (
+        await dynamoClient
+            .get({
+                TableName: DIGITARI_USERS,
+                Key: {
+                    id: sid,
+                },
+            })
+            .promise()
+    ).Item as UserType;
+
+    if (source.bolts < FOLLOW_USER_REWARD) {
+        throw new Error(
+            `You need ${FOLLOW_USER_REWARD} bolts to unfollow a user!`
+        );
+    }
 
     /*
      * Get activity information from the follows row
@@ -72,9 +90,11 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                 Key: {
                     id: sid,
                 },
-                UpdateExpression: `set following = following - :unit`,
+                UpdateExpression: `set following = following - :unit,
+                                       bolts = bolts - :r`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
+                    ":r": FOLLOW_USER_REWARD,
                 },
             })
             .promise()
