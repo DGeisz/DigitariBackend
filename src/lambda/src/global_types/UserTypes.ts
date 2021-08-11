@@ -152,7 +152,7 @@ export function calculateWalletUpgrade(maxWallet: number): [number, number] {
  * non-zero leading values, and if it's less than 100,
  * it's a multiple of 5
  */
-function makePrettyNumber(input: number): number {
+export function makePrettyNumber(input: number): number {
     if (input < 100) {
         return Math.floor((input * 2) / 10) * 5;
     } else {

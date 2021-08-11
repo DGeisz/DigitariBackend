@@ -1,7 +1,10 @@
+import { makePrettyNumber } from "./UserTypes";
+
 export const CONVO_TYPENAME = "Convo";
 
 export const MESSAGE_COUNT_THRESHOLD = 2;
 export const CONVO_ACTIVATION_COST = 5;
+export const CONVO_REWARD_MULTIPLIER = 0.15;
 
 export interface ConvoType {
     id: string;
@@ -57,4 +60,8 @@ export function blockSourceDelta(ranking: number): number {
  */
 export function blockTargetDelta(ranking: number): number {
     return Math.max(Math.floor(ranking * 0.25), 4);
+}
+
+export function convoReward(responseCost: number): number {
+    return makePrettyNumber(CONVO_REWARD_MULTIPLIER * responseCost);
 }
