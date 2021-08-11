@@ -13,6 +13,7 @@ export enum TransactionIcon {
     Feed,
     Challenge,
     Community,
+    Post,
 }
 
 export interface TransactionType {

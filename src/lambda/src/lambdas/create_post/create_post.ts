@@ -9,8 +9,9 @@ import {
     PostTarget,
     PostType,
 } from "../../global_types/PostTypes";
-import { UserType } from "../../global_types/UserTypes";
+import { FOLLOW_USER_REWARD, UserType } from "../../global_types/UserTypes";
 import {
+    DIGITARI_BOLT_TRANSACTIONS,
     DIGITARI_COMMUNITIES,
     DIGITARI_POSTS,
     DIGITARI_USERS,
@@ -20,6 +21,12 @@ import { v4 } from "uuid";
 import { randomString } from "../../utils/string_utils";
 import { tier2responseCost } from "../../utils/tier_utils";
 import { ranking2Tier } from "../../global_types/TierTypes";
+import {
+    BoltTransactionType,
+    TRANSACTION_TTL,
+    TransactionIcon,
+    TransactionTypesEnum,
+} from "../../global_types/TransactionTypes";
 
 const BUCKET_NAME = "digitari-imgs";
 const s3Client = new S3();
@@ -249,6 +256,32 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
                                         VALUES ('${uid}', '${pid}', '${userTier}', ${time});`)
         );
     }
+
+    /*
+     * Add bolt transaction
+     */
+    const boltTransaction: BoltTransactionType = {
+        tid: uid,
+        time,
+        bolts: recipients,
+        message: `You created a post: "${content}"`,
+        transactionType: TransactionTypesEnum.Post,
+        transactionIcon: TransactionIcon.Post,
+        data: pid,
+        ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
+    };
+
+    /*
+     * Send off bolt transaction
+     */
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_BOLT_TRANSACTIONS,
+                Item: boltTransaction,
+            })
+            .promise()
+    );
 
     await Promise.all(updatePromises);
 
