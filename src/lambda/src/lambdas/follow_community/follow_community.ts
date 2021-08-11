@@ -208,7 +208,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
         tid: sid,
         time,
         bolts: FOLLOW_COMMUNITY_REWARD,
-        message: pushMessage,
+        message: `You followed ${target.name}`,
         transactionType: TransactionTypesEnum.Community,
         transactionIcon: TransactionIcon.Community,
         data: tid,
