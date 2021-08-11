@@ -7,6 +7,7 @@ import { ExtendedUserType, UserType } from "../../global_types/UserTypes";
 import {
     DIGITARI_MESSAGES,
     DIGITARI_POSTS,
+    DIGITARI_TRANSACTIONS,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import { checkForConvo, createConvo } from "./rds_queries/queries";
@@ -16,6 +17,12 @@ import { ranking2Tier } from "../../global_types/TierTypes";
 import { ConvoType } from "../../global_types/ConvoTypes";
 import { PushNotificationType } from "../../global_types/PushTypes";
 import { backoffPush } from "../../push_notifications/back_off_push";
+import {
+    TRANSACTION_TTL,
+    TransactionIcon,
+    TransactionType,
+    TransactionTypesEnum,
+} from "../../global_types/TransactionTypes";
 
 const rdsClient = new RdsClient();
 
@@ -85,10 +92,10 @@ export async function handler(
     }
 
     /*
-     * Make sure the source user has enough bolts
+     * Make sure the source user has enough coin
      */
-    if (user.bolts < post.responseCost) {
-        throw new Error("User doesn't have enough bolts");
+    if (user.coin < post.responseCost) {
+        throw new Error("User doesn't have enough coin");
     }
 
     /*
@@ -119,6 +126,10 @@ export async function handler(
         tname = targetUser.firstName;
         ttier = ranking2Tier(targetUser.ranking);
 
+        /*
+         * Flag new convo, and add transaction
+         * showing someone responded
+         */
         updatePromises.push(
             dynamoClient
                 .update({
@@ -126,10 +137,35 @@ export async function handler(
                     Key: {
                         id: targetUser.id,
                     },
-                    UpdateExpression: `set newConvoUpdate = :b`,
+                    UpdateExpression: `set newConvoUpdate = :b,
+                                           transTotal = transTotal + :c`,
                     ExpressionAttributeValues: {
                         ":b": true,
+                        ":c": post.responseCost,
                     },
+                })
+                .promise()
+        );
+
+        const transaction: TransactionType = {
+            tid: targetUser.id,
+            time,
+            coin: post.responseCost,
+            message: `Your post received a new response: "${message}"`,
+            transactionType: TransactionTypesEnum.Convo,
+            transactionIcon: TransactionIcon.Convo,
+            data: `${cvid}:${pid}`,
+            ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
+        };
+
+        /*
+         * Send off the transaction
+         */
+        updatePromises.push(
+            dynamoClient
+                .put({
+                    TableName: DIGITARI_TRANSACTIONS,
+                    Item: transaction,
                 })
                 .promise()
         );
@@ -178,7 +214,7 @@ export async function handler(
                 Key: {
                     id: uid,
                 },
-                UpdateExpression: `set bolts = bolts - :price,
+                UpdateExpression: `set coin = coin - :price,
                                        levelNewResponses = levelNewResponses + :unit`,
                 ExpressionAttributeValues: {
                     ":price": post.responseCost,
@@ -188,7 +224,7 @@ export async function handler(
             .promise()
     );
 
-    user.bolts -= post.responseCost;
+    user.coin -= post.responseCost;
 
     /*
      * Create the initial message
