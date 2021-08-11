@@ -1,3 +1,9 @@
+export const AFTER_TAX_FRACTION = 0.9;
+
+export function applyCoinTax(original: number): number {
+    return Math.floor(AFTER_TAX_FRACTION * original);
+}
+
 export enum TransactionTypesEnum {
     User,
     Convo,
