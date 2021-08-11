@@ -1,6 +1,10 @@
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { DynamoDB } from "aws-sdk";
-import { FOLLOW_USER_PRICE, FOLLOW_USER_REWARD, UserType } from "../../global_types/UserTypes";
+import {
+    FOLLOW_USER_PRICE,
+    FOLLOW_USER_REWARD,
+    UserType,
+} from "../../global_types/UserTypes";
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import {
     followChecker,
@@ -10,11 +14,13 @@ import {
 import { Client } from "elasticsearch";
 import { FollowEventArgs } from "../../global_types/follow_event_args";
 import {
+    DIGITARI_BOLT_TRANSACTIONS,
     DIGITARI_TRANSACTIONS,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import { PushNotificationType } from "../../global_types/PushTypes";
 import {
+    BoltTransactionType,
     TRANSACTION_TTL,
     TransactionIcon,
     TransactionType,
@@ -196,13 +202,13 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                 },
                 UpdateExpression: `set following = following + :unit,
                                        levelUsersFollowed = levelUsersFollowed + :unit,
-                                       bolts = bolts + :reward,
+                                       boltTransTotal = boltTransTotal + :reward,
                                        coin = coin - :price,
                                        coinSpent = coinSpent + :price`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
                     ":price": FOLLOW_USER_PRICE,
-                    ":reward" : FOLLOW_USER_REWARD
+                    ":reward": FOLLOW_USER_REWARD,
                 },
             })
             .promise()
@@ -215,7 +221,33 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     const pushMessage = `${source.firstName} followed you!`;
 
     /*
-     * Create transaction for this bad boi
+     * Create bolt transaction for source
+     */
+    const boltTransaction: BoltTransactionType = {
+        tid: sid,
+        time,
+        bolts: FOLLOW_USER_REWARD,
+        message: pushMessage,
+        transactionType: TransactionTypesEnum.User,
+        transactionIcon: TransactionIcon.User,
+        data: tid,
+        ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
+    };
+
+    /*
+     * Send off bolt transaction
+     */
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_BOLT_TRANSACTIONS,
+                Item: boltTransaction,
+            })
+            .promise()
+    );
+
+    /*
+     * Create transaction for this target
      */
     const transaction: TransactionType = {
         tid,

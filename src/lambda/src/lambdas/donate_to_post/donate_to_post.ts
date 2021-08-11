@@ -5,18 +5,20 @@ import { EventArgs } from "./lambda_types/event_args";
 import { DIGIBOLT_PRICE, ExtendedUserType } from "../../global_types/UserTypes";
 import {
     DIGITARI_BOLT_RECORDS,
+    DIGITARI_BOLT_TRANSACTIONS,
     DIGITARI_POSTS,
     DIGITARI_TRANSACTIONS,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import {
+    BoltTransactionType,
     TRANSACTION_TTL,
     TransactionIcon,
     TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
 import { PushNotificationType } from "../../global_types/PushTypes";
-import { toRep } from "../../utils/value_rep_utils";
+import { toCommaRep, toRep } from "../../utils/value_rep_utils";
 import { BoltRecord } from "../../global_types/BoltRecord";
 import { userPost2BoltCount } from "./utils/bolt_utils";
 import { backoffPush } from "../../push_notifications/back_off_push";
@@ -174,7 +176,7 @@ export async function handler(
                     id: uid,
                 },
                 UpdateExpression: `set coin = coin - :c,
-                                   bolts = bolts + :bolts,
+                                   boltTransTotal = boltTransTotal + :bolts,
                                    levelPostBoltsBought = levelPostBoltsBought + :bolts,
                                    coinSpent = coinSpent + :c,
                                    spentOnConvos = spentOnConvos + :c`,
@@ -182,6 +184,31 @@ export async function handler(
                     ":c": coinTotal,
                     ":bolts": amount,
                 },
+            })
+            .promise()
+    );
+
+    const boltTransaction: BoltTransactionType = {
+        tid: uid,
+        time,
+        bolts: amount,
+        message: `You gave ${toCommaRep(coinTotal)} coin to the post: "${
+            post.content
+        }"`,
+        transactionType: TransactionTypesEnum.Post,
+        transactionIcon: TransactionIcon.Like,
+        data: pid,
+        ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
+    };
+
+    /*
+     * Send off the transaction
+     */
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_BOLT_TRANSACTIONS,
+                Item: boltTransaction,
             })
             .promise()
     );
@@ -249,7 +276,7 @@ export async function handler(
                 amount === 1 ? "digibolt" : "digibolts"
             } from your post: "${post.content}"`,
             transactionType: TransactionTypesEnum.User,
-            transactionIcon: TransactionIcon.Bolt,
+            transactionIcon: TransactionIcon.Like,
             data: uid,
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         };

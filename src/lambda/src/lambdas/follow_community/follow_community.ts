@@ -10,14 +10,17 @@ import {
 import { UserType } from "../../global_types/UserTypes";
 import {
     CommunityType,
-    FOLLOW_COMMUNITY_PRICE, FOLLOW_COMMUNITY_REWARD
+    FOLLOW_COMMUNITY_PRICE,
+    FOLLOW_COMMUNITY_REWARD,
 } from "../../global_types/CommunityTypes";
 import {
+    DIGITARI_BOLT_TRANSACTIONS,
     DIGITARI_COMMUNITIES,
     DIGITARI_TRANSACTIONS,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import {
+    BoltTransactionType,
     TRANSACTION_TTL,
     TransactionIcon,
     TransactionType,
@@ -164,13 +167,13 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                 },
                 UpdateExpression: `set following = following + :unit,
                                        levelsCommsFollowed = levelsCommsFollowed + :unit,
-                                       bolts = bolts + :reward,
+                                       boltTransTotal = boltTransTotal + :reward,
                                        coin = coin - :price,
                                        coinSpent = coinSpent + :price`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
                     ":price": FOLLOW_COMMUNITY_PRICE,
-                    ":reward" : FOLLOW_COMMUNITY_REWARD
+                    ":reward": FOLLOW_COMMUNITY_REWARD,
                 },
             })
             .promise()
@@ -194,6 +197,32 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     ":b": true,
                     ":price": FOLLOW_COMMUNITY_PRICE,
                 },
+            })
+            .promise()
+    );
+
+    /*
+     * Create bolt transaction for source
+     */
+    const boltTransaction: BoltTransactionType = {
+        tid: sid,
+        time,
+        bolts: FOLLOW_COMMUNITY_REWARD,
+        message: pushMessage,
+        transactionType: TransactionTypesEnum.Community,
+        transactionIcon: TransactionIcon.Community,
+        data: tid,
+        ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
+    };
+
+    /*
+     * Send off bolt transaction
+     */
+    updatePromises.push(
+        dynamoClient
+            .put({
+                TableName: DIGITARI_BOLT_TRANSACTIONS,
+                Item: boltTransaction,
             })
             .promise()
     );

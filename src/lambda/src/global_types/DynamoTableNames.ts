@@ -6,6 +6,7 @@ export const DIGITARI_MESSAGES = "DigitariMessages";
 export const DIGITARI_PUSH = "DigitariPush";
 export const DIGITARI_PUSH_TICKETS = "DigitariPushTickets";
 export const DIGITARI_TRANSACTIONS = "DigitariTransactions";
+export const DIGITARI_BOLT_TRANSACTIONS = "DigitariBoltTransactions";
 export const DIGITARI_FEED_RECORDS = "DigitariFeedRecords";
 export const DIGITARI_INVITES = "DigitariInvites";
 export const DIGITARI_RECEIPTS = "DigitariReceipts";

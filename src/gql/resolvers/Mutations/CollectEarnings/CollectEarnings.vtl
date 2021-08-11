@@ -8,7 +8,14 @@
     #end
 #end
 
+#if($ctx.stash.user.boltTransTotal > $ctx.stash.user.maxBoltWallet)
+    #set($boltAmount = $ctx.stash.user.maxBoltWallet)
+#else
+    #set($boltAmount = $ctx.stash.user.boltTransTotal)
+#end
+
 $util.qr($ctx.stash.put("amount", $amount))
+$util.qr($ctx.stash.put("boltAmount", $boltAmount))
 
 {
     "version" : "2017-02-28",
@@ -17,10 +24,11 @@ $util.qr($ctx.stash.put("amount", $amount))
         "id" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
     },
     "update" : {
-        "expression" : "set coin = coin + :a, transTotal = :z, lastCollectionTime = :t, levelCoinCollected = levelCoinCollected + :a",
+        "expression" : "set coin = coin + :a, transTotal = :z, bolts = bolts + :b, boltTransTotal = :z, lastCollectionTime = :t, levelCoinCollected = levelCoinCollected + :a",
         "expressionValues" : {
             ":t" : $util.dynamodb.toDynamoDBJson($ctx.stash.get("time")),
             ":a" : $util.dynamodb.toDynamoDBJson($amount),
+            ":b" : $util.dynamodb.toDynamoDBJson($boltAmount),
             ":z" : $util.dynamodb.toDynamoDBJson(0),
         },
     },

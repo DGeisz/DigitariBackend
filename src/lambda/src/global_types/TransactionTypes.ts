@@ -3,20 +3,33 @@ export enum TransactionTypesEnum {
     Convo,
     Challenge,
     Post,
+    Community,
 }
 
 export enum TransactionIcon {
-    Bolt,
+    Like,
     Convo,
     User,
     Feed,
     Challenge,
+    Community,
 }
 
 export interface TransactionType {
     tid: string;
     time: number;
     coin: number;
+    message: string;
+    transactionType: TransactionTypesEnum;
+    transactionIcon: TransactionIcon;
+    data: string;
+    ttl: number;
+}
+
+export interface BoltTransactionType {
+    tid: string;
+    time: number;
+    bolts: number;
     message: string;
     transactionType: TransactionTypesEnum;
     transactionIcon: TransactionIcon;

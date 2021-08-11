@@ -13,6 +13,7 @@ type User @aws_iam
     imgUrl: String
     remainingInvites: Int
     transTotal: String
+    boltTransTotal: String
 
     lastCollectionTime: String
 
@@ -33,6 +34,8 @@ type User @aws_iam
     # For wallet
     maxWallet: String
     walletBonusEnd: String
+
+    maxBoltWallet: String
 
     # Profile customizations
     nameFont: Int
@@ -199,6 +202,7 @@ type Transaction {
 
 type EarningsReceipt {
     coin: Int
+    bolts: Int
     time: String
 }
 

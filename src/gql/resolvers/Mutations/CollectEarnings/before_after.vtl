@@ -6,5 +6,6 @@ $util.qr($ctx.stash.put("time", $util.time.nowEpochMilliSeconds()))
 ## After
 {
     "coin" : $util.toJson($ctx.stash.amount),
+    "bolts" : $util.toJson($ctx.stash.boltAmount),
     "time" : $util.toJson($ctx.stash.time)
 }

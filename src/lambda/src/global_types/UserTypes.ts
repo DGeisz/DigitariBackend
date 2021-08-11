@@ -15,6 +15,7 @@ export interface UserType {
     email: string;
     remainingInvites: number;
     transTotal: number;
+    boltTransTotal: number;
 
     amFollowing: boolean;
 
@@ -28,6 +29,8 @@ export interface UserType {
 
     maxWallet: number;
     walletBonusEnd: number;
+
+    maxBoltWallet: number;
 
     nameFont: NameFonts;
     nameFontsPurchased: NameFonts[];

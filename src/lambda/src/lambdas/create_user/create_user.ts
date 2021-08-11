@@ -146,6 +146,8 @@ export async function handler(
         maxWallet: 800,
         walletBonusEnd: 0,
 
+        maxBoltWallet: 100,
+
         nameFont: NameFonts.Default,
         nameFontsPurchased: [NameFonts.Default],
         nameColor: ProfileColors.Default,
@@ -164,6 +166,7 @@ export async function handler(
         lastPostsTime: 0,
         postsPendingCollection: false,
         transTotal: JOIN_REWARD,
+        boltTransTotal: 0,
 
         newConvoUpdate: false,
         newTransactionUpdate: true,

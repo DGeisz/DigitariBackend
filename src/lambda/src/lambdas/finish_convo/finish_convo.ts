@@ -3,20 +3,21 @@ import { DynamoDB } from "aws-sdk";
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { EventArgs } from "../dismiss_convo/lambda_types/event_args";
 import {
+    convoReward,
     ConvoUpdate,
     MESSAGE_COUNT_THRESHOLD,
 } from "../../global_types/ConvoTypes";
 import { getConvo } from "../dismiss_convo/rds_queries/queries";
 import {
-    DIGITARI_TRANSACTIONS,
+    DIGITARI_BOLT_TRANSACTIONS,
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
 import {
+    BoltTransactionType,
     TRANSACTION_TTL,
     TransactionIcon,
-    TransactionType,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
 import { UserType } from "../../global_types/UserTypes";
@@ -101,6 +102,8 @@ export async function handler(
         rdsClient.executeSql(`UPDATE convos SET status = 2 WHERE id='${cvid}'`)
     );
 
+    const reward = convoReward(convo.responseCost);
+
     /*
      * Increase both user's successful convo count and ranking,
      * and also give source user the convo reward
@@ -113,12 +116,14 @@ export async function handler(
                     id: convo.suid,
                 },
                 UpdateExpression: `set successfulConvos = successfulConvos + :unit,
+                                       boltTransTotal = boltTransTotal + :r,
                                        ranking = ranking + :unit,
                                        levelSuccessfulConvos = levelSuccessfulConvos + :unit,
                                        newTransactionUpdate = :b`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
                     ":b": true,
+                    ":r": reward,
                 },
             })
             .promise()
@@ -136,12 +141,14 @@ export async function handler(
                     id: convo.tid,
                 },
                 UpdateExpression: `set successfulConvos = successfulConvos + :unit,
+                                       boltTransTotal = boltTransTotal + :r,
                                        ranking = ranking + :unit,
                                        levelSuccessfulConvos = levelSuccessfulConvos + :unit,
                                        newTransactionUpdate = :b`,
                 ExpressionAttributeValues: {
                     ":unit": 1,
                     ":b": true,
+                    ":r": reward,
                 },
             })
             .promise()
@@ -161,10 +168,10 @@ export async function handler(
     /*
      * Create transaction for this bad boi
      */
-    const sourceTransaction: TransactionType = {
+    const sourceTransaction: BoltTransactionType = {
         tid: convo.suid,
         time,
-        coin: 0,
+        bolts: reward,
         message: sourceMessage,
         transactionType: TransactionTypesEnum.Convo,
         transactionIcon: TransactionIcon.Convo,
@@ -178,7 +185,7 @@ export async function handler(
     updatePromises.push(
         dynamoClient
             .put({
-                TableName: DIGITARI_TRANSACTIONS,
+                TableName: DIGITARI_BOLT_TRANSACTIONS,
                 Item: sourceTransaction,
             })
             .promise()
@@ -203,10 +210,10 @@ export async function handler(
     /*
      * Create transaction for this bad boi
      */
-    const targetTransaction: TransactionType = {
+    const targetTransaction: BoltTransactionType = {
         tid: convo.tid,
         time,
-        coin: 0,
+        bolts: reward,
         message: targetMessage,
         transactionType: TransactionTypesEnum.Convo,
         transactionIcon: TransactionIcon.Convo,
@@ -220,7 +227,7 @@ export async function handler(
     updatePromises.push(
         dynamoClient
             .put({
-                TableName: DIGITARI_TRANSACTIONS,
+                TableName: DIGITARI_BOLT_TRANSACTIONS,
                 Item: targetTransaction,
             })
             .promise()
