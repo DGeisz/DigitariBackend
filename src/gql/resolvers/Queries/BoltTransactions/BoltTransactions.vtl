@@ -1,0 +1,36 @@
+## Request
+
+#if($util.isNullOrEmpty($ctx.args.lastTime))
+    {
+        "version" : "2017-02-28",
+        "operation" : "Query",
+        "query" : {
+            "expression": "tid = :tid",
+            "expressionValues" : {
+                ":tid" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+            },
+        },
+        "scanIndexForward": false,
+        "limit": $util.toJson(50)
+    }
+#else
+    {
+        "version" : "2017-02-28",
+        "operation" : "Query",
+        "query" : {
+            "expression": "tid = :tid AND #t < :t",
+            "expressionNames" : {
+                "#t" : "time",
+            },
+            "expressionValues" : {
+                ":tid" : $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+                ":t" : $util.toJson({"N" : $ctx.args.lastTime}),
+            },
+        },
+        "scanIndexForward": false,
+        "limit": $util.toJson(50)
+    }
+#end
+
+## Response
+$util.toJson($ctx.result.items)

@@ -40,28 +40,11 @@ export async function handler() {
                     Key: {
                         id: user.id,
                     },
-                    UpdateExpression: `set #l = :z,
-                                            levelUsersFollowed = :z,
-                                            levelsCommsFollowed = :z,
-                                            levelCoinCollected = :z,
-                                            levelPostsCreated = :z,
-                                            levelPostBoltsBought = :z,
-                                            levelInvitedAndJoined = :z,
-                                            levelNewResponses = :z,
-                                            levelSuccessfulConvos = :z,
-                                            levelCommsCreated = :z,
-                                            levelCoinSpentOnPosts = :z,
-                                            levelCoinEarnedFromPosts = :z,
-                                            maxFollowers = :n,
-                                            maxFollowing = :t,
-                                            maxPostRecipients = :n`,
+                    UpdateExpression: `set maxBoltWallet = :h,
+                                           boltTransTotal = :z`,
                     ExpressionAttributeValues: {
+                        ":h": 100,
                         ":z": 0,
-                        ":n": 1,
-                        ":t": 2,
-                    },
-                    ExpressionAttributeNames: {
-                        "#l": "level",
                     },
                 })
                 .promise()

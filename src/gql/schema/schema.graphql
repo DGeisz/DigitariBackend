@@ -200,6 +200,16 @@ type Transaction {
     data: String
 }
 
+type BoltTransaction {
+    tid: ID
+    time: String
+    bolts: Int
+    message: String
+    transactionType: Int
+    transactionIcon: Int
+    data: String
+}
+
 type EarningsReceipt {
     coin: Int
     bolts: Int
@@ -289,6 +299,7 @@ type Query @aws_cognito_user_pools @aws_iam {
     following(sid: ID!, lastTime: String, entityType: Int): [FollowEntity]
     postResponseCheck(pid: ID): Boolean
     transactions(lastTime: String): [Transaction]
+    boltTransactions(lastTime: String): [BoltTransaction]
     allPosts(lastTime: String, skipReward: Boolean): [Post]
 
     validInviteCode(code: String): Boolean
