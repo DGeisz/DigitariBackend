@@ -16,6 +16,7 @@ export interface UserType {
     remainingInvites: number;
     transTotal: number;
     boltTransTotal: number;
+    imgUrl?: string;
 
     amFollowing: boolean;
 

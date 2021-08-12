@@ -55,8 +55,8 @@ export async function followingHandler(
             coin: bronzeCoin,
             message:
                 'You completed the challenge: "Follow one user or community"',
-            transactionType: TransactionTypesEnum.Challenge,
-            transactionIcon: TransactionIcon.Challenge,
+            transactionType: TransactionTypesEnum.LevelUp,
+            transactionIcon: TransactionIcon.LevelUp,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -77,8 +77,8 @@ export async function followingHandler(
             message: `You completed the challenge: "Follow ${toCommaRep(
                 silverCount
             )} users or communities"`,
-            transactionType: TransactionTypesEnum.Challenge,
-            transactionIcon: TransactionIcon.Challenge,
+            transactionType: TransactionTypesEnum.LevelUp,
+            transactionIcon: TransactionIcon.LevelUp,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -99,8 +99,8 @@ export async function followingHandler(
             message: `You completed the challenge: "Follow ${toCommaRep(
                 goldCount
             )} users or communities"`,
-            transactionType: TransactionTypesEnum.Challenge,
-            transactionIcon: TransactionIcon.Challenge,
+            transactionType: TransactionTypesEnum.LevelUp,
+            transactionIcon: TransactionIcon.LevelUp,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -121,8 +121,8 @@ export async function followingHandler(
             message: `You completed the challenge: "Follow ${toCommaRep(
                 supremeCount
             )} users or communities"`,
-            transactionType: TransactionTypesEnum.Challenge,
-            transactionIcon: TransactionIcon.Challenge,
+            transactionType: TransactionTypesEnum.LevelUp,
+            transactionIcon: TransactionIcon.LevelUp,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });

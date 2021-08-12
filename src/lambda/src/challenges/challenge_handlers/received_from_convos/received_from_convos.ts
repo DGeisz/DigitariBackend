@@ -51,8 +51,8 @@ export async function receivedFromConvosHandler(
             message: `You completed the challenge: "Earn ${toCommaRep(
                 bronzeCount
             )} digicoin from your posts"`,
-            transactionType: TransactionTypesEnum.Challenge,
-            transactionIcon: TransactionIcon.Challenge,
+            transactionType: TransactionTypesEnum.LevelUp,
+            transactionIcon: TransactionIcon.LevelUp,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -73,8 +73,8 @@ export async function receivedFromConvosHandler(
             message: `You completed the challenge: "Earn ${toCommaRep(
                 silverCount
             )} digicoin from your posts"`,
-            transactionType: TransactionTypesEnum.Challenge,
-            transactionIcon: TransactionIcon.Challenge,
+            transactionType: TransactionTypesEnum.LevelUp,
+            transactionIcon: TransactionIcon.LevelUp,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -95,8 +95,8 @@ export async function receivedFromConvosHandler(
             message: `You completed the challenge: "Earn ${toCommaRep(
                 goldCount
             )} digicoin from your posts"`,
-            transactionType: TransactionTypesEnum.Challenge,
-            transactionIcon: TransactionIcon.Challenge,
+            transactionType: TransactionTypesEnum.LevelUp,
+            transactionIcon: TransactionIcon.LevelUp,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });
@@ -117,8 +117,8 @@ export async function receivedFromConvosHandler(
             message: `You completed the challenge: "Earn ${toCommaRep(
                 supremeCount
             )} digicoin from your posts"`,
-            transactionType: TransactionTypesEnum.Challenge,
-            transactionIcon: TransactionIcon.Challenge,
+            transactionType: TransactionTypesEnum.LevelUp,
+            transactionIcon: TransactionIcon.LevelUp,
             data: "",
             ttl: Math.round(time / 1000) + TRANSACTION_TTL, // 24 hours past `time` in epoch seconds
         });

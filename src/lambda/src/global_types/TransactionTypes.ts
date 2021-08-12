@@ -7,7 +7,7 @@ export function applyCoinTax(original: number): number {
 export enum TransactionTypesEnum {
     User,
     Convo,
-    Challenge,
+    LevelUp,
     Post,
     Community,
 }
@@ -17,7 +17,7 @@ export enum TransactionIcon {
     Convo,
     User,
     Feed,
-    Challenge,
+    LevelUp,
     Community,
     Post,
 }

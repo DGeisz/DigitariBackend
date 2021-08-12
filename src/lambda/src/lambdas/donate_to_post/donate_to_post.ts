@@ -11,7 +11,6 @@ import {
     DIGITARI_USERS,
 } from "../../global_types/DynamoTableNames";
 import {
-    applyCoinTax,
     BoltTransactionType,
     TRANSACTION_TTL,
     TransactionIcon,
