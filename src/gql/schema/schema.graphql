@@ -319,6 +319,8 @@ type Mutation {
         email: String!
     ): User
 
+    levelUp: User
+
     checkInUser: User
 
     registerPush(token: String!): Boolean

@@ -184,7 +184,23 @@ export async function handler(
             .promise()
     );
 
-    user.hid = "";
+    await Promise.all(updatePromises);
+
+    /*
+     * Update fields of in-memory user
+     */
+    user.level += 1;
+    user.levelUsersFollowed = 0;
+    user.levelsCommsFollowed = 0;
+    user.levelCoinCollected = 0;
+    user.levelPostsCreated = 0;
+    user.levelPostBoltsBought = 0;
+    user.levelInvitedAndJoined = 0;
+    user.levelNewResponses = 0;
+    user.levelSuccessfulConvos = 0;
+    user.levelCommsCreated = 0;
+    user.levelCoinSpentOnPosts = 0;
+    user.levelCoinEarnedFromPosts = 0;
 
     /*
      * Return the in-memory user
