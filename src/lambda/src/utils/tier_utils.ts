@@ -28,25 +28,25 @@ export function tier2convoReward(tier: number): number {
 export function tier2responseCost(tier: number): number {
     switch (tier) {
         case -3:
-            return 1;
-        case -2:
-            return 2;
-        case -1:
-            return 5;
-        case 0:
             return 10;
-        case 1:
-            return 15;
-        case 2:
+        case -2:
             return 20;
-        case 3:
-            return 25;
-        case 4:
-            return 30;
-        case 5:
-            return 40;
-        case 6:
+        case -1:
             return 50;
+        case 0:
+            return 100;
+        case 1:
+            return 150;
+        case 2:
+            return 200;
+        case 3:
+            return 250;
+        case 4:
+            return 300;
+        case 5:
+            return 350;
+        case 6:
+            return 400;
         default:
             return 0;
     }
