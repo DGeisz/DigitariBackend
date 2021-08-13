@@ -1,7 +1,10 @@
-import { calculateWalletUpgrade, UserType } from "../../global_types/UserTypes";
-import { DIGITARI_USERS } from "../../global_types/DynamoTableNames";
 import { DynamoDB } from "aws-sdk";
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
+import {
+    calculateBoltWalletUpgrade,
+    UserType,
+} from "../../global_types/UserTypes";
+import { DIGITARI_USERS } from "../../global_types/DynamoTableNames";
 
 const dynamoClient = new DynamoDB.DocumentClient({
     apiVersion: "2012-08-10",
@@ -33,10 +36,12 @@ export async function handler(
     /*
      * Calculate upgrade
      */
-    const [nextPrice, nextSize] = calculateWalletUpgrade(user.maxWallet);
+    const [nextPrice, nextSize] = calculateBoltWalletUpgrade(
+        user.maxBoltWallet
+    );
 
-    if (user.bolts < nextPrice) {
-        throw new Error("User doesn't have enough bolts!");
+    if (user.bolts < nextSize) {
+        throw new Error("User doesn't have enough bolts");
     }
 
     /*
@@ -48,7 +53,7 @@ export async function handler(
             Key: {
                 id: uid,
             },
-            UpdateExpression: `set maxWallet = :s, bolts = bolts - :price`,
+            UpdateExpression: `set maxBoltWallet = :s, bolts = bolts - :price`,
             ExpressionAttributeValues: {
                 ":s": nextSize,
                 ":price": nextPrice,
@@ -57,9 +62,9 @@ export async function handler(
         .promise();
 
     /*
-     * Update in memory object
+     * Update in-memory object
      */
-    user.maxWallet = nextSize;
+    user.maxBoltWallet = nextSize;
     user.bolts -= nextPrice;
 
     return user;

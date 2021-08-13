@@ -33,6 +33,8 @@ module.exports = {
         delete_community: "./src/lambdas/delete_community/delete_community.ts",
         distribute_post: "./src/lambdas/distribute_post/distribute_post.ts",
         upgrade_wallet: "./src/lambdas/upgrade_wallet/upgrade_wallet.ts",
+        upgrade_bolt_wallet:
+            "./src/lambdas/upgrade_bolt_wallet/upgrade_bolt_wallet.ts",
         level_up: "./src/lambdas/level_up/level_up.ts",
     },
     externals: ["aws-sdk"],

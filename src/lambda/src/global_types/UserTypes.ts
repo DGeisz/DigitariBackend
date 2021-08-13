@@ -151,6 +151,21 @@ export function calculateWalletUpgrade(maxWallet: number): [number, number] {
     return [nextPrice, nextSize];
 }
 
+const BOLT_WALLET_PRICE_COEFF = 10;
+
+/*
+ * Calculate the price and size of next bolt wallet upgrade
+ */
+export function calculateBoltWalletUpgrade(
+    maxBoltWallet: number
+): [number, number] {
+    const nextPrice = makePrettyNumber(maxBoltWallet * BOLT_WALLET_PRICE_COEFF);
+
+    const nextSize = makePrettyNumber(maxBoltWallet * WALLET_MULTIPLIER);
+
+    return [nextPrice, nextSize];
+}
+
 /*
  * Takes a number and makes it pretty.  Only two
  * non-zero leading values, and if it's less than 100,

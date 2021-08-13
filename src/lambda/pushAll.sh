@@ -23,6 +23,7 @@ if [ "$(uname)" == "Darwin" ]; then
     bash ./zipNpush.sh create_user create_user &
     bash ./zipNpush.sh process_iap process_iap &
     bash ./zipNpush.sh upgrade_wallet upgrade_wallet &
+    bash ./zipNpush.sh upgrade_bolt_wallet upgrade_bolt_wallet &
     bash ./zipNpush.sh level_up level_up &
 else
     ./zipNpush.sh activate_convo activate_convo &
@@ -49,6 +50,7 @@ else
     ./zipNpush.sh create_user create_user &
     ./zipNpush.sh process_iap process_iap &
     ./zipNpush.sh upgrade_wallet upgrade_wallet &
+    ./zipNpush.sh upgrade_bolt_wallet upgrade_bolt_wallet &
     ./zipNpush.sh level_up level_up &
 fi
 
