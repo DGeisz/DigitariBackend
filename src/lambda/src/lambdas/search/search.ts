@@ -84,5 +84,9 @@ export async function handler(
         body,
     });
 
-    return result.body;
+    const initialHits = result.body.hits.hits.map((hit: any) => {
+        return hit.source;
+    });
+
+    return initialHits;
 }
