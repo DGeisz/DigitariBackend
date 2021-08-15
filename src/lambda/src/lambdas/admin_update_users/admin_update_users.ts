@@ -33,14 +33,6 @@ const esClient = new Client({
 });
 
 export async function handler() {
-    // const comms = (
-    //     await dynamoClient
-    //         .scan({
-    //             TableName: DIGITARI_COMMUNITIES,
-    //         })
-    //         .promise()
-    // ).Items as CommunityType[];
-
     await esClient.deleteByQuery({
         index: "search",
         body: {
@@ -51,6 +43,25 @@ export async function handler() {
             },
         },
     });
+
+    await esClient.deleteByQuery({
+        index: "search",
+        body: {
+            query: {
+                term: {
+                    entityType: 1,
+                },
+            },
+        },
+    });
+
+    const comms = (
+        await dynamoClient
+            .scan({
+                TableName: DIGITARI_COMMUNITIES,
+            })
+            .promise()
+    ).Items as CommunityType[];
 
     const users = (
         await dynamoClient
@@ -73,26 +84,26 @@ export async function handler() {
                     id: user.id,
                     name: `${user.firstName.trim()} ${user.lastName.trim()}`,
                     followers: user.followers,
-                    entityType: 1,
+                    entityType: 0,
                 },
             })
         );
     }
 
-    // for (let com of comms) {
-    //     updatePromises.push(
-    //         esClient.index({
-    //             index: "search",
-    //             id: com.id,
-    //             body: {
-    //                 id: com.id,
-    //                 name: com.name,
-    //                 followers: com.followers,
-    //                 entityType: 1,
-    //             },
-    //         })
-    //     );
-    // }
+    for (let com of comms) {
+        updatePromises.push(
+            esClient.index({
+                index: "search",
+                id: com.id,
+                body: {
+                    id: com.id,
+                    name: com.name,
+                    followers: com.followers,
+                    entityType: 1,
+                },
+            })
+        );
+    }
 
     // updatePromises.push(
     //     dynamoClient
