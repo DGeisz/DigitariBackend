@@ -1,5 +1,6 @@
 import { DynamoDB } from "aws-sdk";
 import {
+    DIGITARI_COMMUNITIES,
     DIGITARI_FEED_RECORDS,
     DIGITARI_POSTS,
     DIGITARI_USERS,
@@ -15,6 +16,7 @@ import { PostType } from "../../global_types/PostTypes";
 import { BoltRecord } from "../../global_types/BoltRecord";
 import { FeedRecordType } from "../../global_types/FeedRecordTypes";
 import { Client } from "@elastic/elasticsearch";
+import { CommunityType } from "../../global_types/CommunityTypes";
 
 const dynamoClient = new DynamoDB.DocumentClient({
     apiVersion: "2012-08-10",
@@ -31,6 +33,25 @@ const esClient = new Client({
 });
 
 export async function handler() {
+    // const comms = (
+    //     await dynamoClient
+    //         .scan({
+    //             TableName: DIGITARI_COMMUNITIES,
+    //         })
+    //         .promise()
+    // ).Items as CommunityType[];
+
+    await esClient.deleteByQuery({
+        index: "search",
+        body: {
+            query: {
+                term: {
+                    entityType: 0,
+                },
+            },
+        },
+    });
+
     const users = (
         await dynamoClient
             .scan({
@@ -47,31 +68,48 @@ export async function handler() {
         updatePromises.push(
             esClient.index({
                 index: "search",
+                id: user.id,
                 body: {
                     id: user.id,
                     name: `${user.firstName.trim()} ${user.lastName.trim()}`,
                     followers: user.followers,
-                    entityType: 0,
+                    entityType: 1,
                 },
             })
         );
-        // updatePromises.push(
-        //     dynamoClient
-        //         .update({
-        //             TableName: DIGITARI_USERS,
-        //             Key: {
-        //                 id: user.id,
-        //             },
-        //             UpdateExpression: `set maxBoltWallet = :h,
-        //                                    boltTransTotal = :z`,
-        //             ExpressionAttributeValues: {
-        //                 ":h": 100,
-        //                 ":z": 0,
-        //             },
-        //         })
-        //         .promise()
-        // );
     }
+
+    // for (let com of comms) {
+    //     updatePromises.push(
+    //         esClient.index({
+    //             index: "search",
+    //             id: com.id,
+    //             body: {
+    //                 id: com.id,
+    //                 name: com.name,
+    //                 followers: com.followers,
+    //                 entityType: 1,
+    //             },
+    //         })
+    //     );
+    // }
+
+    // updatePromises.push(
+    //     dynamoClient
+    //         .update({
+    //             TableName: DIGITARI_USERS,
+    //             Key: {
+    //                 id: user.id,
+    //             },
+    //             UpdateExpression: `set maxBoltWallet = :h,
+    //                                    boltTransTotal = :z`,
+    //             ExpressionAttributeValues: {
+    //                 ":h": 100,
+    //                 ":z": 0,
+    //             },
+    //         })
+    //         .promise()
+    // );
 
     console.log("Ending update");
 

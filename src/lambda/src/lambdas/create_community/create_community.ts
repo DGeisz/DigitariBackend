@@ -130,6 +130,7 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
     updatePromises.push(
         esClient.index({
             index: "search",
+            id: cid,
             body: {
                 id: cid,
                 name: event.arguments.name,

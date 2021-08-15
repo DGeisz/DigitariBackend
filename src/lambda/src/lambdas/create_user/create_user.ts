@@ -267,6 +267,7 @@ export async function handler(
     updatePromises.push(
         esClient.index({
             index: "search",
+            id: uid,
             body: {
                 id: uid,
                 name: `${firstName} ${lastName}`,
