@@ -1,5 +1,7 @@
 import { Client } from "@elastic/elasticsearch";
 import { AppSyncResolverEvent } from "aws-lambda";
+import { DynamoDB } from "aws-sdk";
+import { UserType } from "../../global_types/UserTypes";
 
 const esClient = new Client({
     cloud: {
@@ -9,6 +11,10 @@ const esClient = new Client({
         username: process.env.ES_CLOUD_USERNAME,
         password: process.env.ES_CLOUD_PASSWORD,
     },
+});
+
+const dynamoClient = new DynamoDB.DocumentClient({
+    apiVersion: "2012-08-10",
 });
 
 export async function handler(
@@ -85,8 +91,42 @@ export async function handler(
     });
 
     const initialHits = result.body.hits.hits.map((hit: any) => {
-        return hit.source;
+        return hit._source;
     });
+
+    const uids: { id: string }[] = [];
+
+    for (let hit of initialHits) {
+        if (hit.entityType === 0) {
+            uids.push({
+                id: hit.id,
+            });
+        }
+    }
+
+    if (uids.length > 0) {
+        const batchResponse = (
+            await dynamoClient
+                .batchGet({
+                    RequestItems: {
+                        DigitariUsers: {
+                            Keys: uids,
+                        },
+                    },
+                })
+                .promise()
+        ).Responses;
+
+        const users: UserType[] = batchResponse.DigitariUsers as UserType[];
+
+        for (let user of users) {
+            for (let hit of initialHits) {
+                if (hit.id === user.id) {
+                    hit.imgUrl = user.imgUrl;
+                }
+            }
+        }
+    }
 
     return initialHits;
 }
