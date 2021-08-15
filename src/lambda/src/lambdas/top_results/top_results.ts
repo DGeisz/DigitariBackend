@@ -44,7 +44,7 @@ export async function handler(
         size: 50,
     };
 
-    if (typeof entityType !== "undefined") {
+    if (typeof entityType === "number") {
         body.query = {
             term: {
                 entityType,

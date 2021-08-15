@@ -76,7 +76,7 @@ export async function handler(
         },
     };
 
-    if (typeof entityType !== "undefined") {
+    if (typeof entityType === "number") {
         body.query.bool.must.push({
             //@ts-ignore
             term: {
