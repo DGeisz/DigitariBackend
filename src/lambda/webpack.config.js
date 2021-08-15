@@ -36,6 +36,7 @@ module.exports = {
         upgrade_bolt_wallet:
             "./src/lambdas/upgrade_bolt_wallet/upgrade_bolt_wallet.ts",
         level_up: "./src/lambdas/level_up/level_up.ts",
+        search: "./src/lambdas/search/search.ts",
     },
     externals: ["aws-sdk"],
     mode: "production",

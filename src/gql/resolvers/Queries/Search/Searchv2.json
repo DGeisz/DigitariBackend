@@ -1,0 +1,51 @@
+{
+    "version":"2018-05-29",
+    "operation":"GET",
+    "resourcePath": "/search/_search",
+    "params": {
+        "headers":{
+            "Authorization": "ApiKey dnB1UFNuc0JSOUZCMkRVREg5RHA6X0tyNWZBRF9UUnV0SjRLSThiakdPZw=="
+        },
+        "body": {
+            "from": "$util.toJson($ctx.stash.get(\"from\"))",
+            "size": 50,
+            "query": {
+                "bool": {
+                    "must": {
+                        "function_score": {
+                            "query": {
+                                "match": {
+                                    "name": {
+                                        "query": "$util.toJson($ctx.args.text)",
+                                        "fuzziness": "AUTO"
+                                    }
+                                }
+                            },
+                            "field_value_factor": {
+                                "field": "followers",
+                                "modifier": "log1p"
+                            },
+                            "boost_mode": "sum"
+                        }
+                    },
+                    "should": {
+                        "function_score": {
+                            "query": {
+                                "match": {
+                                    "name": {
+                                        "query": "$util.toJson($ctx.args.text)"
+                                    }
+                                }
+                            },
+                            "field_value_factor": {
+                                "field": "followers",
+                                "modifier": "log1p"
+                            },
+                            "boost_mode": "sum"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
