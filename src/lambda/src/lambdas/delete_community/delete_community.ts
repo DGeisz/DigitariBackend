@@ -1,7 +1,7 @@
-import { Client } from "elasticsearch";
 import { DynamoDB } from "aws-sdk";
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import { DIGITARI_COMMUNITIES } from "../../global_types/DynamoTableNames";
+import { Client } from "@elastic/elasticsearch";
 
 const rdsClient = new RdsClient();
 
@@ -10,8 +10,13 @@ const dynamoClient = new DynamoDB.DocumentClient({
 });
 
 const esClient = new Client({
-    host: process.env.ES_DOMAIN,
-    connectionClass: require("http-aws-es"),
+    cloud: {
+        id: process.env.ES_CLOUD_ID,
+    },
+    auth: {
+        username: process.env.ES_CLOUD_USERNAME,
+        password: process.env.ES_CLOUD_PASSWORD,
+    },
 });
 
 interface Event {
@@ -66,7 +71,6 @@ export async function handler(event: Event) {
     try {
         await esClient.delete({
             index: "search",
-            type: "search_entity",
             id: cmid,
         });
     } catch (e) {
@@ -76,7 +80,6 @@ export async function handler(event: Event) {
     try {
         await esClient.deleteByQuery({
             index: "search",
-            type: "search_entity",
             body: {
                 query: {
                     match: {

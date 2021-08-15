@@ -1,6 +1,5 @@
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import { DynamoDB } from "aws-sdk";
-import { Client } from "elasticsearch";
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import {
     DIGITARI_BOLT_TRANSACTIONS,
@@ -24,6 +23,7 @@ import {
     TransactionIcon,
     TransactionTypesEnum,
 } from "../../global_types/TransactionTypes";
+import { Client } from "@elastic/elasticsearch";
 
 const rdsClient = new RdsClient();
 
@@ -32,8 +32,13 @@ const dynamoClient = new DynamoDB.DocumentClient({
 });
 
 const esClient = new Client({
-    host: process.env.ES_DOMAIN,
-    connectionClass: require("http-aws-es"),
+    cloud: {
+        id: process.env.ES_CLOUD_ID,
+    },
+    auth: {
+        username: process.env.ES_CLOUD_USERNAME,
+        password: process.env.ES_CLOUD_PASSWORD,
+    },
 });
 
 export async function handler(event: AppSyncResolverEvent<EventArgs>) {
@@ -125,8 +130,6 @@ export async function handler(event: AppSyncResolverEvent<EventArgs>) {
     updatePromises.push(
         esClient.index({
             index: "search",
-            type: "search_entity",
-            id: cid,
             body: {
                 id: cid,
                 name: event.arguments.name,

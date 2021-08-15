@@ -1,11 +1,11 @@
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import { DynamoDB } from "aws-sdk";
-import { Client } from "elasticsearch";
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { FollowEventArgs } from "../../global_types/follow_event_args";
 import { getFollowEntity } from "./rds_queries/queries";
 import { DIGITARI_USERS } from "../../global_types/DynamoTableNames";
 import { FOLLOW_USER_REWARD, UserType } from "../../global_types/UserTypes";
+import { Client } from "@elastic/elasticsearch";
 
 const rdsClient = new RdsClient();
 
@@ -14,8 +14,13 @@ const dynamoClient = new DynamoDB.DocumentClient({
 });
 
 const esClient = new Client({
-    host: process.env.ES_DOMAIN,
-    connectionClass: require("http-aws-es"),
+    cloud: {
+        id: process.env.ES_CLOUD_ID,
+    },
+    auth: {
+        username: process.env.ES_CLOUD_USERNAME,
+        password: process.env.ES_CLOUD_PASSWORD,
+    },
 });
 
 export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
@@ -65,7 +70,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     updatePromises.push(
         esClient.updateByQuery({
             index: "search",
-            type: "search_entity",
             body: {
                 query: {
                     match: {

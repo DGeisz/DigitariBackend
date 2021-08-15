@@ -8,8 +8,8 @@ import {
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import { UserToken } from "../../global_types/PushTypes";
 import { ObjectList } from "aws-sdk/clients/s3";
-import { Client } from "elasticsearch";
 import { MAX_BATCH_WRITE_ITEMS } from "../../global_constants/aws_constants";
+import { Client } from "@elastic/elasticsearch";
 
 const BUCKET_NAME = "digitari-imgs";
 const MAX_S3_DELETE = 1000;
@@ -23,8 +23,13 @@ const dynamoClient = new DynamoDB.DocumentClient({
 });
 
 const esClient = new Client({
-    host: process.env.ES_DOMAIN,
-    connectionClass: require("http-aws-es"),
+    cloud: {
+        id: process.env.ES_CLOUD_ID,
+    },
+    auth: {
+        username: process.env.ES_CLOUD_USERNAME,
+        password: process.env.ES_CLOUD_PASSWORD,
+    },
 });
 
 export async function handler(event: AppSyncResolverEvent<{}>) {
@@ -209,10 +214,15 @@ export async function handler(event: AppSyncResolverEvent<{}>) {
      * Now delete the user in elastic search
      */
     updatePromises.push(
-        esClient.delete({
+        esClient.deleteByQuery({
             index: "search",
-            type: "search_entity",
-            id: uid,
+            body: {
+                query: {
+                    match: {
+                        id: uid,
+                    },
+                },
+            },
         })
     );
 

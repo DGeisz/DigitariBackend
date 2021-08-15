@@ -14,9 +14,20 @@ import {
 import { PostType } from "../../global_types/PostTypes";
 import { BoltRecord } from "../../global_types/BoltRecord";
 import { FeedRecordType } from "../../global_types/FeedRecordTypes";
+import { Client } from "@elastic/elasticsearch";
 
 const dynamoClient = new DynamoDB.DocumentClient({
     apiVersion: "2012-08-10",
+});
+
+const esClient = new Client({
+    cloud: {
+        id: process.env.ES_CLOUD_ID,
+    },
+    auth: {
+        username: process.env.ES_CLOUD_USERNAME,
+        password: process.env.ES_CLOUD_PASSWORD,
+    },
 });
 
 export async function handler() {
@@ -34,21 +45,32 @@ export async function handler() {
 
     for (let user of users) {
         updatePromises.push(
-            dynamoClient
-                .update({
-                    TableName: DIGITARI_USERS,
-                    Key: {
-                        id: user.id,
-                    },
-                    UpdateExpression: `set maxBoltWallet = :h,
-                                           boltTransTotal = :z`,
-                    ExpressionAttributeValues: {
-                        ":h": 100,
-                        ":z": 0,
-                    },
-                })
-                .promise()
+            esClient.index({
+                index: "search",
+                body: {
+                    id: user.id,
+                    name: `${user.firstName.trim()} ${user.lastName.trim()}`,
+                    followers: user.followers,
+                    entityType: 0,
+                },
+            })
         );
+        // updatePromises.push(
+        //     dynamoClient
+        //         .update({
+        //             TableName: DIGITARI_USERS,
+        //             Key: {
+        //                 id: user.id,
+        //             },
+        //             UpdateExpression: `set maxBoltWallet = :h,
+        //                                    boltTransTotal = :z`,
+        //             ExpressionAttributeValues: {
+        //                 ":h": 100,
+        //                 ":z": 0,
+        //             },
+        //         })
+        //         .promise()
+        // );
     }
 
     console.log("Ending update");

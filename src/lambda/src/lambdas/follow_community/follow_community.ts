@@ -1,6 +1,5 @@
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
 import { DynamoDB } from "aws-sdk";
-import { Client } from "elasticsearch";
 import { AppSyncIdentityCognito, AppSyncResolverEvent } from "aws-lambda";
 import { FollowEventArgs } from "../../global_types/follow_event_args";
 import {
@@ -31,6 +30,7 @@ import { getCommPostRecords } from "./rds_queries/queries";
 import { FeedRecordType } from "../../global_types/FeedRecordTypes";
 import { MAX_BATCH_WRITE_ITEMS } from "../../global_constants/aws_constants";
 import { backoffPush } from "../../push_notifications/back_off_push";
+import { Client } from "@elastic/elasticsearch";
 
 const rdsClient = new RdsClient();
 
@@ -39,8 +39,13 @@ const dynamoClient = new DynamoDB.DocumentClient({
 });
 
 const esClient = new Client({
-    host: process.env.ES_DOMAIN,
-    connectionClass: require("http-aws-es"),
+    cloud: {
+        id: process.env.ES_CLOUD_ID,
+    },
+    auth: {
+        username: process.env.ES_CLOUD_USERNAME,
+        password: process.env.ES_CLOUD_PASSWORD,
+    },
 });
 
 export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
@@ -107,7 +112,6 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
     updatePromises.push(
         esClient.updateByQuery({
             index: "search",
-            type: "search_entity",
             body: {
                 query: {
                     match: {
@@ -115,7 +119,7 @@ export async function handler(event: AppSyncResolverEvent<FollowEventArgs>) {
                     },
                 },
                 script: {
-                    source: "ctx._source.followers += 1",
+                    source: `ctx._source.followers = ${target.followers + 1}`,
                     lang: "painless",
                 },
             },

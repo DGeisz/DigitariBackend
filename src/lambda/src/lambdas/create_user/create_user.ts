@@ -25,7 +25,6 @@ import {
 import { sendPushAndHandleReceipts } from "../../push_notifications/push";
 import { PushNotificationType } from "../../global_types/PushTypes";
 import { RdsClient } from "../../data_clients/rds_client/rds_client";
-import { Client } from "elasticsearch";
 import { toCommaRep } from "../../utils/value_rep_utils";
 import { filterEmoji } from "../../utils/string_utils";
 import {
@@ -35,6 +34,7 @@ import {
 import { backoffPush } from "../../push_notifications/back_off_push";
 import { MAX_BATCH_WRITE_ITEMS } from "../../global_constants/aws_constants";
 import { FeedRecordType } from "../../global_types/FeedRecordTypes";
+import { Client } from "@elastic/elasticsearch";
 
 const INVITE_REWARD = 400;
 
@@ -47,8 +47,13 @@ const dynamoClient = new DynamoDB.DocumentClient({
 });
 
 const esClient = new Client({
-    host: process.env.ES_DOMAIN,
-    connectionClass: require("http-aws-es"),
+    cloud: {
+        id: process.env.ES_CLOUD_ID,
+    },
+    auth: {
+        username: process.env.ES_CLOUD_USERNAME,
+        password: process.env.ES_CLOUD_PASSWORD,
+    },
 });
 
 export async function handler(
@@ -262,8 +267,6 @@ export async function handler(
     updatePromises.push(
         esClient.index({
             index: "search",
-            type: "search_entity",
-            id: uid,
             body: {
                 id: uid,
                 name: `${firstName} ${lastName}`,
@@ -297,7 +300,6 @@ export async function handler(
             updatePromises.push(
                 esClient.updateByQuery({
                     index: "search",
-                    type: "search_entity",
                     body: {
                         query: {
                             match: {
